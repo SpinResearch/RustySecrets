@@ -124,8 +124,12 @@ fn read_no_more_than<R: Reader>(r: &mut R, max: usize) -> IoResult<Vec<u8>> {
 fn perform_encode(k: u8, n: u8) -> IoResult<()> {
 	let secret = try!(read_no_more_than(&mut stdio::stdin(), 0x10000));
 	let shares = try!(secret_share(&*secret, k, n));
+	let config = base64::Config {
+		pad: false,
+		..base64::STANDARD
+	};
 	for (index, share) in shares.iter().enumerate() {
-		println!("{}-{}-{}", k, index+1, share.to_base64(base64::STANDARD));
+		println!("{}-{}-{}", k, index+1, share.to_base64(config));
 	}
 	Ok(())
 }
