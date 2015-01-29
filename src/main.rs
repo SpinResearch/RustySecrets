@@ -205,8 +205,9 @@ fn main() {
 	let mut opts = Options::new();
 	opts.optflag("h", "help", "print this help text");
 	opts.optflag("d", "decode", "for decoding");
-	opts.optopt("e", "encode", "for encoding, K is the required number of shares, \
-		N is the number of shares to generate. 1 <= K <= N <= 255", "K,N");
+	opts.optopt("e", "encode", "for encoding, K is the required number of \
+	                            shares for decoding, N is the number of shares \
+	                            to generate. 1 <= K <= N <= 255", "K,N");
 	let opt_matches = match opts.parse(args.tail()) {
 		Ok(m) => m,
 		Err(f) => panic!(f.to_string())
@@ -229,7 +230,11 @@ fn main() {
 			(true, false) => {
 				if let Some(param) = opt_matches.opt_str("e") {
 					if let Some((k,n)) = parse_k_n(&*param) {
-						Ok(Action::Encode(k,n))
+						if 0 < k && k <= n {
+							Ok(Action::Encode(k,n))
+						} else {
+							Err("Invalid encoding parameters K,N")
+						}
 					} else {
 						Err("Could not parse K,N parameters")
 					}
