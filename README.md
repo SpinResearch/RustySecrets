@@ -20,11 +20,7 @@ Decoding a subset (2nd and 3rd) of shares (one share per line):
 
 ```
 $ echo -e "2-2-HkctX9qblUhW7EGutTxNKvs \n 2-3-O94PSafi5nzDilhF3htZBQ0" | secretshare -d
-2-1-cfFLZV0QABT0RmqOCFVxW/w
-2-2-HkctX9qblUhW7EGutTxNKvs
-2-3-O94PSafi5nzDilhF3htZBQ0
-2-4-wDbhK8mQovAPpRfu0u41yPU
-2-5-5a/DPbTp0cSaww4Fuckh5wM
+This is a secret
 ```
 
 # Building
