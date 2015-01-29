@@ -144,7 +144,7 @@ fn read_shares() -> IoResult<(u8, Vec<(u8,Vec<u8>)>)> {
 	let mut shares: Vec<(u8,Vec<u8>)> = Vec::new();
 	for line in stdin.lines() {
 		let line = try!(line);
-		let parts: Vec<_> = line.split('-').collect();
+		let parts: Vec<_> = line.trim().split('-').collect();
 		let (k, n, raw) = match
 			Some(parts).and_then(|p| {
 				if p.len() != 3 { None } else { Some(p) }
@@ -214,13 +214,17 @@ fn main() {
 	                            to generate. 1 <= K <= N <= 255", "K,N");
 	let opt_matches = match opts.parse(args.tail()) {
 		Ok(m) => m,
-		Err(f) => panic!(f.to_string())
+		Err(f) => {
+			drop(writeln!(&mut stderr, "Error: {}", f));
+			os::set_exit_status(1);
+			return;
+		}
 	};
 
 	if args.len() < 2 || opt_matches.opt_present("h") {
 		println!(
 "The program secretshare is an implementation of Shamir's secret sharing scheme.\n\
- It is applied byte-wise within a finite field for arbitraty long secrets.\n");
+ It is applied byte-wise within a finite field for arbitrarily long secrets.\n");
 		println!("{}", opts.usage("Usage: secretshare [options]"));
 		println!("Input is read from STDIN and output is written to STDOUT.");
  		return;
