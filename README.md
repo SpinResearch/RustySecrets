@@ -27,7 +27,7 @@ This is a secret
 
 # Building
 
-This project is Cargo-enabled. So, you should be able to built it with
+This project is Cargo-enabled. So, you should be able to build it with
 
 ```
 $ cargo build --release
