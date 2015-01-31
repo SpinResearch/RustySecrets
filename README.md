@@ -8,12 +8,12 @@ A secret can be split into multiple shares and a selectable number of shares is 
 Passing a secret to secretshare for encoding:
 
 ```
-$ echo This is a secret | secretshare -e2,5
-2-1-cfFLZV0QABT0RmqOCFVxW/w
-2-2-HkctX9qblUhW7EGutTxNKvs
-2-3-O94PSafi5nzDilhF3htZBQ0
-2-4-wDbhK8mQovAPpRfu0u41yPU
-2-5-5a/DPbTp0cSaww4Fuckh5wM
+$ echo My secret | ./secretshare -e2,5
+2-1-LiTyeXwEP71IUA-Qj6n
+2-2-i8OZZ1et6MgMvg-xwsJ
+2-3-6J5LbU7KpRAw5A-27nn
+2-4-3BBPWwHiWyKEfw-0ADd
+2-5-v02dURiFFvq4JQ-zLIz
 ```
 
 The parameters following the `-e` option tell `secretshare` to create 5 shares of which 2 will be necessary for decoding.
@@ -21,8 +21,8 @@ The parameters following the `-e` option tell `secretshare` to create 5 shares o
 Decoding a subset of shares (one share per line) can be done like this:
 
 ```
-$ echo -e "2-2-HkctX9qblUhW7EGutTxNKvs \n 2-3-O94PSafi5nzDilhF3htZBQ0" | secretshare -d
-This is a secret
+$ echo -e "2-2-i8OZZ1et6MgMvg-xwsJ \n 2-4-3BBPWwHiWyKEfw-0ADd" | ./secretshare -d
+My secret
 ```
 
 # Building
@@ -32,4 +32,3 @@ This project is Cargo-enabled. So, you should be able to build it with
 ```
 $ cargo build --release
 ```
-
