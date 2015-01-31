@@ -5,6 +5,7 @@
 
 extern crate "rustc-serialize" as serialize;
 extern crate getopts;
+extern crate crc24;
 
 use std::os;
 use std::rand::{ Rng, OsRng };
@@ -121,7 +122,14 @@ fn read_no_more_than<R: Reader>(r: &mut R, max: usize) -> IoResult<Vec<u8>> {
 	Ok(data)
 }
 
-fn perform_encode(k: u8, n: u8) -> IoResult<()> {
+fn crc24_as_bytes(octets: &[u8]) -> [u8; 3] {
+	let v = crc24::hash_raw(octets);
+	[((v >> 16) & 0xFF) as u8,
+	 ((v >>  8) & 0xFF) as u8,
+	 ( v        & 0xFF) as u8]
+}
+
+fn perform_encode(k: u8, n: u8, with_checksums: bool) -> IoResult<()> {
 	let secret = try!(read_no_more_than(&mut stdio::stdin(), 0x10000));
 	let shares = try!(secret_share(&*secret, k, n));
 	let config = base64::Config {
@@ -129,9 +137,24 @@ fn perform_encode(k: u8, n: u8) -> IoResult<()> {
 		..base64::STANDARD
 	};
 	for (index, share) in shares.iter().enumerate() {
-		println!("{}-{}-{}", k, index+1, share.to_base64(config));
+		let salad = share.to_base64(config);
+		if with_checksums {
+			let crc_bytes = crc24_as_bytes(&**share);
+			println!("{}-{}-{}-{}", k, index+1, salad, crc_bytes.to_base64(config));
+		} else {
+			println!("{}-{}-{}", k, index+1, salad);
+		}
 	}
 	Ok(())
+}
+
+macro_rules! otry {
+	($o:expr, $e:expr) => (
+		match $o {
+			Some(thing_) => thing_,
+			None => return Err(other_io_err($e))
+		}
+	)
 }
 
 /// reads shares from stdin and returns Ok(k, shares) on success
@@ -145,36 +168,49 @@ fn read_shares() -> IoResult<(u8, Vec<(u8,Vec<u8>)>)> {
 	for line in stdin.lines() {
 		let line = try!(line);
 		let parts: Vec<_> = line.trim().split('-').collect();
-		let (k, n, raw) = match
-			Some(parts).and_then(|p| {
-				if p.len() != 3 { None } else { Some(p) }
-			}).and_then(|p| {
-				let mut iter = p.into_iter();
-				let p1 = iter.next().unwrap().parse::<u8>();
-				let p2 = iter.next().unwrap().parse::<u8>();
-				let p3 = iter.next().unwrap();
-				match (p1, p2) {
-					(Some(k), Some(n)) => Some((k,n,p3)),
-					_ => None
-				}
-			}).and_then(|(k,n,text)| {
-				match text.from_base64() {
-					Ok(v) => Some((k,n,v)),
-					_ => None
-				}
-			}) {
-				None => return Err(other_io_err("Share parse error")),
-				Some(s) => s
-			};
-		if let Some((ck,cl)) = opt_k_l {
-			if ck != k || cl != raw.len() {
+		if parts.len() < 3 || parts.len() > 4 {
+			return Err(other_io_err("Share parse error: Expected 3 or 4 \
+			                         parts searated by a minus sign"));
+		}
+		let (k, n, p3, opt_p4) = {
+			let mut iter = parts.into_iter();
+			let msg = "Share parse error: Could not parse K,N parameters";
+			let k = otry!(iter.next().unwrap().parse::<u8>(), msg);
+			let n = otry!(iter.next().unwrap().parse::<u8>(), msg);
+			let p3 = iter.next().unwrap();
+			let opt_p4 = iter.next();
+			(k, n, p3, opt_p4)
+		};
+		if k < 1 || n < 1 {
+			return Err(other_io_err("Share parse error: Illegal K,N parameters"));
+		}
+		let data = try!(
+			p3.from_base64().map_err(|_| other_io_err(
+				"Share parse error: Base64 decoding of data block failed"))
+		);
+		if let Some(check) = opt_p4 {
+			if check.len() != 4 {
+				return Err(other_io_err("Share parse error: Checksum part is \
+				                         expected to be four characters"));
+			}
+			let crc_bytes = try!(
+				check.from_base64().map_err(|_| other_io_err(
+					"Share parse error: Base64 decoding of checksum failed"))
+			);
+			let mychksum = crc24_as_bytes(&*data);
+			if mychksum != crc_bytes {
+				return Err(other_io_err("Share parse error: Checksum mismatch"));
+			}
+		}
+		if let Some((ck, cl)) = opt_k_l {
+			if ck != k || cl != data.len() {
 				return Err(other_io_err("Incompatible shares"));
 			}
 		} else {
-			opt_k_l = Some((k,raw.len()));
+			opt_k_l = Some((k, data.len()));
 		}
 		if shares.iter().all(|s| s.0 != n) {
-			shares.push((n, raw));
+			shares.push((n, data));
 			counter += 1;
 			if counter == k {
 				return Ok((k, shares));
@@ -254,7 +290,7 @@ fn main() {
 
 	let result =
 		match action {
-			Ok(Action::Encode(k,n)) => perform_encode(k,n),
+			Ok(Action::Encode(k,n)) => perform_encode(k, n, true),
 			Ok(Action::Decode) => perform_decode(),
 			Err(e) => {
 				drop(writeln!(&mut stderr, "Error: {}", e));

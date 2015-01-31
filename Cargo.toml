@@ -2,7 +2,11 @@
 name = "secretshare"
 version = "0.0.1"
 authors = ["Sebastian Gesemann <s.gesemann@gmail.com>"]
+description = "This is an implementation of Shamir's secret sharing scheme."
+license = "GPLv3"
+readme = "README.md"
 
 [dependencies]
 getopts = "0.2.0"
 rustc-serialize = "0.2.10"
+crc24 = "0.0.2"

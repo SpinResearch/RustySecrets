@@ -2,9 +2,15 @@
 name = "secretshare"
 version = "0.0.1"
 dependencies = [
+ "crc24 0.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "getopts 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.2.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "crc24"
+version = "0.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "getopts"
