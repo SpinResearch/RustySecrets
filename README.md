@@ -61,5 +61,25 @@ of shares that have been created). The D part is a Base64 encoding of
 a specific share's raw data. The optional part C is a Base64 encoding
 of a CRC-24 checksum of the share's data.
 
-# I/O
+# How does it compare to `ssss`?
 
+There is already a [tool](http://point-at-infinity.org/ssss/) that
+implements Shamir's secret sharing scheme. But it is incompatible
+with this project. There are certain differences:
+
+* `ssss` uses big integers via `libgmp` to do its finite field calculations
+  whereas `secretshare` always uses a fixed finite field of 256 elements
+  and simply applies the algorithm byte-wise regardless of the length
+  of the secret.
+* The shares of `ssss` don't include the encoding parameter K. So, if you
+  want to use `ssss` instead you would have to remember yourself how many
+  shares are necessary to decode the secret again.
+* `ssss` uses a hex encoding of the shares whereas `secretshare` crams
+  more bits into the characters via Base64.
+* `ssss` does not add any checksums to the shares.
+
+Note that the checksums are computed after the encoding of the shares.
+They don't reveal anything about the secret. You still need K shares
+to decode the secret and the checksums don't make it any easier to
+brute-force anything. Their purpose is just to protect the integrity
+of the shares.
