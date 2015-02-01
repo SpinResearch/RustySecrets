@@ -6,6 +6,13 @@ A secret can be split into N shares in a way so that
 a selectable number of shares K (with K ≤ N) is required
 to reconstruct the secret again.
 
+**Warning**: I don't yet recommend the serious use of this tool.
+I don't want to guarantee that shares computed with version 0.0.1
+can still be decoded with newer versions. For now, this is
+experimental. Also, I'm currently investigating whether my use
+of a non-prime field actually violates the information-theoretic
+security.
+
 # Example
 
 Passing a secret to secretshare for encoding:

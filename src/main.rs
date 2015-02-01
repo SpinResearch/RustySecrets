@@ -292,11 +292,7 @@ fn main() {
 		match action {
 			Ok(Action::Encode(k,n)) => perform_encode(k, n, true),
 			Ok(Action::Decode) => perform_decode(),
-			Err(e) => {
-				drop(writeln!(&mut stderr, "Error: {}", e));
-				os::set_exit_status(1);
-				return;
-			}
+			Err(e) => Err(other_io_err(e))
 		};
 
 	if let Err(e) = result {
@@ -304,4 +300,3 @@ fn main() {
 		os::set_exit_status(1);
 	}
 }
-
