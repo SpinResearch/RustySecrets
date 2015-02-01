@@ -1,7 +1,10 @@
 # secretshare
 
-This program is an implementation of Shamir's secret sharing.
-A secret can be split into multiple shares and a selectable number of shares is required to reconstruct the secret again.
+This program is an implementation of
+[Shamir's secret sharing](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing).
+A secret can be split into N shares in a way so that
+a selectable number of shares K (with K ≤ N) is required
+to reconstruct the secret again.
 
 # Example
 
@@ -53,13 +56,21 @@ The generated shares are lines of ASCII text.
 
 # Structure of the shares
 
-A share is built out of three or four parts: K-N-D-C (C is optional).
-K is one of the encoding parameters that tell you how many distinct
+```
+  2-1-LiTyeXwEP71IUA-Qj6n
+  ^ ^ ^^^^^^^^^^^^^^ ^^^^
+  K N        D        C
+```
+
+A share is built out of three or four parts separated with a minus: K-N-D-C.
+The last part is optional. K is one of the encoding parameters that tell you
+how many distinct
 shares of a specific secret are necessary to be able to recover the
 secret. The number N identifies the share (ranging from 1 to the number
 of shares that have been created). The D part is a Base64 encoding of
 a specific share's raw data. The optional part C is a Base64 encoding
-of a CRC-24 checksum of the share's data.
+of a CRC-24 checksum of the share's data. The same checksum algorithm
+is used in the OpenPGP format for “ASCII amoring”.
 
 # How does it compare to `ssss`?
 
