@@ -6,12 +6,10 @@ A secret can be split into N shares in a way so that
 a selectable number of shares K (with K ≤ N) is required
 to reconstruct the secret again.
 
-**Warning**: I don't yet recommend the serious use of this tool.
-I don't want to guarantee that shares computed with version 0.0.1
-can still be decoded with newer versions. For now, this is
-experimental. Also, I'm currently investigating whether my use
-of a non-prime field actually violates the information-theoretic
-security.
+**Warning**: I don't yet recommend the serious use of this tool. The
+encoding of the shares might change in a newer version in which case
+you would have trouble decoding secrets that have been shared using
+an older version of the program. For now, this is experimental.
 
 # Example
 
@@ -19,11 +17,11 @@ Passing a secret to secretshare for encoding:
 
 ```
 $ echo My secret | ./secretshare -e2,5
-2-1-LiTyeXwEP71IUA-Qj6n
-2-2-i8OZZ1et6MgMvg-xwsJ
-2-3-6J5LbU7KpRAw5A-27nn
-2-4-3BBPWwHiWyKEfw-0ADd
-2-5-v02dURiFFvq4JQ-zLIz
+2-1-1YAYwmOHqZ69jA-v+mz
+2-2-YJZQDGm22Y77Gw-IhSh
+2-3-+G9ovW9SAnUynQ-Elwi
+2-4-F7rAjX3UOa53KA-b2vm
+2-5-j0P4PHsw4lW+rg-XyNl
 ```
 
 The parameters following the `-e` option tell `secretshare` to create 5 shares of which 2 will be necessary for decoding.
@@ -31,7 +29,7 @@ The parameters following the `-e` option tell `secretshare` to create 5 shares o
 Decoding a subset of shares (one share per line) can be done like this:
 
 ```
-$ echo -e "2-2-i8OZZ1et6MgMvg-xwsJ \n 2-4-3BBPWwHiWyKEfw-0ADd" | ./secretshare -d
+$ echo -e "2-2-YJZQDGm22Y77Gw-IhSh \n 2-4-F7rAjX3UOa53KA-b2vm" | ./secretshare -d
 My secret
 ```
 
@@ -45,8 +43,8 @@ $ cargo build --release
 
 once you have made sure that `rustc` (the compiler) and `cargo`
 (the build and dependency management tool) are installed.
-Visit the [Rust homepage](http://www.rust-lang.org/) if you don't
-know what they are.
+Visit the [Rust homepage](http://www.rust-lang.org/) if you are
+don't know where to get these tools.
 
 # I/O
 
@@ -76,8 +74,50 @@ shares of a specific secret are necessary to be able to recover the
 secret. The number N identifies the share (ranging from 1 to the number
 of shares that have been created). The D part is a Base64 encoding of
 a specific share's raw data. The optional part C is a Base64 encoding
-of a CRC-24 checksum of the share's data. The same checksum algorithm
-is used in the OpenPGP format for “ASCII amoring”.
+of a CRC-24 checksum of the concatenation of K and N as bytes followed
+by the share's raw data (before Base64 encoding). The same checksum
+algorithm is used in the OpenPGP format for “ASCII amoring”.
+
+# Changelog
+
+2015-02-03:
+
+* I changed the CRC-24 checksum computation to include the coding parameter
+  K and the share number N so that these numbers are also protected.
+  If you have older shares generated with a previous version, you can still
+  decode the secret by simply removing the checksum part of the shares.
+
+# A word on the secrecy
+
+Shamir's secret sharing is known to have the perfect secrecy property.
+In the context of (K,N)-threshold schemes this means that if you have
+less than K shares available, you have absolutely no information about
+what the secret is. None. The checksums that are included in the shares
+also don't reveal anything about the secret. They are just a simple
+integrity protection of the shares themselves. In other words, given
+a share without checksum, we can derive a share with a checksum. This
+obviously does not add any new information.
+
+# Galois field
+
+Shamir's secret sharing algorithm requires the use of polynomials over
+a finite field. One easy way of constructing a finite field is to pick
+a prime number p, use the integers 0, 1, 2, ..., p-1 as field elements
+and simply use modular arithmetic (mod p) for the field operations.
+
+So, you *could* pick a prime like 257 to apply Shamir's algorithm
+byte-wise. The downside of this is that the shares would consist of
+sequences of values each between 0 and 256 *inclusive*. So, you would
+need more than 8 bits to encode each of them.
+
+Luckily, there is another way. We are not restricted to so-called
+prime fields. There are also non-prime fields where the number of
+elements is a *power* of a prime, for example 2^8=256. It's just
+a bit harder to explain how they are constructed. The finite
+field I used is the same as the one you can find in the RAID 6
+implementation of the Linux kernel or the Anubis block cipher:
+Gf(2^8) reduction polynomial is x^8 + x^4 + x^3 + x^2 + 1 or
+alternatively 11D in hex.
 
 # How does it compare to `ssss`?
 

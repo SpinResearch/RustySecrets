@@ -1,6 +1,6 @@
 [package]
 name = "secretshare"
-version = "0.0.1"
+version = "0.1.0"
 authors = ["Sebastian Gesemann <s.gesemann@gmail.com>"]
 description = "This is an implementation of Shamir's secret sharing scheme."
 license = "GPLv3"
