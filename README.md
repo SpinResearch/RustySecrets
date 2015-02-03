@@ -78,15 +78,6 @@ of a CRC-24 checksum of the concatenation of K and N as bytes followed
 by the share's raw data (before Base64 encoding). The same checksum
 algorithm is used in the OpenPGP format for “ASCII amoring”.
 
-# Changelog
-
-2015-02-03:
-
-* I changed the CRC-24 checksum computation to include the coding parameter
-  K and the share number N so that these numbers are also protected.
-  If you have older shares generated with a previous version, you can still
-  decode the secret by simply removing the checksum part of the shares.
-
 # A word on the secrecy
 
 Shamir's secret sharing is known to have the perfect secrecy property.
@@ -135,9 +126,3 @@ with this project. There are certain differences:
 * `ssss` uses a hex encoding of the shares whereas `secretshare` crams
   more bits into the characters via Base64.
 * `ssss` does not add any checksums to the shares.
-
-Note that the checksums are computed after the encoding of the shares.
-They don't reveal anything about the secret. You still need K shares
-to decode the secret and the checksums don't make it any easier to
-brute-force anything. Their purpose is just to protect the integrity
-of the shares.
