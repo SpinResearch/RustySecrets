@@ -1,19 +1,22 @@
 #![feature(collections)]
+#![feature(core)]
 #![feature(io)]
 #![feature(os)]
 #![feature(rand)]
+#![feature(hash)]
 
 extern crate "rustc-serialize" as serialize;
 extern crate getopts;
 extern crate crc24;
 
-use std::os;
-use std::rand::{ Rng, OsRng };
+use std::default::Default;
 use std::iter::repeat;
 use std::old_io::{ stdio, IoError, IoErrorKind, IoResult, BufferedReader };
+use std::os;
+use std::rand::{ Rng, OsRng };
 
-use serialize::base64::{ self, FromBase64, ToBase64 };
 use getopts::Options;
+use serialize::base64::{ self, FromBase64, ToBase64 };
 
 use gf256::Gf256;
 
@@ -122,8 +125,18 @@ fn read_no_more_than<R: Reader>(r: &mut R, max: usize) -> IoResult<Vec<u8>> {
 	Ok(data)
 }
 
-fn crc24_as_bytes(octets: &[u8]) -> [u8; 3] {
-	let v = crc24::hash_raw(octets);
+/// computes a CRC-24 hash over the concatenated coding parameters k, n
+/// and the raw share data
+fn crc24_as_bytes(k: u8, n: u8, octets: &[u8]) -> [u8; 3] {
+	use std::hash::{ Hasher, Writer };
+	use std::slice::ref_slice;
+
+	let mut h: crc24::Crc24Hasher = Default::default();
+	h.write(ref_slice(&k));
+	h.write(ref_slice(&n));
+	h.write(octets);
+	let v = h.finish();
+
 	[((v >> 16) & 0xFF) as u8,
 	 ((v >>  8) & 0xFF) as u8,
 	 ( v        & 0xFF) as u8]
@@ -139,7 +152,7 @@ fn perform_encode(k: u8, n: u8, with_checksums: bool) -> IoResult<()> {
 	for (index, share) in shares.iter().enumerate() {
 		let salad = share.to_base64(config);
 		if with_checksums {
-			let crc_bytes = crc24_as_bytes(&**share);
+			let crc_bytes = crc24_as_bytes(k, (index+1) as u8, &**share);
 			println!("{}-{}-{}-{}", k, index+1, salad, crc_bytes.to_base64(config));
 		} else {
 			println!("{}-{}-{}", k, index+1, salad);
@@ -197,7 +210,7 @@ fn read_shares() -> IoResult<(u8, Vec<(u8,Vec<u8>)>)> {
 				check.from_base64().map_err(|_| other_io_err(
 					"Share parse error: Base64 decoding of checksum failed"))
 			);
-			let mychksum = crc24_as_bytes(&*data);
+			let mychksum = crc24_as_bytes(k, n, &*data);
 			if mychksum != crc_bytes {
 				return Err(other_io_err("Share parse error: Checksum mismatch"));
 			}
