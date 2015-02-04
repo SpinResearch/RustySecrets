@@ -5,11 +5,11 @@
 #![feature(rand)]
 #![feature(hash)]
 
+extern crate core; // FIXME: temporary fix for ParseIntError not being available in std
 extern crate "rustc-serialize" as serialize;
 extern crate getopts;
 extern crate crc24;
 
-use std::default::Default;
 use std::iter::repeat;
 use std::old_io::{ stdio, IoError, IoErrorKind, IoResult, BufferedReader };
 use std::os;
@@ -31,6 +31,26 @@ fn other_io_err(s: &'static str) -> IoError {
 		kind: IoErrorKind::OtherIoError,
 		desc: s,
 		detail: None
+	}
+}
+
+// a try!-like macro for Option<T> expressions that takes
+// a &'static str as error message as 2nd parameter
+// and creates an IoError out of it if necessary.
+macro_rules! otry {
+	($o:expr, $e:expr) => (
+		match $o {
+			Some(thing_) => thing_,
+			None => return Err(other_io_err($e))
+		}
+	)
+}
+
+/// maps a ParseIntError to an IoError
+fn pie2io(p: core::num::ParseIntError) -> IoError {
+	IoError {
+		detail: Some(p.to_string()),
+		.. other_io_err("Int parsing error")
 	}
 }
 
@@ -97,13 +117,14 @@ enum Action {
 	Decode
 }
 
-fn parse_k_n(s: &str) -> Option<(u8, u8)> {
+fn parse_k_n(s: &str) -> IoResult<(u8, u8)> {
 	let mut iter = s.split(',');
-	let first = match iter.next() { Some(x) => x, None => return None };
-	let second = match iter.next() { Some(x) => x, None => return None };
-	let k = match first.parse() { Some(x) => x, None => return None };
-	let n = match second.parse() { Some(x) => x, None => return None };
-	Some((k, n))
+	let msg = "K and N have to be separated with a comma";
+	let s1 = otry!(iter.next(), msg).trim();
+	let s2 = otry!(iter.next(), msg).trim();
+	let k = try!(s1.parse().map_err(pie2io));
+	let n = try!(s2.parse().map_err(pie2io));
+	Ok((k, n))
 }
 
 /// tries to read everything but stops early if the input seems to be
@@ -131,7 +152,7 @@ fn crc24_as_bytes(k: u8, n: u8, octets: &[u8]) -> [u8; 3] {
 	use std::hash::{ Hasher, Writer };
 	use std::slice::ref_slice;
 
-	let mut h: crc24::Crc24Hasher = Default::default();
+	let mut h = crc24::Crc24Hasher::new();
 	h.write(ref_slice(&k));
 	h.write(ref_slice(&n));
 	h.write(octets);
@@ -161,15 +182,6 @@ fn perform_encode(k: u8, n: u8, with_checksums: bool) -> IoResult<()> {
 	Ok(())
 }
 
-macro_rules! otry {
-	($o:expr, $e:expr) => (
-		match $o {
-			Some(thing_) => thing_,
-			None => return Err(other_io_err($e))
-		}
-	)
-}
-
 /// reads shares from stdin and returns Ok(k, shares) on success
 /// where shares is a Vec<(u8, Vec<u8>)> representing x-coordinates
 /// and share data.
@@ -187,9 +199,8 @@ fn read_shares() -> IoResult<(u8, Vec<(u8,Vec<u8>)>)> {
 		}
 		let (k, n, p3, opt_p4) = {
 			let mut iter = parts.into_iter();
-			let msg = "Share parse error: Could not parse K,N parameters";
-			let k = otry!(iter.next().unwrap().parse::<u8>(), msg);
-			let n = otry!(iter.next().unwrap().parse::<u8>(), msg);
+			let k = try!(iter.next().unwrap().parse::<u8>().map_err(pie2io));
+			let n = try!(iter.next().unwrap().parse::<u8>().map_err(pie2io));
 			let p3 = iter.next().unwrap();
 			let opt_p4 = iter.next();
 			(k, n, p3, opt_p4)
@@ -286,7 +297,7 @@ fn main() {
 			(false, true) => Ok(Action::Decode),
 			(true, false) => {
 				if let Some(param) = opt_matches.opt_str("e") {
-					if let Some((k,n)) = parse_k_n(&*param) {
+					if let Ok((k,n)) = parse_k_n(&*param) {
 						if 0 < k && k <= n {
 							Ok(Action::Encode(k,n))
 						} else {
