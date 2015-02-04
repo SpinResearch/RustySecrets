@@ -7,6 +7,6 @@ license = "GPLv3"
 readme = "README.md"
 
 [dependencies]
-getopts = "0.2.1"
-rustc-serialize = "0.2.11"
-crc24 = "0.1.0"
+getopts = "^0.2.1"
+rustc-serialize = "^0.2.11"
+crc24 = "^0.1.0"
