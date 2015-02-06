@@ -84,10 +84,10 @@ Shamir's secret sharing is known to have the perfect secrecy property.
 In the context of (K,N)-threshold schemes this means that if you have
 less than K shares available, you have absolutely no information about
 what the secret is. None. The checksums that are included in the shares
-also don't reveal anything about the secret. They are just a simple
-integrity protection of the shares themselves. In other words, given
-a share without checksum, we can derive a share with a checksum. This
-obviously does not add any new information.
+also don't reveal anything about the secret except for its length.
+They are just a simple integrity protection of the shares themselves.
+In other words, given a share without checksum, we can derive a share
+with a checksum. This obviously does not add any new information.
 
 # Galois field
 
