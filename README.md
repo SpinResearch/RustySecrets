@@ -83,8 +83,9 @@ algorithm is used in the OpenPGP format for “ASCII amoring”.
 Shamir's secret sharing is known to have the perfect secrecy property.
 In the context of (K,N)-threshold schemes this means that if you have
 less than K shares available, you have absolutely no information about
-what the secret is. None. The checksums that are included in the shares
-also don't reveal anything about the secret except for its length.
+what the secret is except for its length. The checksums that are included
+in the shares
+also don't reveal anything about the secret.
 They are just a simple integrity protection of the shares themselves.
 In other words, given a share without checksum, we can derive a share
 with a checksum. This obviously does not add any new information.
@@ -101,7 +102,7 @@ byte-wise. The downside of this is that the shares would consist of
 sequences of values each between 0 and 256 *inclusive*. So, you would
 need more than 8 bits to encode each of them.
 
-Luckily, there is another way. We are not restricted to so-called
+But there is another way. We are not restricted to so-called
 prime fields. There are also non-prime fields where the number of
 elements is a *power* of a prime, for example 2^8=256. It's just
 a bit harder to explain how they are constructed. The finite
@@ -109,20 +110,3 @@ field I used is the same as the one you can find in the RAID 6
 implementation of the Linux kernel or the Anubis block cipher:
 Gf(2^8) reduction polynomial is x^8 + x^4 + x^3 + x^2 + 1 or
 alternatively 11D in hex.
-
-# How does it compare to `ssss`?
-
-There is already a [tool](http://point-at-infinity.org/ssss/) that
-implements Shamir's secret sharing scheme. But it is incompatible
-with this project. There are certain differences:
-
-* `ssss` uses big integers via `libgmp` to do its finite field calculations
-  whereas `secretshare` always uses a fixed finite field of 256 elements
-  and simply applies the algorithm byte-wise regardless of the length
-  of the secret.
-* The shares of `ssss` don't include the encoding parameter K. So, if you
-  want to use `ssss` instead you would have to remember yourself how many
-  shares are necessary to decode the secret again.
-* `ssss` uses a hex encoding of the shares whereas `secretshare` crams
-  more bits into the characters via Base64.
-* `ssss` does not add any checksums to the shares.
