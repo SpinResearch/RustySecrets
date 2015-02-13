@@ -1,11 +1,9 @@
 #![feature(collections)]
 #![feature(core)]
 #![feature(io)]
-#![feature(os)]
 #![feature(env)]
 #![feature(hash)]
 
-extern crate core; // FIXME: temporary fix for ParseIntError not being available in std
 extern crate "rustc-serialize" as serialize;
 extern crate getopts;
 extern crate crc24;
@@ -14,8 +12,9 @@ extern crate rand;
 use std::iter::repeat;
 use std::old_io::{ stdio, IoError, IoErrorKind, IoResult, BufferedReader };
 use std::env;
-use rand::{ Rng, OsRng };
+use std::num;
 
+use rand::{ Rng, OsRng };
 use getopts::Options;
 use serialize::base64::{ self, FromBase64, ToBase64 };
 
@@ -48,7 +47,7 @@ macro_rules! otry {
 }
 
 /// maps a ParseIntError to an IoError
-fn pie2io(p: core::num::ParseIntError) -> IoError {
+fn pie2io(p: num::ParseIntError) -> IoError {
 	IoError {
 		detail: Some(p.to_string()),
 		.. other_io_err("Int parsing error")
@@ -265,7 +264,7 @@ fn perform_decode() -> IoResult<()> {
 
 fn main() {
 	let mut stderr = stdio::stderr();
-	let args: Vec<String> = env::args().map(|oss| oss.into_string().unwrap()).collect();
+	let args: Vec<String> = env::args().collect();
 
 	let mut opts = Options::new();
 	opts.optflag("h", "help", "print this help text");
@@ -325,3 +324,4 @@ fn main() {
 		env::set_exit_status(1);
 	}
 }
+
