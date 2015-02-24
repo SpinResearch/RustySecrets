@@ -1,6 +1,6 @@
 #![feature(collections)]
 #![feature(core)]
-#![feature(io)]
+#![feature(old_io)]
 #![feature(env)]
 #![feature(hash)]
 
@@ -149,7 +149,7 @@ fn read_no_more_than<R: Reader>(r: &mut R, max: usize) -> IoResult<Vec<u8>> {
 /// computes a CRC-24 hash over the concatenated coding parameters k, n
 /// and the raw share data
 fn crc24_as_bytes(k: u8, n: u8, octets: &[u8]) -> [u8; 3] {
-	use std::hash::{ Hasher, Writer };
+	use std::hash::Hasher;
 	use std::slice::ref_slice;
 
 	let mut h = crc24::Crc24Hasher::new();

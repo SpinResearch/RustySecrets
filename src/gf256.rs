@@ -39,13 +39,13 @@ fn get_tables() -> &'static Tables {
 		// mutable access is fine because of synchronization via INIT
 		let tabs = unsafe { &mut TABLES };
 		let mut tmp = 1;
-		for power in 0..255us {
+		for power in 0..255usize {
 			tabs.exp[power] = tmp;
 			tabs.log[tmp as usize] = power as u8;
 			tmp = xtimes(tmp);
 		}
 		tabs.exp[255] = 1;
-		for x in 1..256us {
+		for x in 1..256usize {
 			let l = tabs.log[x];
 			let nl = if l==0 { 0 } else { 255 - l };
 			let i = tabs.exp[nl as usize];
