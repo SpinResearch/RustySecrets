@@ -1,17 +1,18 @@
 #![feature(collections)]
 #![feature(core)]
-#![feature(old_io)]
-#![feature(env)]
+#![feature(exit_status)]
 #![feature(hash)]
+#![feature(io)]
 
 extern crate "rustc-serialize" as serialize;
 extern crate getopts;
 extern crate crc24;
 extern crate rand;
 
-use std::iter::repeat;
-use std::old_io::{ stdio, IoError, IoErrorKind, IoResult, BufferedReader };
 use std::env;
+use std::io;
+use std::io::prelude::*;
+use std::iter::repeat;
 use std::num;
 
 use rand::{ Rng, OsRng };
@@ -26,36 +27,29 @@ fn new_vec<T: Clone>(n: usize, x: T) -> Vec<T> {
 	repeat(x).take(n).collect()
 }
 
-fn other_io_err(s: &'static str) -> IoError {
-	IoError {
-		kind: IoErrorKind::OtherIoError,
-		desc: s,
-		detail: None
-	}
+fn other_io_err(descr: &'static str, detail: Option<String>) -> io::Error {
+    io::Error::new(io::ErrorKind::Other, descr, detail)
 }
 
 // a try!-like macro for Option<T> expressions that takes
 // a &'static str as error message as 2nd parameter
-// and creates an IoError out of it if necessary.
+// and creates an io::Error out of it if necessary.
 macro_rules! otry {
 	($o:expr, $e:expr) => (
 		match $o {
 			Some(thing_) => thing_,
-			None => return Err(other_io_err($e))
+			None => return Err(other_io_err($e, None))
 		}
 	)
 }
 
-/// maps a ParseIntError to an IoError
-fn pie2io(p: num::ParseIntError) -> IoError {
-	IoError {
-		detail: Some(p.to_string()),
-		.. other_io_err("Int parsing error")
-	}
+/// maps a ParseIntError to an io::Error
+fn pie2io(p: num::ParseIntError) -> io::Error {
+    other_io_err("Int parsing error", Some(p.to_string()))
 }
 
 /// evaluates a polynomial at x=1, 2, 3, ... n (inclusive)
-fn encode<W: Writer>(src: &[u8], n: u8, w: &mut W) -> IoResult<()> {
+fn encode<W: Write>(src: &[u8], n: u8, w: &mut W) -> io::Result<()> {
 	for raw_x in 1 .. ((n as u16) + 1) {
 		let x = Gf256::from_byte(raw_x as u8);
 		let mut fac = Gf256::one();
@@ -64,7 +58,7 @@ fn encode<W: Writer>(src: &[u8], n: u8, w: &mut W) -> IoResult<()> {
 			acc = acc + fac * Gf256::from_byte(coeff);
 			fac = fac * x;
 		}
-		try!(w.write_u8(acc.to_byte()));
+		try!(w.write(&[acc.to_byte()]));
 	}
 	Ok(())
 }
@@ -92,7 +86,7 @@ fn lagrange_interpolate(src: &[(u8, u8)], raw_x: u8) -> u8 {
 	sum.to_byte()
 }
 
-fn secret_share(src: &[u8], k: u8, n: u8) -> IoResult<Vec<Vec<u8>>> {
+fn secret_share(src: &[u8], k: u8, n: u8) -> io::Result<Vec<Vec<u8>>> {
 	let mut result = Vec::with_capacity(n as usize);
 	for _ in 0 .. (n as usize) {
 		result.push(new_vec(src.len(), 0u8));
@@ -117,7 +111,7 @@ enum Action {
 	Decode
 }
 
-fn parse_k_n(s: &str) -> IoResult<(u8, u8)> {
+fn parse_k_n(s: &str) -> io::Result<(u8, u8)> {
 	let mut iter = s.split(',');
 	let msg = "K and N have to be separated with a comma";
 	let s1 = otry!(iter.next(), msg).trim();
@@ -125,25 +119,6 @@ fn parse_k_n(s: &str) -> IoResult<(u8, u8)> {
 	let k = try!(s1.parse().map_err(pie2io));
 	let n = try!(s2.parse().map_err(pie2io));
 	Ok((k, n))
-}
-
-/// tries to read everything but stops early if the input seems to be
-/// larger than `max` bytes and returns an IoError in this case
-fn read_no_more_than<R: Reader>(r: &mut R, max: usize) -> IoResult<Vec<u8>> {
-	let mut data = Vec::new();
-	loop {
-		if let Err(e) = r.push(max + 1 - data.len(), &mut data) {
-			if e.kind == IoErrorKind::EndOfFile {
-				break; // EOF condition is actually OK
-			} else {
-				return Err(e);
-			}
-		}
-		if data.len() > max {
-			return Err(other_io_err("Input too long"));
-		}
-	}
-	Ok(data)
 }
 
 /// computes a CRC-24 hash over the concatenated coding parameters k, n
@@ -163,8 +138,22 @@ fn crc24_as_bytes(k: u8, n: u8, octets: &[u8]) -> [u8; 3] {
 	 ( v        & 0xFF) as u8]
 }
 
-fn perform_encode(k: u8, n: u8, with_checksums: bool) -> IoResult<()> {
-	let secret = try!(read_no_more_than(&mut stdio::stdin(), 0x10000));
+fn perform_encode(k: u8, n: u8, with_checksums: bool) -> io::Result<()> {
+    let secret = {
+        let limit: usize = 0x10000;
+        let stdin = io::stdin();
+        let mut locked = stdin.lock();
+        let mut tmp: Vec<u8> = Vec::new();
+        try!(locked.by_ref().take(limit as u64).read_to_end(&mut tmp));
+        if tmp.len() == limit {
+            let mut dummy = [0u8];
+            if try!(locked.read(&mut dummy)) > 0 {
+                return Err(other_io_err("Secret too large",
+                                        Some(format!("My limit is at {} bytes.", limit))));
+            }
+        }
+        tmp
+    };
 	let shares = try!(secret_share(&*secret, k, n));
 	let config = base64::Config {
 		pad: false,
@@ -185,8 +174,9 @@ fn perform_encode(k: u8, n: u8, with_checksums: bool) -> IoResult<()> {
 /// reads shares from stdin and returns Ok(k, shares) on success
 /// where shares is a Vec<(u8, Vec<u8>)> representing x-coordinates
 /// and share data.
-fn read_shares() -> IoResult<(u8, Vec<(u8,Vec<u8>)>)> {
-	let mut stdin = BufferedReader::new(stdio::stdin());
+fn read_shares() -> io::Result<(u8, Vec<(u8,Vec<u8>)>)> {
+    let stdin = io::stdin();
+	let stdin = io::BufReader::new(stdin.lock());
 	let mut opt_k_l: Option<(u8, usize)> = None;
 	let mut counter = 0u8;
 	let mut shares: Vec<(u8,Vec<u8>)> = Vec::new();
@@ -195,7 +185,7 @@ fn read_shares() -> IoResult<(u8, Vec<(u8,Vec<u8>)>)> {
 		let parts: Vec<_> = line.trim().split('-').collect();
 		if parts.len() < 3 || parts.len() > 4 {
 			return Err(other_io_err("Share parse error: Expected 3 or 4 \
-			                         parts searated by a minus sign"));
+			                         parts searated by a minus sign", None));
 		}
 		let (k, n, p3, opt_p4) = {
 			let mut iter = parts.into_iter();
@@ -206,29 +196,29 @@ fn read_shares() -> IoResult<(u8, Vec<(u8,Vec<u8>)>)> {
 			(k, n, p3, opt_p4)
 		};
 		if k < 1 || n < 1 {
-			return Err(other_io_err("Share parse error: Illegal K,N parameters"));
+			return Err(other_io_err("Share parse error: Illegal K,N parameters", None));
 		}
 		let data = try!(
 			p3.from_base64().map_err(|_| other_io_err(
-				"Share parse error: Base64 decoding of data block failed"))
+				"Share parse error: Base64 decoding of data block failed", None ))
 		);
 		if let Some(check) = opt_p4 {
 			if check.len() != 4 {
 				return Err(other_io_err("Share parse error: Checksum part is \
-				                         expected to be four characters"));
+				                         expected to be four characters", None));
 			}
 			let crc_bytes = try!(
 				check.from_base64().map_err(|_| other_io_err(
-					"Share parse error: Base64 decoding of checksum failed"))
+					"Share parse error: Base64 decoding of checksum failed", None))
 			);
 			let mychksum = crc24_as_bytes(k, n, &*data);
 			if mychksum != crc_bytes {
-				return Err(other_io_err("Share parse error: Checksum mismatch"));
+				return Err(other_io_err("Share parse error: Checksum mismatch", None));
 			}
 		}
 		if let Some((ck, cl)) = opt_k_l {
 			if ck != k || cl != data.len() {
-				return Err(other_io_err("Incompatible shares"));
+				return Err(other_io_err("Incompatible shares", None));
 			}
 		} else {
 			opt_k_l = Some((k, data.len()));
@@ -241,10 +231,10 @@ fn read_shares() -> IoResult<(u8, Vec<(u8,Vec<u8>)>)> {
 			}
 		}
 	}
-	Err(other_io_err("Not enough shares provided!"))
+	Err(other_io_err("Not enough shares provided!", None))
 }
 
-fn perform_decode() -> IoResult<()> {
+fn perform_decode() -> io::Result<()> {
 	let (k, shares) = try!(read_shares());
 	assert!(!shares.is_empty());
 	let slen = shares[0].1.len();
@@ -257,13 +247,13 @@ fn perform_decode() -> IoResult<()> {
 		}
 		secret.push(lagrange_interpolate(&*col_in, 0u8));
 	}
-	let mut out = stdio::stdout_raw();
+	let mut out = io::stdout();
 	try!(out.write_all(&*secret));
 	out.flush()
 }
 
 fn main() {
-	let mut stderr = stdio::stderr();
+	let mut stderr = io::stderr();
 	let args: Vec<String> = env::args().collect();
 
 	let mut opts = Options::new();
@@ -316,7 +306,7 @@ fn main() {
 		match action {
 			Ok(Action::Encode(k,n)) => perform_encode(k, n, true),
 			Ok(Action::Decode) => perform_decode(),
-			Err(e) => Err(other_io_err(e))
+			Err(e) => Err(other_io_err(e, None))
 		};
 
 	if let Err(e) = result {
