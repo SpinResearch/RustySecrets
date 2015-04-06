@@ -1,13 +1,13 @@
 [package]
 name = "secretshare"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Sebastian Gesemann <s.gesemann@gmail.com>"]
 description = "This is an implementation of Shamir's secret sharing scheme."
 license = "GPLv3"
 readme = "README.md"
 
 [dependencies]
-getopts = "^0.2.1"
-rustc-serialize = "^0.3.0"
-crc24 = "^0.1.5"
-rand = "^0.2.0"
+getopts = "^0.2.9"
+rustc-serialize = "^0.3.12"
+crc24 = "^0.1.6"
+rand = "^0.3.7"

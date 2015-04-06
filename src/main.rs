@@ -1,15 +1,12 @@
-#![feature(collections)]
-#![feature(core)]
-#![feature(exit_status)]
-#![feature(hash)]
-#![feature(io)]
-
-extern crate "rustc-serialize" as serialize;
+extern crate rustc_serialize as serialize;
 extern crate getopts;
 extern crate crc24;
 extern crate rand;
 
+use std::convert;
 use std::env;
+use std::error;
+use std::fmt;
 use std::io;
 use std::io::prelude::*;
 use std::iter::repeat;
@@ -27,25 +24,61 @@ fn new_vec<T: Clone>(n: usize, x: T) -> Vec<T> {
 	repeat(x).take(n).collect()
 }
 
-fn other_io_err(descr: &'static str, detail: Option<String>) -> io::Error {
-    io::Error::new(io::ErrorKind::Other, descr, detail)
+#[derive(Debug)]
+pub struct Error {
+    descr: &'static str,
+    detail: Option<String>,
+}
+
+impl Error {
+    fn new(descr: &'static str, detail: Option<String>) -> Error {
+        Error { descr: descr, detail: detail }
+    }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self.detail {
+            None => write!(f, "{}", self.descr),
+            Some(ref detail) => write!(f, "{} ({})", self.descr, detail)
+        }
+    }
+}
+
+impl error::Error for Error {
+    fn description(&self) -> &str { self.descr }
+    fn cause(&self) -> Option<&error::Error> { None }
+}
+
+impl convert::From<Error> for io::Error {
+    fn from(me: Error) -> io::Error {
+        io::Error::new(io::ErrorKind::Other, me)
+    }
 }
 
 // a try!-like macro for Option<T> expressions that takes
 // a &'static str as error message as 2nd parameter
-// and creates an io::Error out of it if necessary.
+// and creates an Error out of it if necessary.
 macro_rules! otry {
 	($o:expr, $e:expr) => (
 		match $o {
 			Some(thing_) => thing_,
-			None => return Err(other_io_err($e, None))
+			None => return Err(convert::From::from(Error::new($e, None)))
 		}
 	)
 }
 
 /// maps a ParseIntError to an io::Error
 fn pie2io(p: num::ParseIntError) -> io::Error {
-    other_io_err("Int parsing error", Some(p.to_string()))
+    convert::From::from(
+        Error::new("Integer parsing error", Some(p.to_string()))
+    )
+}
+
+fn other_io_err(descr: &'static str, detail: Option<String>) -> io::Error {
+    convert::From::from(
+        Error::new(descr, detail)
+    )
 }
 
 /// evaluates a polynomial at x=1, 2, 3, ... n (inclusive)
@@ -125,11 +158,9 @@ fn parse_k_n(s: &str) -> io::Result<(u8, u8)> {
 /// and the raw share data
 fn crc24_as_bytes(k: u8, n: u8, octets: &[u8]) -> [u8; 3] {
 	use std::hash::Hasher;
-	use std::slice::ref_slice;
 
 	let mut h = crc24::Crc24Hasher::new();
-	h.write(ref_slice(&k));
-	h.write(ref_slice(&n));
+	h.write(&[k, n]);
 	h.write(octets);
 	let v = h.finish();
 
@@ -212,7 +243,7 @@ fn read_shares() -> io::Result<(u8, Vec<(u8,Vec<u8>)>)> {
 					"Share parse error: Base64 decoding of checksum failed", None))
 			);
 			let mychksum = crc24_as_bytes(k, n, &*data);
-			if mychksum != crc_bytes {
+			if crc_bytes != mychksum {
 				return Err(other_io_err("Share parse error: Checksum mismatch", None));
 			}
 		}
@@ -262,11 +293,11 @@ fn main() {
 	opts.optopt("e", "encode", "for encoding, K is the required number of \
 	                            shares for decoding, N is the number of shares \
 	                            to generate. 1 <= K <= N <= 255", "K,N");
-	let opt_matches = match opts.parse(args.tail()) {
+	let opt_matches = match opts.parse(&args[1..]) {
 		Ok(m) => m,
 		Err(f) => {
 			drop(writeln!(&mut stderr, "Error: {}", f));
-			env::set_exit_status(1);
+			// env::set_exit_status(1); // FIXME: unstable feature
 			return;
 		}
 	};
@@ -311,7 +342,7 @@ fn main() {
 
 	if let Err(e) = result {
 		drop(writeln!(&mut stderr, "{}", e));
-		env::set_exit_status(1);
+		// env::set_exit_status(1); // FIXME: unstable feature
 	}
 }
 

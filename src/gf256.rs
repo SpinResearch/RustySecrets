@@ -1,6 +1,7 @@
 //! This module provides the Gf256 type which is used to represent
 //! elements of a finite field wich 256 elements.
 
+use std::num::Wrapping;
 use std::ops::{ Add, Sub, Mul, Div };
 use std::sync::{ Once, ONCE_INIT };
 
@@ -8,9 +9,8 @@ const POLY: u8 = 0x1D; // represents x^8 + x^4 + x^3 + x^2 + 1
 
 /// replicates the least significant bit to every other bit
 #[inline]
-#[allow(unsigned_negation)]
 fn mask(bit: u8) -> u8 {
-	-(bit & 1)
+    (Wrapping(0u8) - Wrapping(bit & 1)).0
 }
 
 /// multiplies a polynomial with x and returns the residual
