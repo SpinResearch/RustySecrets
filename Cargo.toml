@@ -7,7 +7,7 @@ license = "GPLv3"
 readme = "README.md"
 
 [dependencies]
-getopts = "^0.2.9"
-rustc-serialize = "^0.3.12"
+getopts = "^0.2.14"
+rustc-serialize = "^0.3.18"
 crc24 = "^0.1.6"
-rand = "^0.3.7"
+rand = "^0.3.14"
