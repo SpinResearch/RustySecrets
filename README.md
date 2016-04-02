@@ -17,11 +17,11 @@ Passing a secret to secretshare for encoding:
 
 ```
 $ echo My secret | ./secretshare -e2,5
-2-1-1YAYwmOHqZ69jA-v+mz
-2-2-YJZQDGm22Y77Gw-IhSh
-2-3-+G9ovW9SAnUynQ-Elwi
-2-4-F7rAjX3UOa53KA-b2vm
-2-5-j0P4PHsw4lW+rg-XyNl
+2-1-1YAYwmOHqZ69jA
+2-2-YJZQDGm22Y77Gw
+2-3-+G9ovW9SAnUynQ
+2-4-F7rAjX3UOa53KA
+2-5-j0P4PHsw4lW+rg
 ```
 
 The parameters following the `-e` option tell `secretshare` to create 5 shares of which 2 will be necessary for decoding.
@@ -29,7 +29,7 @@ The parameters following the `-e` option tell `secretshare` to create 5 shares o
 Decoding a subset of shares (one share per line) can be done like this:
 
 ```
-$ echo -e "2-2-YJZQDGm22Y77Gw-IhSh \n 2-4-F7rAjX3UOa53KA-b2vm" | ./secretshare -d
+$ echo -e "2-2-YJZQDGm22Y77Gw \n 2-4-F7rAjX3UOa53KA" | ./secretshare -d
 My secret
 ```
 
@@ -62,9 +62,9 @@ The generated shares are lines of ASCII text.
 # Structure of the shares
 
 ```
-  2-1-LiTyeXwEP71IUA-Qj6n
-  ^ ^ ^^^^^^^^^^^^^^ ^^^^
-  K N        D        C
+  2-1-LiTyeXwEP71IUA
+  ^ ^ ^^^^^^^^^^^^^^
+  K N        D        
 ```
 
 A share is built out of three or four parts separated with a minus: K-N-D-C.
@@ -73,10 +73,7 @@ how many distinct
 shares of a specific secret are necessary to be able to recover the
 secret. The number N identifies the share (ranging from 1 to the number
 of shares that have been created). The D part is a Base64 encoding of
-a specific share's raw data. The optional part C is a Base64 encoding
-of a CRC-24 checksum of the concatenation of K and N as bytes followed
-by the share's raw data (before Base64 encoding). The same checksum
-algorithm is used in the OpenPGP format for “ASCII amoring”.
+a specific share's raw data.
 
 # A word on the secrecy
 

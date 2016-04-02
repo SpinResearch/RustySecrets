@@ -9,5 +9,4 @@ readme = "README.md"
 [dependencies]
 getopts = "^0.2.14"
 rustc-serialize = "^0.3.18"
-crc24 = "^0.1.6"
 rand = "^0.3.14"

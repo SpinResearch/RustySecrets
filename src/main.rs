@@ -1,6 +1,5 @@
 extern crate rustc_serialize as serialize;
 extern crate getopts;
-extern crate crc24;
 extern crate rand;
 
 use std::convert;
@@ -154,22 +153,7 @@ fn parse_k_n(s: &str) -> io::Result<(u8, u8)> {
 	Ok((k, n))
 }
 
-/// computes a CRC-24 hash over the concatenated coding parameters k, n
-/// and the raw share data
-fn crc24_as_bytes(k: u8, n: u8, octets: &[u8]) -> [u8; 3] {
-	use std::hash::Hasher;
-
-	let mut h = crc24::Crc24Hasher::new();
-	h.write(&[k, n]);
-	h.write(octets);
-	let v = h.finish();
-
-	[((v >> 16) & 0xFF) as u8,
-	 ((v >>  8) & 0xFF) as u8,
-	 ( v        & 0xFF) as u8]
-}
-
-fn perform_encode(k: u8, n: u8, with_checksums: bool) -> io::Result<()> {
+fn perform_encode(k: u8, n: u8) -> io::Result<()> {
     let secret = {
         let limit: usize = 0x10000;
         let stdin = io::stdin();
@@ -192,12 +176,7 @@ fn perform_encode(k: u8, n: u8, with_checksums: bool) -> io::Result<()> {
 	};
 	for (index, share) in shares.iter().enumerate() {
 		let salad = share.to_base64(config);
-		if with_checksums {
-			let crc_bytes = crc24_as_bytes(k, (index+1) as u8, &**share);
-			println!("{}-{}-{}-{}", k, index+1, salad, crc_bytes.to_base64(config));
-		} else {
-			println!("{}-{}-{}", k, index+1, salad);
-		}
+		println!("{}-{}-{}", k, index+1, salad);
 	}
 	Ok(())
 }
@@ -218,13 +197,12 @@ fn read_shares() -> io::Result<(u8, Vec<(u8,Vec<u8>)>)> {
 			return Err(other_io_err("Share parse error: Expected 3 or 4 \
 			                         parts searated by a minus sign", None));
 		}
-		let (k, n, p3, opt_p4) = {
+		let (k, n, p3) = {
 			let mut iter = parts.into_iter();
 			let k = try!(iter.next().unwrap().parse::<u8>().map_err(pie2io));
 			let n = try!(iter.next().unwrap().parse::<u8>().map_err(pie2io));
 			let p3 = iter.next().unwrap();
-			let opt_p4 = iter.next();
-			(k, n, p3, opt_p4)
+			(k, n, p3)
 		};
 		if k < 1 || n < 1 {
 			return Err(other_io_err("Share parse error: Illegal K,N parameters", None));
@@ -233,20 +211,6 @@ fn read_shares() -> io::Result<(u8, Vec<(u8,Vec<u8>)>)> {
 			p3.from_base64().map_err(|_| other_io_err(
 				"Share parse error: Base64 decoding of data block failed", None ))
 		);
-		if let Some(check) = opt_p4 {
-			if check.len() != 4 {
-				return Err(other_io_err("Share parse error: Checksum part is \
-				                         expected to be four characters", None));
-			}
-			let crc_bytes = try!(
-				check.from_base64().map_err(|_| other_io_err(
-					"Share parse error: Base64 decoding of checksum failed", None))
-			);
-			let mychksum = crc24_as_bytes(k, n, &*data);
-			if crc_bytes != mychksum {
-				return Err(other_io_err("Share parse error: Checksum mismatch", None));
-			}
-		}
 		if let Some((ck, cl)) = opt_k_l {
 			if ck != k || cl != data.len() {
 				return Err(other_io_err("Incompatible shares", None));
@@ -311,7 +275,7 @@ fn main() {
  		return;
 	}
 
-	let action: Result<_,_> = 
+	let action: Result<_,_> =
 		match (opt_matches.opt_present("e"), opt_matches.opt_present("d")) {
 			(false, false) => Err("Nothing to do! Use -e or -d"),
 			(true, true) => Err("Use either -e or -d and not both"),
@@ -335,7 +299,7 @@ fn main() {
 
 	let result =
 		match action {
-			Ok(Action::Encode(k,n)) => perform_encode(k, n, true),
+			Ok(Action::Encode(k,n)) => perform_encode(k, n),
 			Ok(Action::Decode) => perform_decode(),
 			Err(e) => Err(other_io_err(e, None))
 		};
@@ -345,4 +309,3 @@ fn main() {
 		// env::set_exit_status(1); // FIXME: unstable feature
 	}
 }
-
