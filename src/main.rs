@@ -107,7 +107,7 @@ fn perform_encode_from_io(k: u8, n: u8) -> io::Result<()> {
         }
         tmp
     };
-	match lib::perform_encode(k, n, secret) {
+	match lib::generate_shares(k, n, secret) {
 		Ok(shares) => {
 			for share in shares {println!("{:?}", str::from_utf8(&share).unwrap())};
 		}
@@ -168,7 +168,7 @@ fn read_shares() -> io::Result<(u8, Vec<(u8,Vec<u8>)>)> {
 fn perform_decode_from_io() -> io::Result<()> {
 	let (k, shares) = try!(read_shares());
 
-	return match lib::perform_decode(k, shares) {
+	return match lib::recover_secret(k, shares) {
 		Ok(secret) => {
 			let mut out = io::stdout();
 			try!(out.write_all(&*secret));

@@ -14,6 +14,40 @@ use std::iter::repeat;
 pub mod custom_error;
 use self::custom_error::*;
 
+pub fn generate_shares(k: u8, n: u8, secret: Vec<u8>) -> io::Result<Vec<Vec<u8>>> {
+	let shares = try!(secret_share(&*secret, k, n));
+	let config = base64::Config {
+		pad: false,
+		..base64::STANDARD
+	};
+
+	let mut result = Vec::with_capacity(n as usize);
+
+	for (index, share) in shares.iter().enumerate() {
+		let salad = share.to_base64(config);
+		let string = format!("{}-{}-{}", k, index+1, salad).into_bytes();
+		result.push(string);
+	}
+
+	Ok(result)
+}
+
+pub fn recover_secret(k: u8, shares: Vec<(u8,Vec<u8>)>) -> io::Result<Vec<u8>> {
+	assert!(!shares.is_empty());
+	let slen = shares[0].1.len();
+	let mut col_in = Vec::with_capacity(k as usize);
+	let mut secret = Vec::with_capacity(slen);
+	for byteindex in 0 .. slen {
+		col_in.clear();
+		for s in shares.iter().take(k as usize) {
+			col_in.push((s.0, s.1[byteindex]));
+		}
+		secret.push(lagrange_interpolate(&*col_in, 0u8));
+	}
+
+	return Ok(secret) as io::Result<Vec<u8>>;
+}
+
 fn new_vec<T: Clone>(n: usize, x: T) -> Vec<T> {
 	repeat(x).take(n).collect()
 }
@@ -74,38 +108,4 @@ fn secret_share(src: &[u8], k: u8, n: u8) -> io::Result<Vec<Vec<u8>>> {
 		}
 	}
 	Ok(result)
-}
-
-pub fn perform_encode(k: u8, n: u8, secret: Vec<u8>) -> io::Result<Vec<Vec<u8>>> {
-	let shares = try!(secret_share(&*secret, k, n));
-	let config = base64::Config {
-		pad: false,
-		..base64::STANDARD
-	};
-
-	let mut result = Vec::with_capacity(n as usize);
-
-	for (index, share) in shares.iter().enumerate() {
-		let salad = share.to_base64(config);
-		let string = format!("{}-{}-{}", k, index+1, salad).into_bytes();
-		result.push(string);
-	}
-
-	Ok(result)
-}
-
-pub fn perform_decode(k: u8, shares: Vec<(u8,Vec<u8>)>) -> io::Result<Vec<u8>> {
-	assert!(!shares.is_empty());
-	let slen = shares[0].1.len();
-	let mut col_in = Vec::with_capacity(k as usize);
-	let mut secret = Vec::with_capacity(slen);
-	for byteindex in 0 .. slen {
-		col_in.clear();
-		for s in shares.iter().take(k as usize) {
-			col_in.push((s.0, s.1[byteindex]));
-		}
-		secret.push(lagrange_interpolate(&*col_in, 0u8));
-	}
-
-	return Ok(secret) as io::Result<Vec<u8>>;
 }
