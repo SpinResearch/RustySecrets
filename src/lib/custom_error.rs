@@ -4,6 +4,7 @@ pub use std::io::prelude::*;
 use std::error;
 use std::fmt;
 use std::io;
+use std::num;
 
 #[derive(Debug)]
 pub struct Error {
@@ -40,5 +41,12 @@ impl convert::From<Error> for io::Error {
 pub fn other_io_err(descr: &'static str, detail: Option<String>) -> io::Error {
     convert::From::from(
         Error::new(descr, detail)
+    )
+}
+
+/// maps a ParseIntError to an io::Error
+pub fn pie2io(p: num::ParseIntError) -> io::Error {
+    convert::From::from(
+        Error::new("Integer parsing error", Some(p.to_string()))
     )
 }

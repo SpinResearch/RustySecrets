@@ -32,8 +32,54 @@ pub fn generate_shares(k: u8, n: u8, secret: Vec<u8>) -> io::Result<Vec<Vec<u8>>
 	Ok(result)
 }
 
-pub fn recover_secret(k: u8, shares: Vec<(u8,Vec<u8>)>) -> io::Result<Vec<u8>> {
-	assert!(!shares.is_empty());
+pub fn process_shares(shares_strings: Vec<String>) -> io::Result<(u8, Vec<(u8,Vec<u8>)>)> {
+	let mut opt_k_l: Option<(u8, usize)> = None;
+	let mut counter = 0u8;
+	let mut shares: Vec<(u8,Vec<u8>)> = Vec::new();
+
+	for line in shares_strings {
+		let parts: Vec<_> = line.trim().split('-').collect();
+		if parts.len() < 3 || parts.len() > 4 {
+			return Err(other_io_err("Share parse error: Expected 3 or 4 \
+									 parts separated by a minus sign", None));
+		}
+		let (k, n, p3) = {
+			let mut iter = parts.into_iter();
+			let k = try!(iter.next().unwrap().parse::<u8>().map_err(pie2io));
+			let n = try!(iter.next().unwrap().parse::<u8>().map_err(pie2io));
+			let p3 = iter.next().unwrap();
+			(k, n, p3)
+		};
+		if k < 1 || n < 1 {
+			return Err(other_io_err("Share parse error: Illegal K,N parameters", None));
+		}
+		let data = try!(
+			p3.from_base64().map_err(|_| other_io_err(
+				"Share parse error: Base64 decoding of data block failed", None ))
+		);
+		if let Some((ck, cl)) = opt_k_l {
+			if ck != k || cl != data.len() {
+				return Err(other_io_err("Incompatible shares", None));
+			}
+		} else {
+			opt_k_l = Some((k, data.len()));
+		}
+		if shares.iter().all(|s| s.0 != n) {
+			shares.push((n, data));
+			counter += 1;
+			if counter == k {
+				return Ok((k, shares));
+			}
+		}
+	}
+	Err(other_io_err("Not enough shares provided!", None))
+}
+
+pub fn recover_secret(shares_strings: Vec<String>) -> io::Result<Vec<u8>> {
+	assert!(!shares_strings.is_empty());
+
+	let (k, shares) = try!(process_shares(shares_strings));
+
 	let slen = shares[0].1.len();
 	let mut col_in = Vec::with_capacity(k as usize);
 	let mut secret = Vec::with_capacity(slen);
