@@ -140,4 +140,3 @@ impl Div<Gf256> for Gf256 {
 		}
 	}
 }
-

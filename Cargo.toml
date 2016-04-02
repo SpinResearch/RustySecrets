@@ -1,8 +1,7 @@
 [package]
-name = "secretshare"
-version = "0.1.6"
-authors = ["Sebastian Gesemann <s.gesemann@gmail.com>"]
-description = "This is an implementation of Shamir's secret sharing scheme."
+name = "rusty-secrets"
+version = "0.0.1"
+description = "Implementation of threshold Shamir secret sharing in the Rust programming language." 
 license = "GPLv3"
 readme = "README.md"
 
@@ -10,3 +9,12 @@ readme = "README.md"
 getopts = "^0.2.14"
 rustc-serialize = "^0.3.18"
 rand = "^0.3.14"
+libc = "^0.2.0"
+
+[lib]
+name = "rusty_secrets_lib"
+path = "src/lib/mod.rs"
+
+[[bin]]
+name = "rusty_secrets_bin"
+path = "src/main.rs"

@@ -1,4 +1,4 @@
-# secretshare
+# Rusty Secrets
 
 This program is an implementation of
 [Shamir's secret sharing](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing).
@@ -107,3 +107,8 @@ field I used is the same as the one you can find in the RAID 6
 implementation of the Linux kernel or the Anubis block cipher:
 Gf(2^8) reduction polynomial is x^8 + x^4 + x^3 + x^2 + 1 or
 alternatively 11D in hex.
+
+## Credits
+
+Rusty Secrets was forked off [sellibitze's secretshare.](https://github.com/sellibitze/secretshare)
+
