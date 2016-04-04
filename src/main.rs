@@ -103,7 +103,8 @@ fn perform_encode_from_io(k: u8, n: u8) -> io::Result<()> {
                                         Some(format!("My limit is at {} bytes.", limit))));
             }
         }
-        tmp
+        tmp.pop();
+		tmp
     };
 	match lib::generate_shares(k, n, secret) {
 		Ok(shares) => {
