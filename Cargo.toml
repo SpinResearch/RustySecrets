@@ -1,9 +1,11 @@
 [package]
 name = "rusty_secrets"
-version = "0.0.1"
-description = "Implementation of threshold Shamir secret sharing in the Rust programming language." 
+version = "0.0.2"
+description = "Implementation of threshold Shamir secret sharing in the Rust programming language."
 license = "GPLv3"
 readme = "README.md"
+build = "build.rs"
+
 
 [dependencies]
 getopts = "^0.2.14"

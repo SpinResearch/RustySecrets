@@ -1,59 +1,12 @@
 //! This module provides the Gf256 type which is used to represent
 //! elements of a finite field wich 256 elements.
 
-use std::num::Wrapping;
 use std::ops::{ Add, Sub, Mul, Div };
-use std::sync::{ Once, ONCE_INIT };
 
-const POLY: u8 = 0x1D; // represents x^8 + x^4 + x^3 + x^2 + 1
-
-/// replicates the least significant bit to every other bit
-#[inline]
-fn mask(bit: u8) -> u8 {
-    (Wrapping(0u8) - Wrapping(bit & 1)).0
-}
-
-/// multiplies a polynomial with x and returns the residual
-/// of the polynomial division with POLY as divisor
-#[inline]
-fn xtimes(poly: u8) -> u8 {
-	(poly << 1) ^ (mask(poly >> 7) & POLY)
-}
-
-/// Tables used for multiplication and division
-struct Tables {
-	exp: [u8; 256],
-	log: [u8; 256],
-	inv: [u8; 256]
-}
-
-static INIT: Once = ONCE_INIT;
-static mut TABLES: Tables = Tables {
-	exp: [0; 256],
-	log: [0; 256],
-	inv: [0; 256]
-};
+include!(concat!(env!("OUT_DIR"), "/nothinghardcoded.rs"));
 
 fn get_tables() -> &'static Tables {
-	INIT.call_once(|| {
-		// mutable access is fine because of synchronization via INIT
-		let tabs = unsafe { &mut TABLES };
-		let mut tmp = 1;
-		for power in 0..255usize {
-			tabs.exp[power] = tmp;
-			tabs.log[tmp as usize] = power as u8;
-			tmp = xtimes(tmp);
-		}
-		tabs.exp[255] = 1;
-		for x in 1..256usize {
-			let l = tabs.log[x];
-			let nl = if l==0 { 0 } else { 255 - l };
-			let i = tabs.exp[nl as usize];
-			tabs.inv[x] = i;
-		}
-	});
-	// We're guaranteed to have TABLES initialized by now
-	return unsafe { &TABLES };
+	return &TABLES;
 }
 
 /// Type for elements of a finite field with 256 elements
@@ -93,11 +46,6 @@ impl Gf256 {
 		let tabs = get_tables();
 		Gf256 { poly: tabs.exp[power as usize] }
 	}
-/*
-	pub fn inv(&self) -> Option<Gf256> {
-		self.log().map(|l| Gf256::exp(255 - l))
-	}
-*/
 }
 
 impl Add<Gf256> for Gf256 {
