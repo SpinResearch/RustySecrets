@@ -1,4 +1,4 @@
-# Rusty Secrets ![Travis-Badge](https://travis-ci.org/freedomofpress/RustySecrets.svg) [![Coverage Status](https://coveralls.io/repos/github/freedomofpress/RustySecrets/badge.svg?branch=master)](https://coveralls.io/github/freedomofpress/RustySecrets?branch=master)
+# Rusty Secrets [![Build Status](https://travis-ci.org/freedomofpress/RustySecrets.svg?branch=master)](https://travis-ci.org/freedomofpress/RustySecrets) [![Coverage Status](https://coveralls.io/repos/github/freedomofpress/RustySecrets/badge.svg?branch=master)](https://coveralls.io/github/freedomofpress/RustySecrets?branch=master)
 
 [**Documentation**](http://freedomofpress.github.io/RustySecrets/rusty_secrets/index.html)
 

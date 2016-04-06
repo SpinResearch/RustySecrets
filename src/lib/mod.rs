@@ -20,14 +20,14 @@ use self::custom_error::*;
 /// # Examples
 ///
 /// ```
-/// extern crate rusty_secrets;
 /// use rusty_secrets::{generate_shares};
+/// let secret = "These programs were never about terrorism: they’re about economic spying, social control, and diplomatic manipulation. They’re about power.".to_string();
 ///
-/// match generate_shares(k, n, &secret_to_split){
+/// match generate_shares(7, 10, &secret.into_bytes()){
 /// 	Ok(shares) => {
 /// 		// Do something with the shares
 /// 	},
-/// 	Err(_) => // Deal with error
+/// 	Err(_) => {}// Deal with error}
 /// }
 /// ```
 
@@ -109,14 +109,18 @@ fn process_shares(shares_strings: Vec<String>) -> io::Result<(u8, Vec<(u8,Vec<u8
 /// # Examples
 ///
 /// ```
-/// extern crate rusty_secrets;
 /// use rusty_secrets::{recover_secret};
+/// let share1 = "2-1-1YAYwmOHqZ69jA".to_string();
+/// let share2 = "2-4-F7rAjX3UOa53KA".to_string();
+/// let shares = vec![share1, share2];
 ///
 /// match recover_secret(shares) {
 /// 	Ok(secret) => {
 /// 		// Do something with the secret
 /// 	},
-/// 	Err(e) => // Deal with the error
+/// 	Err(e) => {
+/// 		// Deal with the error
+/// 	}
 /// }
 /// ```
 pub fn recover_secret(shares: Vec<String>) -> io::Result<Vec<u8>> {
