@@ -2,7 +2,6 @@ extern crate getopts;
 
 use getopts::Options;
 
-use std::str;
 use lib::custom_error::*;
 mod lib;
 

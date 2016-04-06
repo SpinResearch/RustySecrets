@@ -2,7 +2,6 @@ extern crate rusty_secrets;
 
 use rusty_secrets::{recover_secret, generate_shares};
 
-
 #[test]
 fn test_reasonable_splits() {
     let max_shares = 50;

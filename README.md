@@ -1,4 +1,4 @@
-# Rusty Secrets
+# Rusty Secrets ![Travis-Badge](https://travis-ci.org/freedomofpress/RustySecrets.svg) [![Coverage Status](https://coveralls.io/repos/github/freedomofpress/RustySecrets/badge.svg?branch=master)](https://coveralls.io/github/freedomofpress/RustySecrets?branch=master)
 
 Rusty Secrets is an implementation of a threshold [Shamir's secret sharing scheme](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing).
 

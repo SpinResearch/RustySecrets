@@ -15,6 +15,10 @@ pub mod custom_error;
 use self::custom_error::*;
 
 pub fn generate_shares(k: u8, n: u8, secret: &Vec<u8>) -> io::Result<Vec<String>> {
+	if k > n {
+		return Err(other_io_err("Threshold K can not be larger than N", None));
+	}
+
 	let shares = try!(secret_share(&*secret, k, n));
 	let config = base64::Config {
 		pad: false,
@@ -40,8 +44,7 @@ pub fn process_shares(shares_strings: Vec<String>) -> io::Result<(u8, Vec<(u8,Ve
 	for line in shares_strings {
 		let parts: Vec<_> = line.trim().split('-').collect();
 		if parts.len() != 3 {
-			return Err(other_io_err("Share parse error: Expected 3
-									 parts separated by a minus sign", None));
+			return Err(other_io_err("Share parse error: Expected 3 parts separated by a minus sign", None));
 		}
 		let (k, n, p3) = {
 			let mut iter = parts.into_iter();
@@ -64,20 +67,25 @@ pub fn process_shares(shares_strings: Vec<String>) -> io::Result<(u8, Vec<(u8,Ve
 		} else {
 			opt_k_l = Some((k, data.len()));
 		}
-		if shares.iter().all(|s| s.0 != n) {
-			shares.push((n, data));
-			counter += 1;
-			if counter == k {
-				return Ok((k, shares));
-			}
+
+		if shares.iter().any(|s| s.0 == n) {
+			return Err(other_io_err("Duplicate Share Number", None));
+		};
+
+		if shares.iter().any(|s| s.1 == data) {
+			return Err(other_io_err("Duplicate Share Data", None));
+		};
+
+		shares.push((n, data));
+		counter += 1;
+		if counter == k {
+			return Ok((k, shares));
 		}
 	}
 	Err(other_io_err("Not enough shares provided!", None))
 }
 
 pub fn recover_secret(shares_strings: Vec<String>) -> io::Result<Vec<u8>> {
-	assert!(!shares_strings.is_empty());
-
 	let (k, shares) = try!(process_shares(shares_strings));
 
 	let slen = shares[0].1.len();

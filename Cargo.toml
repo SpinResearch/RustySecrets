@@ -2,6 +2,7 @@
 name = "rusty_secrets"
 version = "0.0.2"
 description = "Implementation of threshold Shamir secret sharing in the Rust programming language."
+homepage = "https://github.com/freedomofpress/RustySecrets"
 license = "GPLv3"
 readme = "README.md"
 build = "build.rs"

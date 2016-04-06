@@ -50,3 +50,19 @@ pub fn pie2io(p: num::ParseIntError) -> io::Error {
         Error::new("Integer parsing error", Some(p.to_string()))
     )
 }
+
+#[test]
+fn test_custom_error() {
+    let desc = "Boring error description";
+    let detail = "More of it";
+    let ewd = Error::new(desc, Some(detail.to_string()));
+
+    assert_eq!(error::Error::description(&ewd), desc);
+    match error::Error::cause(&ewd) {
+        Some(_)  => assert!(false),
+        None   => assert!(true),
+    }
+    let _formated_err = format!("{}", ewd);
+    let ewod = Error::new(desc, None);
+    let _formated_err = format!("{}", ewod);
+}
