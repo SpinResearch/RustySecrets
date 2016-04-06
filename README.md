@@ -1,5 +1,7 @@
 # Rusty Secrets ![Travis-Badge](https://travis-ci.org/freedomofpress/RustySecrets.svg) [![Coverage Status](https://coveralls.io/repos/github/freedomofpress/RustySecrets/badge.svg?branch=master)](https://coveralls.io/github/freedomofpress/RustySecrets?branch=master)
 
+[** Documentation **](http://freedomofpress.github.io/RustySecrets/rusty_secrets/index.html)
+
 Rusty Secrets is an implementation of a threshold [Shamir's secret sharing scheme](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing).
 
 ## Design goals
@@ -64,10 +66,6 @@ Decoding a subset of shares (one share per line) can be done like this:
 $ echo -e "2-2-YJZQDGm22Y77Gw \n 2-4-F7rAjX3UOa53KA" | ./rusty_secrets_bin -d
 My secret
 ```
-
-### Library
-
-Documentation to come for the library interface.
 
 ## Vocabulary
 

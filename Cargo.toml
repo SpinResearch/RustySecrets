@@ -1,9 +1,10 @@
 [package]
 name = "rusty_secrets"
 version = "0.0.2"
+authors = ["Frederic Jacobs <github@fredericjacobs.com>", "sellibitze"]
 description = "Implementation of threshold Shamir secret sharing in the Rust programming language."
 homepage = "https://github.com/freedomofpress/RustySecrets"
-license = "GPLv3"
+license = "GPL-3.0"
 readme = "README.md"
 build = "build.rs"
 
@@ -20,3 +21,4 @@ crate_type = ["rlib"]
 [[bin]]
 name = "rusty_secrets_bin"
 path = "src/main.rs"
+doc = false
