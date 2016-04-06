@@ -14,7 +14,7 @@ use std::iter::repeat;
 pub mod custom_error;
 use self::custom_error::*;
 
-pub fn generate_shares(k: u8, n: u8, secret: Vec<u8>) -> io::Result<Vec<Vec<u8>>> {
+pub fn generate_shares(k: u8, n: u8, secret: &Vec<u8>) -> io::Result<Vec<String>> {
 	let shares = try!(secret_share(&*secret, k, n));
 	let config = base64::Config {
 		pad: false,
@@ -24,8 +24,8 @@ pub fn generate_shares(k: u8, n: u8, secret: Vec<u8>) -> io::Result<Vec<Vec<u8>>
 	let mut result = Vec::with_capacity(n as usize);
 
 	for (index, share) in shares.iter().enumerate() {
-		let salad = share.to_base64(config);
-		let string = format!("{}-{}-{}", k, index+1, salad).into_bytes();
+		let b64_share = share.to_base64(config);
+		let string = format!("{}-{}-{}", k, index+1, b64_share);
 		result.push(string);
 	}
 
@@ -39,8 +39,8 @@ pub fn process_shares(shares_strings: Vec<String>) -> io::Result<(u8, Vec<(u8,Ve
 
 	for line in shares_strings {
 		let parts: Vec<_> = line.trim().split('-').collect();
-		if parts.len() < 3 || parts.len() > 4 {
-			return Err(other_io_err("Share parse error: Expected 3 or 4 \
+		if parts.len() != 3 {
+			return Err(other_io_err("Share parse error: Expected 3
 									 parts separated by a minus sign", None));
 		}
 		let (k, n, p3) = {

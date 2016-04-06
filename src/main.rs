@@ -106,9 +106,9 @@ fn perform_encode_from_io(k: u8, n: u8) -> io::Result<()> {
         tmp.pop();
 		tmp
     };
-	match lib::generate_shares(k, n, secret) {
+	match lib::generate_shares(k, n, &secret) {
 		Ok(shares) => {
-			for share in shares {println!("{:?}", str::from_utf8(&share).unwrap())};
+			for share in shares {println!("{:?}", share)};
 		}
 		Err(e) => { return Err(e) as io::Result<()>; }
 	}
