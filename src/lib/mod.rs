@@ -2,17 +2,34 @@ extern crate rustc_serialize as serialize;
 extern crate rand;
 
 use self::rand::{ Rng, OsRng };
-pub use self::serialize::base64::{ self, FromBase64, ToBase64 };
+use self::serialize::base64::{ self, FromBase64, ToBase64 };
 
 mod gf256;
 use self::gf256::Gf256;
 
 use std::io;
-pub use std::str;
 use std::iter::repeat;
 
+/// Generate generic errors that typeset with io::Error.
 pub mod custom_error;
 use self::custom_error::*;
+
+
+/// Performs threshold k-out-of-n Shamir secret sharing.
+///
+/// # Examples
+///
+/// ```
+/// use rusty_secrets::{generate_shares};
+/// let secret = "These programs were never about terrorism: they’re about economic spying, social control, and diplomatic manipulation. They’re about power.".to_string();
+///
+/// match generate_shares(7, 10, &secret.into_bytes()){
+/// 	Ok(shares) => {
+/// 		// Do something with the shares
+/// 	},
+/// 	Err(_) => {}// Deal with error}
+/// }
+/// ```
 
 pub fn generate_shares(k: u8, n: u8, secret: &Vec<u8>) -> io::Result<Vec<String>> {
 	if k > n {
@@ -36,7 +53,7 @@ pub fn generate_shares(k: u8, n: u8, secret: &Vec<u8>) -> io::Result<Vec<String>
 	Ok(result)
 }
 
-pub fn process_shares(shares_strings: Vec<String>) -> io::Result<(u8, Vec<(u8,Vec<u8>)>)> {
+fn process_shares(shares_strings: Vec<String>) -> io::Result<(u8, Vec<(u8,Vec<u8>)>)> {
 	let mut opt_k_l: Option<(u8, usize)> = None;
 	let mut counter = 0u8;
 	let mut shares: Vec<(u8,Vec<u8>)> = Vec::new();
@@ -85,8 +102,29 @@ pub fn process_shares(shares_strings: Vec<String>) -> io::Result<(u8, Vec<(u8,Ve
 	Err(other_io_err("Not enough shares provided!", None))
 }
 
-pub fn recover_secret(shares_strings: Vec<String>) -> io::Result<Vec<u8>> {
-	let (k, shares) = try!(process_shares(shares_strings));
+/// Recovers the secret from a k-out-of-n Shamir secret sharing.
+///
+/// At least `k` distinct shares need to be provided to recover the share.
+///
+/// # Examples
+///
+/// ```
+/// use rusty_secrets::{recover_secret};
+/// let share1 = "2-1-1YAYwmOHqZ69jA".to_string();
+/// let share2 = "2-4-F7rAjX3UOa53KA".to_string();
+/// let shares = vec![share1, share2];
+///
+/// match recover_secret(shares) {
+/// 	Ok(secret) => {
+/// 		// Do something with the secret
+/// 	},
+/// 	Err(e) => {
+/// 		// Deal with the error
+/// 	}
+/// }
+/// ```
+pub fn recover_secret(shares: Vec<String>) -> io::Result<Vec<u8>> {
+	let (k, shares) = try!(process_shares(shares));
 
 	let slen = shares[0].1.len();
 	let mut col_in = Vec::with_capacity(k as usize);
