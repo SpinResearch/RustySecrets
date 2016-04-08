@@ -10,7 +10,7 @@ use self::gf256::Gf256;
 use std::io;
 use std::iter::repeat;
 
-/// Generate generic errors that typeset with io::Error.
+/// Generate generic errors that typeset with `io::Error`.
 pub mod custom_error;
 use self::custom_error::*;
 
@@ -31,7 +31,7 @@ use self::custom_error::*;
 /// }
 /// ```
 
-pub fn generate_shares(k: u8, n: u8, secret: &Vec<u8>) -> io::Result<Vec<String>> {
+pub fn generate_shares(k: u8, n: u8, secret: &[u8]) -> io::Result<Vec<String>> {
 	if k > n {
 		return Err(other_io_err("Threshold K can not be larger than N", None));
 	}
@@ -53,7 +53,7 @@ pub fn generate_shares(k: u8, n: u8, secret: &Vec<u8>) -> io::Result<Vec<String>
 	Ok(result)
 }
 
-fn process_shares(shares_strings: Vec<String>) -> io::Result<(u8, Vec<(u8,Vec<u8>)>)> {
+fn process_shares(shares_strings: Vec<String>) -> io::Result<(u8, Vec<(u8, Vec<u8>)>)> {
 	let mut opt_k_l: Option<(u8, usize)> = None;
 	let mut counter = 0u8;
 	let mut shares: Vec<(u8,Vec<u8>)> = Vec::new();
@@ -137,7 +137,7 @@ pub fn recover_secret(shares: Vec<String>) -> io::Result<Vec<u8>> {
 		secret.push(lagrange_interpolate(&*col_in, 0u8));
 	}
 
-	return Ok(secret) as io::Result<Vec<u8>>;
+	Ok(secret) as io::Result<Vec<u8>>
 }
 
 fn new_vec<T: Clone>(n: usize, x: T) -> Vec<T> {
