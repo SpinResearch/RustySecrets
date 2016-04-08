@@ -6,7 +6,9 @@ Rusty Secrets is an implementation of a threshold [Shamir's secret sharing schem
 
 ## Design goals
 
-The main use for this library is to split a secret of an arbitrary length in n different shares and t-out-of-n shares are required to recover it. The dealer is assumed to be honest (and competent). We further assume that our adversary will only be able to compromise at most k-1 shares.
+The main use for this library is to split a secret of an arbitrary length in n different shares and t-out-of-n shares are required to recover it. The dealer is assumed to be honest (and competent). We further assume that our adversary will only be able to compromise at most k-1 shares. Shares are kept offline.
+
+A typical use case for this library would be splitting an encryption key to a TrueCrypt-like volume.
 
 ## Choosing a scheme
 
@@ -21,8 +23,8 @@ what the secret is except for its length (typical secrets would be an AES-256 ke
 
 Information-theoretic security gives us strong guarantees:
 
-1) That there are provably no faster attacks than brute force exhaustion of key space.
-2) An encryption protocol that has information-theoretic security does not depend for its effectiveness on unproven assumptions about computational hardness, and such an algorithm is not vulnerable to future developments in computer power such as quantum computing. Source: [Wikipedia]( https://en.wikipedia.org/wiki/Information-theoretic_security “Information Theoretic Security”)
+- 1) That there are provably no faster attacks than brute force exhaustion of key space.
+- 2) An encryption protocol that has information-theoretic security does not depend for its effectiveness on unproven assumptions about computational hardness, and such an algorithm is not vulnerable to future developments in computer power such as quantum computing. Source: [Wikipedia]( https://en.wikipedia.org/wiki/Information-theoretic_security “Information Theoretic Security”)
 
 
 ### Peer-review
