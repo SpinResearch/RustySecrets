@@ -6,7 +6,7 @@ use std::ops::{ Add, Sub, Mul, Div };
 include!(concat!(env!("OUT_DIR"), "/nothinghardcoded.rs"));
 
 fn get_tables() -> &'static Tables {
-	return &TABLES;
+	&TABLES
 }
 
 /// Type for elements of a finite field with 256 elements

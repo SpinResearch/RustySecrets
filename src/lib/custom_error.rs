@@ -6,7 +6,7 @@ use std::fmt;
 use std::io;
 use std::num;
 
-/// Error struct used for generating an io:Error from a generic description.
+/// Error struct used for generating an `io::Error` from a generic description.
 #[derive(Debug)]
 pub struct Error {
     descr: &'static str,
@@ -39,15 +39,15 @@ impl convert::From<Error> for io::Error {
     }
 }
 
-/// Returns an io:Error from description string and optional detail string.
-/// Particularly useful in Result expressions.
+/// Returns an `io::Error` from description string and optional detail string.
+/// Particularly useful in `Result` expressions.
 pub fn other_io_err(descr: &'static str, detail: Option<String>) -> io::Error {
     convert::From::from(
         Error::new(descr, detail)
     )
 }
 
-/// maps a ParseIntError to an io::Error
+/// maps a `ParseIntError` to an `io::Error`
 pub fn pie2io(p: num::ParseIntError) -> io::Error {
     convert::From::from(
         Error::new("Integer parsing error", Some(p.to_string()))
