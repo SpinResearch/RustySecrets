@@ -1,5 +1,5 @@
 //! This module provides the Gf256 type which is used to represent
-//! elements of a finite field wich 256 elements.
+//! elements of a finite field with 256 elements.
 
 use std::ops::{ Add, Sub, Mul, Div };
 

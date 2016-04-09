@@ -7,6 +7,7 @@ mod lib;
 
 use std::io;
 use std::env;
+use std::process;
 
 enum Action {
 	Encode(u8, u8), // k and n parameter
@@ -39,8 +40,7 @@ fn main() {
 		Ok(m) => m,
 		Err(f) => {
 			drop(writeln!(&mut stderr, "Error: {}", f));
-			// env::set_exit_status(1); // FIXME: unstable feature
-			return;
+			process::exit(1);
 		}
 	};
 
@@ -84,7 +84,7 @@ fn main() {
 
 	if let Err(e) = result {
 		drop(writeln!(&mut stderr, "{}", e));
-		// env::set_exit_status(1); // FIXME: unstable feature
+		process::exit(1);
 	}
 }
 
