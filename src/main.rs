@@ -7,6 +7,7 @@ mod lib;
 
 use std::io;
 use std::env;
+use std::process;
 
 enum Action {
 	Encode(u8, u8), // k and n parameter
@@ -39,14 +40,13 @@ fn main() {
 		Ok(m) => m,
 		Err(f) => {
 			drop(writeln!(&mut stderr, "Error: {}", f));
-			// env::set_exit_status(1); // FIXME: unstable feature
-			return;
+			process::exit(1);
 		}
 	};
 
 	if args.len() < 2 || opt_matches.opt_present("h") {
 		println!(
-"The program secretshare is an implementation of Shamir's secret sharing scheme.\n\
+"The program rustysecrets is an implementation of Shamir's secret sharing scheme.\n\
  It is applied byte-wise within a finite field for arbitrarily long secrets.\n");
 		println!("{}", opts.usage("Usage: rustysecrets [options]"));
 		println!("Input is read from STDIN and output is written to STDOUT.");
@@ -84,7 +84,7 @@ fn main() {
 
 	if let Err(e) = result {
 		drop(writeln!(&mut stderr, "{}", e));
-		// env::set_exit_status(1); // FIXME: unstable feature
+		process::exit(1);
 	}
 }
 
