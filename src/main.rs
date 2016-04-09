@@ -46,7 +46,7 @@ fn main() {
 
 	if args.len() < 2 || opt_matches.opt_present("h") {
 		println!(
-"The program secretshare is an implementation of Shamir's secret sharing scheme.\n\
+"The program rustysecrets is an implementation of Shamir's secret sharing scheme.\n\
  It is applied byte-wise within a finite field for arbitrarily long secrets.\n");
 		println!("{}", opts.usage("Usage: rustysecrets [options]"));
 		println!("Input is read from STDIN and output is written to STDOUT.");
