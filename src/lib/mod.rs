@@ -134,7 +134,7 @@ pub fn recover_secret(shares: Vec<String>) -> io::Result<Vec<u8>> {
 		for s in shares.iter().take(k as usize) {
 			col_in.push((s.0, s.1[byteindex]));
 		}
-		secret.push(lagrange_interpolate(&*col_in, 0u8));
+		secret.push(lagrange_interpolate(&*col_in));
 	}
 
 	Ok(secret) as io::Result<Vec<u8>>
@@ -159,25 +159,24 @@ fn encode<W: Write>(src: &[u8], n: u8, w: &mut W) -> io::Result<()> {
 	Ok(())
 }
 
-/// evaluates an interpolated polynomial at `raw_x` where
+/// evaluates an interpolated polynomial at `Gf256::zero()` where
 /// the polynomial is determined using Lagrangian interpolation
 /// based on the given x/y coordinates `src`.
-fn lagrange_interpolate(src: &[(u8, u8)], raw_x: u8) -> u8 {
-	let x = Gf256::from_byte(raw_x);
+fn lagrange_interpolate(src: &[(u8, u8)]) -> u8 {
 	let mut sum = Gf256::zero();
 	for (i, &(raw_xi, raw_yi)) in src.iter().enumerate() {
 		let xi = Gf256::from_byte(raw_xi);
 		let yi = Gf256::from_byte(raw_yi);
-		let mut lix = Gf256::one();
+		let mut prod = Gf256::one();
 		for (j, &(raw_xj, _)) in src.iter().enumerate() {
 			if i != j {
 				let xj = Gf256::from_byte(raw_xj);
 				let delta = xi - xj;
 				assert!(delta.poly !=0, "Duplicate shares");
-				lix = lix * (x - xj) / delta;
+				prod = prod *  xj / delta;
 			}
 		}
-		sum = sum + lix * yi;
+		sum = sum + prod * yi;
 	}
 	sum.to_byte()
 }
