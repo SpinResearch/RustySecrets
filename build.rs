@@ -37,6 +37,7 @@ fn generate_tables(mut file: &File) {
     	tabs.log[tmp as usize] = power as u8;
     	tmp = xtimes(tmp);
     }
+    tabs.exp[255] = 1;
 
     match write!(file, "{}", tabs) {
         Ok(()) => {}
