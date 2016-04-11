@@ -23,14 +23,12 @@ fn xtimes(poly: u8) -> u8 {
 struct Tables {
 	exp: [u8; 256],
 	log: [u8; 256],
-	inv: [u8; 256]
 }
 
 fn generate_tables(mut file: &File) {
     let mut tabs = Tables {
     	exp: [0; 256],
     	log: [0; 256],
-    	inv: [0; 256]
     };
 
     let mut tmp = 1;
@@ -40,12 +38,6 @@ fn generate_tables(mut file: &File) {
     	tmp = xtimes(tmp);
     }
     tabs.exp[255] = 1;
-    for x in 1..256usize {
-    	let l = tabs.log[x];
-    	let nl = if l==0 { 0 } else { 255 - l };
-    	let i = tabs.exp[nl as usize];
-    	tabs.inv[x] = i;
-    }
 
     match write!(file, "{}", tabs) {
         Ok(()) => {}
@@ -71,9 +63,6 @@ impl fmt::Display for Tables {
         try!(write!(f, "],\n"));
         try!(write!(f, "    log: ["));
         try!(farray(self.log, f));
-        try!(write!(f, "],\n"));
-        try!(write!(f, "    inv: ["));
-        try!(farray(self.inv, f));
         try!(write!(f, "]\n"));
         write!(f, "}};")
     }
@@ -88,8 +77,7 @@ fn main() {
 
     write!(f, "pub struct Tables {{
     pub exp: [u8; 256],
-    pub log: [u8; 256],
-    pub inv: [u8; 256]
+    pub log: [u8; 256]
 }}
 
 pub static TABLES: Tables = ");
