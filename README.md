@@ -4,6 +4,8 @@
 
 Rusty Secrets is an implementation of a threshold [Shamir's secret sharing scheme](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing).
 
+#### ⚠️ This code is available for peer-review. Do not use in production apps yet. Shares format and algorithm likely to change ⚠️
+
 ## Design goals
 
 The main use for this library is to split a secret of an arbitrary length in n different shares and t-out-of-n shares are required to recover it. The dealer is assumed to be honest (and competent). We further assume that our adversary will only be able to compromise at most k-1 shares. Shares are kept offline.
