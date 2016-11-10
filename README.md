@@ -1,6 +1,6 @@
-# Rusty Secrets [![Build Status](https://travis-ci.org/freedomofpress/RustySecrets.svg?branch=master)](https://travis-ci.org/freedomofpress/RustySecrets) [![Coverage Status](https://coveralls.io/repos/github/freedomofpress/RustySecrets/badge.svg?branch=master)](https://coveralls.io/github/freedomofpress/RustySecrets?branch=master)
+# Rusty Secrets [![Build Status](https://travis-ci.org/SpinResearch/RustySecrets.svg?branch=master)](https://travis-ci.org/SpinResearch/RustySecrets) [![Coverage Status](https://coveralls.io/repos/github/SpinResearch/RustySecrets/badge.svg?branch=master)](https://coveralls.io/github/SpinResearch/RustySecrets?branch=master)
 
-[**Documentation**](http://freedomofpress.github.io/RustySecrets/rusty_secrets/index.html)
+[**Documentation**](http://spinresearch.github.io/RustySecrets/rusty_secrets/index.html)
 
 Rusty Secrets is an implementation of a threshold [Shamir's secret sharing scheme](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing).
 
