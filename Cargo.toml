@@ -4,7 +4,7 @@ version = "0.0.2"
 authors = ["Frederic Jacobs <github@fredericjacobs.com>", "sellibitze"]
 description = "Implementation of threshold Shamir secret sharing in the Rust programming language."
 homepage = "https://github.com/freedomofpress/RustySecrets"
-license = "GPL-3.0"
+license = "BSD-3-Clause"
 readme = "README.md"
 build = "build.rs"
 
