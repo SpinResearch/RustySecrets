@@ -1,12 +1,12 @@
 extern crate rusty_secrets;
 
-use rusty_secrets::{recover_secret};
+use rusty_secrets::recover_secret;
 
 #[test]
 #[should_panic(expected = "Not enough shares provided!")]
 fn test_recover_sellibitze_no_shares() {
     let shares = vec![];
-    recover_secret(shares).unwrap();
+    recover_secret(shares, false).unwrap();
 }
 
 #[test]
@@ -17,7 +17,7 @@ fn test_recover_2_parts_share() {
 
     let shares = vec![share1, share2];
 
-    recover_secret(shares).unwrap();
+    recover_secret(shares, false).unwrap();
 }
 
 #[test]
@@ -28,7 +28,7 @@ fn test_recover_incorrect_share_num() {
 
     let shares = vec![share1, share2];
 
-    recover_secret(shares).unwrap();
+    recover_secret(shares, false).unwrap();
 }
 
 #[test]
@@ -39,7 +39,7 @@ fn test_recover_0_share_num() {
 
     let shares = vec![share1, share2];
 
-    recover_secret(shares).unwrap();
+    recover_secret(shares, false).unwrap();
 }
 
 #[test]
@@ -50,18 +50,7 @@ fn test_recover_invalid_b64() {
 
     let shares = vec![share1, share2];
 
-    recover_secret(shares).unwrap();
-}
-
-#[test]
-#[should_panic(expected = "Incompatible shares")]
-fn test_recover_invalid_b64_size() {
-    let share1 = "2-1-CgnlCxRNtnkzENE".to_string();
-    let share2 = "3-5-Cgl/3sS13REq2X8".to_string();
-
-    let shares = vec![share1, share2];
-
-    recover_secret(shares).unwrap();
+    recover_secret(shares, false).unwrap();
 }
 
 #[test]
@@ -72,7 +61,7 @@ fn test_recover_duplicate_shares_number() {
 
     let shares = vec![share1, share2];
 
-    recover_secret(shares).unwrap();
+    recover_secret(shares, false).unwrap();
 }
 
 #[test]
@@ -83,7 +72,7 @@ fn test_recover_duplicate_shares_data() {
 
     let shares = vec![share1, share2];
 
-    recover_secret(shares).unwrap();
+    recover_secret(shares, false).unwrap();
 }
 
 #[test]
@@ -94,5 +83,5 @@ fn test_recover_too_few_shares() {
 
     let shares = vec![share1, share2];
 
-    recover_secret(shares).unwrap();
+    recover_secret(shares, false).unwrap();
 }
