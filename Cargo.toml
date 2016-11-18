@@ -1,24 +1,14 @@
 [package]
 name = "rusty_secrets"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Frederic Jacobs <github@fredericjacobs.com>", "sellibitze"]
 description = "Implementation of threshold Shamir secret sharing in the Rust programming language."
 homepage = "https://github.com/freedomofpress/RustySecrets"
-license = "GPL-3.0"
+license = "BSD-3-Clause"
 readme = "README.md"
 build = "build.rs"
 
 [dependencies]
-getopts = "^0.2.14"
 rustc-serialize = "^0.3.18"
 rand = "^0.3.14"
-
-[lib]
-name = "rusty_secrets"
-path = "src/lib/mod.rs"
-crate_type = ["rlib"]
-
-[[bin]]
-name = "rusty_secrets_bin"
-path = "src/main.rs"
-doc = false
+[dependencies.protobuf]

@@ -1,18 +1,11 @@
-addons:
-  apt:
-    packages:
-      - libcurl4-openssl-dev
-      - libelf-dev
-      - libdw-dev
+
 language: rust
 
-before_script:
-  - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
+rust:
+  - stable
+  - beta
+  - nightly
 
-script:
-  - |
-      travis-cargo build &&
-      travis-cargo test
-after_success:
-  - travis-cargo coveralls --no-sudo
-
+matrix:
+  allow_failures:
+    - rust: nightly
