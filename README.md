@@ -49,27 +49,7 @@ A share is built out of three parts separated with a dash: K-N-D.
 - N is the identifier of the share and varies between 1 and n where n is the total number of generated shares.
 - The D part is a Base64 encoding of a specific share's raw data.
 
-### Command-line encoding
-
-Passing a secret to rustysecrets for encoding:
-
-```
-$ echo My secret | ./rusty_secrets_bin -e2,5
-2-1-1YAYwmOHqZ69jA
-2-2-YJZQDGm22Y77Gw
-2-3-+G9ovW9SAnUynQ
-2-4-F7rAjX3UOa53KA
-2-5-j0P4PHsw4lW+rg
-```
-
-The parameters following the `-e` option tell rustysecrets to create 5 shares of which 2 will be necessary for decoding.
-
-Decoding a subset of shares (one share per line) can be done like this:
-
-```
-$ echo -e "2-2-YJZQDGm22Y77Gw \n 2-4-F7rAjX3UOa53KA" | ./rusty_secrets_bin -d
-My secret
-```
+// TODO: Rewrite documentation to match current implementation
 
 ## Vocabulary
 

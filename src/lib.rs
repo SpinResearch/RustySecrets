@@ -1,19 +1,24 @@
+extern crate protobuf;
 extern crate rustc_serialize as serialize;
 extern crate rand;
 
-use self::rand::{ Rng, OsRng };
-use self::serialize::base64::{ self, FromBase64, ToBase64 };
+use rand::{ Rng, OsRng };
+use serialize::base64::{ self, FromBase64, ToBase64 };
 
 mod gf256;
-use self::gf256::Gf256;
+use gf256::Gf256;
 
 use std::io;
 use std::iter::repeat;
 
 /// Generate generic errors that typeset with `io::Error`.
 pub mod custom_error;
-use self::custom_error::*;
+use custom_error::*;
 
+use protobuf::Message;
+
+mod ShareDataMod;
+pub use ShareDataMod::{ShareData};
 
 /// Performs threshold k-out-of-n Shamir secret sharing.
 ///
@@ -30,7 +35,6 @@ use self::custom_error::*;
 /// 	Err(_) => {}// Deal with error}
 /// }
 /// ```
-
 pub fn generate_shares(k: u8, n: u8, secret: &[u8]) -> io::Result<Vec<String>> {
 	if k > n {
 		return Err(other_io_err("Threshold K can not be larger than N", None));
@@ -44,8 +48,11 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8]) -> io::Result<Vec<String>> {
 
 	let mut result = Vec::with_capacity(n as usize);
 
-	for (index, share) in shares.iter().enumerate() {
-		let b64_share = share.to_base64(config);
+	for (index, share) in shares.into_iter().enumerate() {
+		let mut share_protobuf = ShareData::new();
+		share_protobuf.set_shamirData(share);
+
+		let b64_share = share_protobuf.write_to_bytes().unwrap().to_base64(config);
 		let string = format!("{}-{}-{}", k, index+1, b64_share);
 		result.push(string);
 	}
@@ -73,10 +80,16 @@ fn process_shares(shares_strings: Vec<String>) -> io::Result<(u8, Vec<(u8, Vec<u
 		if k < 1 || n < 1 {
 			return Err(other_io_err("Share parse error: Illegal K,N parameters", None));
 		}
-		let data = try!(
+
+		let raw_data = try!(
 			p3.from_base64().map_err(|_| other_io_err(
 				"Share parse error: Base64 decoding of data block failed", None ))
 		);
+
+		let protobuf_data = try!(protobuf::parse_from_bytes::<ShareData>(raw_data.as_slice())
+								.map_err(|_| other_io_err("Share parse error: Protobuffer could not be decoded.", None )));
+		let data = Vec::from(protobuf_data.get_shamirData());
+
 		if let Some((ck, cl)) = opt_k_l {
 			if ck != k || cl != data.len() {
 				return Err(other_io_err("Incompatible shares", None));
@@ -110,8 +123,8 @@ fn process_shares(shares_strings: Vec<String>) -> io::Result<(u8, Vec<(u8, Vec<u
 ///
 /// ```
 /// use rusty_secrets::{recover_secret};
-/// let share1 = "2-1-1YAYwmOHqZ69jA".to_string();
-/// let share2 = "2-4-F7rAjX3UOa53KA".to_string();
+/// let share1 = "2-1-Cha7s14Q/mSwWko0ittr+/Uf79RHQMIP".to_string();
+/// let share2 = "2-4-ChaydsUJDypD9ZWxwvIICh/cmZvzusOF".to_string();
 /// let shares = vec![share1, share2];
 ///
 /// match recover_secret(shares) {
