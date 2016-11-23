@@ -12,3 +12,6 @@ build = "build.rs"
 rustc-serialize = "^0.3.18"
 rand = "^0.3.14"
 [dependencies.protobuf]
+
+[dev-dependencies]
+clap = "^2.19"
