@@ -47,9 +47,7 @@ A share is built out of three parts separated with a dash: K-N-D.
 
 - K specifies the number of shares necessary to recover the secret.
 - N is the identifier of the share and varies between 1 and n where n is the total number of generated shares.
-- The D part is a Base64 encoding of a specific share's raw data.
-
-// TODO: Rewrite documentation to match current implementation
+- The D part is a Base64 encoding of a `ShareData` protobuf.
 
 ## Vocabulary
 

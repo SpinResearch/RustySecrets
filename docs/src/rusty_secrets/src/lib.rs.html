@@ -75,8 +75,6 @@
 <span id="31">31</span>
 <span id="32">32</span>
 <span id="33">33</span>
-<span id="34">34</span>
-<span id="35">35</span>
 </pre><pre class='rust '>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>deny</span>(
     <span class='ident'>missing_docs</span>,
@@ -101,15 +99,13 @@
 <span class='kw'>mod</span> <span class='ident'>custom_error</span>;
 <span class='kw'>mod</span> <span class='ident'>gf256</span>;
 <span class='kw'>mod</span> <span class='ident'>interpolation</span>;
+<span class='kw'>mod</span> <span class='ident'>share_data</span>;
 <span class='kw'>mod</span> <span class='ident'>share_format</span>;
 <span class='kw'>mod</span> <span class='ident'>sss</span>;
 <span class='kw'>mod</span> <span class='ident'>validation</span>;
 
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>sss</span>::<span class='ident'>generate_shares</span>;
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>sss</span>::<span class='ident'>recover_secret</span>;
-
-<span class='attribute'>#[<span class='ident'>allow</span>(<span class='ident'>missing_docs</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>share_data</span>;
 
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
 <span class='kw'>mod</span> <span class='ident'>tests</span>;
