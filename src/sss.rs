@@ -1,4 +1,4 @@
-use custom_error::other_io_err;
+use custom_error::{RustyError, other_io_err};
 use digest;
 use interpolation::{encode, lagrange_interpolate};
 use merkle_sigs::sign_data_vec;
@@ -66,7 +66,7 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> io::Re
     Ok(result)
 }
 
-pub fn secret_share(src: &[u8], k: u8, n: u8) -> io::Result<Vec<Vec<u8>>> {
+pub fn secret_share(src: &[u8], k: u8, n: u8) -> Result<Vec<Vec<u8>>, RustyError> {
     let mut result = Vec::with_capacity(n as usize);
     for _ in 0..(n as usize) {
         result.push(new_vec(src.len(), 0u8));
@@ -108,7 +108,7 @@ pub fn secret_share(src: &[u8], k: u8, n: u8) -> io::Result<Vec<Vec<u8>>> {
 /// 	}
 /// }
 /// ```
-pub fn recover_secret(shares: Vec<String>, verify_signatures: bool) -> io::Result<Vec<u8>> {
+pub fn recover_secret(shares: Vec<String>, verify_signatures: bool) -> Result<Vec<u8>, RustyError> {
     let (k, shares) = try!(process_and_validate_shares(shares, verify_signatures));
 
     let slen = shares[0].1.len();

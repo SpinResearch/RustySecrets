@@ -1,4 +1,5 @@
-use custom_error::{other_io_err, pie2io};
+use custom_error::RustyError;
+use custom_error::pie2error;
 use digest;
 use merkle_sigs::Proof;
 use merkle_sigs::PublicKey;
@@ -7,7 +8,6 @@ use protobuf::{Message, RepeatedField};
 use serialize;
 use serialize::base64::{self, FromBase64, ToBase64};
 use share_data::ShareData;
-use std::io;
 
 fn base64_config() -> serialize::base64::Config {
     base64::Config { pad: false, ..base64::STANDARD }
@@ -34,31 +34,31 @@ pub fn share_string_from(share: Vec<u8>,
 pub fn share_from_string
     (s: &str,
      is_signed: bool)
-     -> io::Result<(Vec<u8>, u8, u8, Option<(Vec<Vec<u8>>, Proof<PublicKey>)>)> {
+     -> Result<(Vec<u8>, u8, u8, Option<(Vec<Vec<u8>>, Proof<PublicKey>)>), RustyError> {
     let parts: Vec<_> = s.trim().split('-').collect();
 
     if parts.len() != 3 {
-        return Err(other_io_err("Share parse error: Expected 3 parts separated by a minus sign",
+        return Err(RustyError::new("Share parse error: Expected 3 parts separated by a minus sign",
                                 None, None));
     }
     let (k, n, p3) = {
         let mut iter = parts.into_iter();
-        let k = try!(iter.next().unwrap().parse::<u8>().map_err(pie2io));
-        let n = try!(iter.next().unwrap().parse::<u8>().map_err(pie2io));
+        let k = try!(iter.next().unwrap().parse::<u8>().map_err(pie2error));
+        let n = try!(iter.next().unwrap().parse::<u8>().map_err(pie2error));
         let p3 = iter.next().unwrap();
         (k, n, p3)
     };
     if k < 1 || n < 1 {
-        return Err(other_io_err("Share parse error: Illegal K,N parameters", None, None));
+        return Err(RustyError::new("Share parse error: Illegal K,N parameters", None, None));
     }
 
     let raw_data = try!(p3.from_base64().map_err(|_| {
-        other_io_err("Share parse error: Base64 decoding of data block failed",
+        RustyError::new("Share parse error: Base64 decoding of data block failed",
                      None, None)
     }));
 
     let protobuf_data = try!(protobuf::parse_from_bytes::<ShareData>(raw_data.as_slice())
-        .map_err(|_| other_io_err("Share parse error: Protobuffer could not be decoded.", None, None)));
+        .map_err(|_| RustyError::new("Share parse error: Protobuffer could not be decoded.", None, None)));
 
 
     let share = Vec::from(protobuf_data.get_shamir_data());

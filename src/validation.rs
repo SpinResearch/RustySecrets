@@ -1,13 +1,13 @@
-use custom_error::other_io_err;
+use custom_error::RustyError;
 use merkle_sigs::verify_data_vec_signature;
 use share_format;
 use share_format::format_share_for_signing;
 use std::error::Error;
-use std::io;
 
 pub fn process_and_validate_shares(shares_strings: Vec<String>,
                                    verify_signatures: bool)
-                                   -> io::Result<(u8, Vec<(u8, Vec<u8>)>)> {
+                                   -> Result<(u8, Vec<(u8, Vec<u8>)>), RustyError> {
+
     let mut opt_k: Option<u8> = None;
     let mut opt_root_hash: Option<Vec<u8>> = None;
 
@@ -19,7 +19,7 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
 
         if verify_signatures {
             if sig_pair.is_none() {
-                return Err(other_io_err("Signature is missing while shares are required to be \
+                return Err(RustyError::new("Signature is missing while shares are required to be \
                                          signed.",
                                         None, Some(k)));
             }
@@ -29,7 +29,7 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
 
             if let Some(rh) = opt_root_hash.clone() {
                 if root_hash != rh {
-                    return Err(other_io_err("Root hash not matching", None, Some(k)));
+                    return Err(RustyError::new("Root hash not matching", None, Some(k)));
                 }
                 p.validate(&rh);
             } else {
@@ -41,23 +41,23 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
                                                                     &share_data.as_slice()),
                                                                     &(signature.to_vec(), p),
                                                                     &root_hash)
-				 .map_err(|e| other_io_err("Invalid signature", Some(String::from(e.description())), Some(k))));
+				 .map_err(|e| RustyError::new("Invalid signature", Some(String::from(e.description())), Some(k))));
         }
 
         if let Some(k_global) = opt_k {
             if k != k_global {
-                return Err(other_io_err("Incompatible shares", None, Some(k)));
+                return Err(RustyError::new("Incompatible shares", None, Some(k)));
             }
         } else {
             opt_k = Some(k);
         }
 
         if shares.iter().any(|s| s.0 == n) {
-            return Err(other_io_err("Duplicate Share Number", None, Some(k)));
+            return Err(RustyError::new("Duplicate Share Number", None, Some(k)));
         };
 
         if shares.iter().any(|s| s.1 == share_data) {
-            return Err(other_io_err("Duplicate Share Data", None, Some(k)));
+            return Err(RustyError::new("Duplicate Share Data", None, Some(k)));
         };
 
         shares.push((n, share_data));
@@ -65,5 +65,5 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
             return Ok((k, shares));
         }
     }
-    Err(other_io_err("Not enough shares provided!", None, None))
+    Err(RustyError::new("Not enough shares provided!", None, None))
 }
