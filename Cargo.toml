@@ -11,4 +11,7 @@ build = "build.rs"
 [dependencies]
 rustc-serialize = "^0.3.18"
 rand = "^0.3.14"
+ring = "0.6.0-alpha"
+merkle_sigs = { git = "https://github.com/SpinResearch/merkle_sigs.rs" }
+
 [dependencies.protobuf]
