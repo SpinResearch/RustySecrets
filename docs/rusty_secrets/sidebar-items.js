@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["generate_shares","Performs threshold k-out-of-n Shamir secret sharing."],["recover_secret","Recovers the secret from a k-out-of-n Shamir secret sharing."]],"mod":[["custom_error",""],["share_data",""]]});
+initSidebarItems({"fn":[["generate_shares","Performs threshold k-out-of-n Shamir secret sharing."],["recover_secret","Recovers the secret from a k-out-of-n Shamir secret sharing."]],"mod":[["share_data",""]]});

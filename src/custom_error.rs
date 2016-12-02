@@ -1,3 +1,5 @@
+//! `custom_error` provides basic error management complying with the io::Result trait.
+
 use std::convert;
 use std::error;
 use std::fmt;
@@ -12,6 +14,7 @@ pub struct Error {
 }
 
 impl Error {
+    /// Initializes a new error with a description and optional detail string.
     pub fn new(descr: &'static str, detail: Option<String>) -> Error {
         Error {
             descr: descr,
@@ -55,18 +58,39 @@ pub fn pie2io(p: num::ParseIntError) -> io::Error {
     convert::From::from(Error::new("Integer parsing error", Some(p.to_string())))
 }
 
-#[test]
-fn test_custom_error() {
-    let desc = "Boring error description";
-    let detail = "More of it";
-    let ewd = Error::new(desc, Some(detail.to_string()));
+#[cfg(test)]
+mod tests_custom_err {
+    use std::error;
+    use custom_error;
 
-    assert_eq!(error::Error::description(&ewd), desc);
-    match error::Error::cause(&ewd) {
-        Some(_) => assert!(false),
-        None => assert!(true),
+    #[test]
+    fn test_custom_error() {
+        let desc = "Boring error description";
+        let detail = "More of it";
+        let ewd = custom_error::Error::new(desc, Some(detail.to_string()));
+
+        assert_eq!(error::Error::description(&ewd), desc);
+        match error::Error::cause(&ewd) {
+            Some(_) => assert!(false),
+            None => assert!(true),
+        }
+        let _formated_err = format!("{}", ewd);
+        let ewod = custom_error::Error::new(desc, None);
+        let _formated_err = format!("{}", ewod);
     }
-    let _formated_err = format!("{}", ewd);
-    let ewod = Error::new(desc, None);
-    let _formated_err = format!("{}", ewod);
+}
+
+#[cfg(test)]
+mod tests_std_err {
+    use std::error::Error;
+    use custom_error::pie2io;
+
+    #[test]
+    fn test_parse_errors() {
+        let nan = "2a".to_string();
+        match nan.parse::<u8>().map_err(pie2io) {
+            Ok(_) => assert!(false),
+            Err(x) => assert_eq!("Integer parsing error", x.description()),
+        }
+    }
 }

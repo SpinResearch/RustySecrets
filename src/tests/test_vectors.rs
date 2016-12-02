@@ -1,9 +1,9 @@
-extern crate rusty_secrets;
 extern crate protobuf;
 extern crate rustc_serialize as serialize;
 
 use protobuf::Message;
-use rusty_secrets::{recover_secret, share_data};
+use share_data;
+use sss::recover_secret;
 use serialize::base64::{self, FromBase64, ToBase64};
 
 pub fn wrap_from_sellibitze(share: &str) -> String {

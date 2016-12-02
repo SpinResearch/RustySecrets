@@ -2,9 +2,10 @@ extern crate rusty_secrets;
 
 use rusty_secrets::{generate_shares, recover_secret};
 
+#[ignore]
 #[test]
 fn test_reasonable_splits() {
-    let max_shares = 40;
+    let max_shares = 25;
     let secret = "I grew up with the understanding that the world I lived in was one where people \
                   enjoyed a sort of freedom to communicate with each other in privacy, without it \
                   being monitored, without it being measured or analyzed or sort of judged by \
