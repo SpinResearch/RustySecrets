@@ -39,7 +39,7 @@ pub fn share_from_string
 
     if parts.len() != 3 {
         return Err(other_io_err("Share parse error: Expected 3 parts separated by a minus sign",
-                                None));
+                                None, None));
     }
     let (k, n, p3) = {
         let mut iter = parts.into_iter();
@@ -49,16 +49,16 @@ pub fn share_from_string
         (k, n, p3)
     };
     if k < 1 || n < 1 {
-        return Err(other_io_err("Share parse error: Illegal K,N parameters", None));
+        return Err(other_io_err("Share parse error: Illegal K,N parameters", None, None));
     }
 
     let raw_data = try!(p3.from_base64().map_err(|_| {
         other_io_err("Share parse error: Base64 decoding of data block failed",
-                     None)
+                     None, None)
     }));
 
     let protobuf_data = try!(protobuf::parse_from_bytes::<ShareData>(raw_data.as_slice())
-        .map_err(|_| other_io_err("Share parse error: Protobuffer could not be decoded.", None)));
+        .map_err(|_| other_io_err("Share parse error: Protobuffer could not be decoded.", None, None)));
 
 
     let share = Vec::from(protobuf_data.get_shamir_data());

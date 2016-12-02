@@ -21,7 +21,7 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
             if sig_pair.is_none() {
                 return Err(other_io_err("Signature is missing while shares are required to be \
                                          signed.",
-                                        None));
+                                        None, Some(k)));
             }
 
             let (signature, p) = sig_pair.unwrap();
@@ -29,7 +29,7 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
 
             if let Some(rh) = opt_root_hash.clone() {
                 if root_hash != rh {
-                    return Err(other_io_err("Root hash not matching", None));
+                    return Err(other_io_err("Root hash not matching", None, Some(k)));
                 }
                 p.validate(&rh);
             } else {
@@ -41,23 +41,23 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
                                                                     &share_data.as_slice()),
                                                                     &(signature.to_vec(), p),
                                                                     &root_hash)
-				 .map_err(|e| other_io_err("Invalid signature", Some(String::from(e.description())))));
+				 .map_err(|e| other_io_err("Invalid signature", Some(String::from(e.description())), Some(k))));
         }
 
         if let Some(k_global) = opt_k {
             if k != k_global {
-                return Err(other_io_err("Incompatible shares", None));
+                return Err(other_io_err("Incompatible shares", None, Some(k)));
             }
         } else {
             opt_k = Some(k);
         }
 
         if shares.iter().any(|s| s.0 == n) {
-            return Err(other_io_err("Duplicate Share Number", None));
+            return Err(other_io_err("Duplicate Share Number", None, Some(k)));
         };
 
         if shares.iter().any(|s| s.1 == share_data) {
-            return Err(other_io_err("Duplicate Share Data", None));
+            return Err(other_io_err("Duplicate Share Data", None, Some(k)));
         };
 
         shares.push((n, share_data));
@@ -65,5 +65,5 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
             return Ok((k, shares));
         }
     }
-    Err(other_io_err("Not enough shares provided!", None))
+    Err(other_io_err("Not enough shares provided!", None, None))
 }
