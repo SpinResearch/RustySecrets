@@ -74,7 +74,7 @@ pub fn pie2error(p: num::ParseIntError) -> RustyError {
 #[cfg(test)]
 mod tests_custom_err {
     use std::error;
-    use custom_error;
+    use custom_error::RustyError;
 
     #[test]
     fn test_custom_error() {
