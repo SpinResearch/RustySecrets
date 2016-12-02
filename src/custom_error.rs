@@ -1,5 +1,3 @@
-//! `custom_error` provides basic error management complying with the io::Result trait.
-
 use std::convert;
 use std::error;
 use std::fmt;
