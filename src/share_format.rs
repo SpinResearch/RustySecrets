@@ -9,6 +9,8 @@ use serialize::base64::{self, FromBase64, ToBase64};
 use share_data::ShareData;
 use std::error::Error;
 
+type ParsedShare = Result<(Vec<u8>, u8, u8, Option<(Vec<Vec<u8>>, Proof<MerklePublicKey>)>), RustyError>;
+
 fn base64_config() -> serialize::base64::Config {
     base64::Config { pad: false, ..base64::STANDARD }
 }
@@ -33,7 +35,7 @@ pub fn share_from_string
     (s: &str,
      index: u8,
      is_signed: bool)
-     -> Result<(Vec<u8>, u8, u8, Option<(Vec<Vec<u8>>, Proof<MerklePublicKey>)>), RustyError> {
+     ->  ParsedShare {
     let parts: Vec<_> = s.trim().split('-').collect();
 
     if parts.len() != 3 {
@@ -51,7 +53,7 @@ pub fn share_from_string
     }
 
     let raw_data = try!(p3.from_base64().map_err(|_| {
-        RustyError::with_type(RustyErrorTypes::ShareParsingError(index, format!("Base64 decoding of data block failed")))
+        RustyError::with_type(RustyErrorTypes::ShareParsingError(index, "Base64 decoding of data block failed".to_owned()))
     }));
 
     let protobuf_data = try!(protobuf::parse_from_bytes::<ShareData>(raw_data.as_slice())

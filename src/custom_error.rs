@@ -54,23 +54,23 @@ impl RustyError {
     }
 
     fn descr_for_type(error_type: &RustyErrorTypes) -> &'static str {
-        match error_type {
-            &RustyErrorTypes::EmptyShares => "No shares were provided.",
-            &RustyErrorTypes::IncompatibleSets(_) => "The shares are incompatible with each other.",
-            &RustyErrorTypes::InvalidSignature(_, _) => "The signature of this share is not valid.",
-            &RustyErrorTypes::MissingShares(_, _) => "The number of shares provided is insufficient to recover the secret.",
-            &RustyErrorTypes::MissingSignature(_) => "Signature is missing while shares are required to be signed.",
-            &RustyErrorTypes::ShareParsingError(_, _) => "This share is incorrectly formatted.",
-            &RustyErrorTypes::DuplicateShareNum(_) => "This share number has already been used by a previous share.",
-            &RustyErrorTypes::DuplicateShareData(_) => "The data encoded in this share is the same as the one found in a previous share."
+        match *error_type {
+            RustyErrorTypes::EmptyShares => "No shares were provided.",
+            RustyErrorTypes::IncompatibleSets(_) => "The shares are incompatible with each other.",
+            RustyErrorTypes::InvalidSignature(_, _) => "The signature of this share is not valid.",
+            RustyErrorTypes::MissingShares(_, _) => "The number of shares provided is insufficient to recover the secret.",
+            RustyErrorTypes::MissingSignature(_) => "Signature is missing while shares are required to be signed.",
+            RustyErrorTypes::ShareParsingError(_, _) => "This share is incorrectly formatted.",
+            RustyErrorTypes::DuplicateShareNum(_) => "This share number has already been used by a previous share.",
+            RustyErrorTypes::DuplicateShareData(_) => "The data encoded in this share is the same as the one found in a previous share."
         }
     }
 
     fn detail_for_type(error_type: &RustyErrorTypes) -> Option<String> {
-        match error_type {
-            &RustyErrorTypes::MissingShares(required, found) => Some(format!("{} shares are required to recover the secret,
+        match *error_type {
+            RustyErrorTypes::MissingShares(required, found) => Some(format!("{} shares are required to recover the secret,
                                                                    found only {}.", required, found)),
-            &RustyErrorTypes::ShareParsingError(_, ref description) => Some(description.clone()),
+            RustyErrorTypes::ShareParsingError(_, ref description) => Some(description.clone()),
             _ => None
         }
     }
@@ -83,12 +83,12 @@ impl RustyError {
     }
 
     fn share_num_for_type(error_type: &RustyErrorTypes) -> Option<u8> {
-        match error_type {
-            &RustyErrorTypes::InvalidSignature(share_num, _) => Some(share_num),
-            &RustyErrorTypes::MissingSignature(share_num) => Some(share_num),
-            &RustyErrorTypes::ShareParsingError(share_num, _) => Some(share_num),
-            &RustyErrorTypes::DuplicateShareNum(share_num) => Some(share_num),
-            &RustyErrorTypes::DuplicateShareData(share_num) => Some(share_num),
+        match *error_type {
+            RustyErrorTypes::InvalidSignature(share_num, _)
+            | RustyErrorTypes::MissingSignature(share_num)
+            | RustyErrorTypes::ShareParsingError(share_num, _)
+            | RustyErrorTypes::DuplicateShareNum(share_num)
+            | RustyErrorTypes::DuplicateShareData(share_num) => Some(share_num),
             _ => None
         }
     }

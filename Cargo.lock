@@ -40,7 +40,7 @@ dependencies = [
 [[package]]
 name = "merkle_sigs"
 version = "1.0.0"
-source = "git+https://github.com/SpinResearch/merkle_sigs.rs#c91207cd348e194706a2afe442d192f98f809018"
+source = "git+https://github.com/SpinResearch/merkle_sigs.rs#c9125872e759405e55cdf0609f5c32fece181793"
 dependencies = [
  "lamport_sigs 1.0.0 (git+https://github.com/SpinResearch/lamport.rs)",
  "merkle 1.0.0 (git+https://github.com/SpinResearch/merkle.rs)",

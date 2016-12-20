@@ -5,6 +5,8 @@ use share_format::format_share_for_signing;
 use std::collections::HashMap;
 use std::error::Error;
 
+type ProcessedShares = Result<(u8, Vec<(u8, Vec<u8>)>), RustyError>;
+
 // The order of validation that we think makes the most sense is the following:
 // 1) Validate shares individually
 // 2) Validate duplicate shares share num && data
@@ -13,7 +15,7 @@ use std::error::Error;
 
 pub fn process_and_validate_shares(shares_strings: Vec<String>,
                                    verify_signatures: bool)
-                                   -> Result<(u8, Vec<(u8, Vec<u8>)>), RustyError> {
+                                   -> ProcessedShares {
     let mut shares: Vec<(u8, Vec<u8>)> = Vec::new();
 
     let mut k_compatibility_sets  = HashMap::new();
@@ -45,12 +47,12 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
                                                                     &(signature.to_vec(), p),
                                                                     &root_hash)
 		    .map_err(|e| RustyError::with_type(RustyErrorTypes::InvalidSignature(share_index, String::from(e.description())))));
-            rh_compatibility_sets.entry(root_hash.clone()).or_insert(Vec::new());
+            rh_compatibility_sets.entry(root_hash.clone()).or_insert_with(Vec::new);
             let vec = rh_compatibility_sets.get_mut(&root_hash).unwrap();
             vec.push(share_index);
         }
 
-        k_compatibility_sets.entry(k).or_insert(Vec::new());
+        k_compatibility_sets.entry(k).or_insert_with(Vec::new);
         let vec = k_compatibility_sets.get_mut(&k).unwrap();
         vec.push(share_index);
 
@@ -100,9 +102,8 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
 
     if shares_num >= k as usize  {
         shares.truncate(k as usize);
-        return Ok((k, shares));
+        Ok((k, shares))
     } else {
-        return Err(RustyError::with_type(RustyErrorTypes::MissingShares(k, shares_num)))
+        Err(RustyError::with_type(RustyErrorTypes::MissingShares(k, shares_num)))
     }
-
 }
