@@ -1,10 +1,10 @@
-#![deny(
-    missing_docs,
-    missing_debug_implementations, missing_copy_implementations,
-    trivial_casts, trivial_numeric_casts,
-    unsafe_code, unstable_features,
-    unused_import_braces, unused_qualifications
-)]
+// #![deny(
+//     missing_docs,
+//     missing_debug_implementations, missing_copy_implementations,
+//     trivial_casts, trivial_numeric_casts,
+//     unsafe_code, unstable_features,
+//     unused_import_braces, unused_qualifications
+// )]
 
 //! `RustySecrets` implements Shamir Secret Sharing in Rust. It provides the possibility to sign shares.
 
@@ -28,6 +28,7 @@ mod validation;
 
 pub use sss::generate_shares;
 pub use sss::recover_secret;
+pub use custom_error::RustyError;
 
 #[cfg(test)]
 mod tests;
