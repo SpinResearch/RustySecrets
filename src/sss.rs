@@ -31,7 +31,7 @@ fn new_vec<T: Clone>(n: usize, x: T) -> Vec<T> {
 /// ```
 pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> io::Result<Vec<String>> {
     if k > n {
-        return Err(other_io_err("Threshold K can not be larger than N", None, None));
+        return Err(other_io_err("Threshold K can not be larger than N", None, None, None));
     }
 
     let shares = try!(secret_share(&*secret, k, n));

@@ -14,7 +14,7 @@ fn test_reasonable_splits() {
         .to_string()
         .into_bytes();
     for is_signing in vec![true, false] {
-        for k in 2..max_shares {
+        for k in 1..max_shares {
             for n in k..max_shares {
                 let shares = generate_shares(k, n, &secret, is_signing).unwrap();
                 println!("Testing {} out-of- {}", k, n);
