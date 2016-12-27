@@ -22,6 +22,7 @@ pub enum RustyErrorTypes {
     InvalidSignature(u8, String),
     MissingShares(u8, usize),
     MissingSignature(u8),
+    SecretDeserializationIssue,
     ShareParsingError(u8, String)
 }
 
@@ -60,6 +61,8 @@ impl RustyError {
             RustyErrorTypes::InvalidSignature(_, _) => "The signature of this share is not valid.",
             RustyErrorTypes::MissingShares(_, _) => "The number of shares provided is insufficient to recover the secret.",
             RustyErrorTypes::MissingSignature(_) => "Signature is missing while shares are required to be signed.",
+            RustyErrorTypes::SecretDeserializationIssue => "An issue was encountered deserializing the secret.
+            Updating to the latest version of RustySecrets might help fix this.",
             RustyErrorTypes::ShareParsingError(_, _) => "This share is incorrectly formatted.",
             RustyErrorTypes::DuplicateShareNum(_) => "This share number has already been used by a previous share.",
             RustyErrorTypes::DuplicateShareData(_) => "The data encoded in this share is the same as the one found in a previous share."

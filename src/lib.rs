@@ -21,14 +21,16 @@ static digest: &'static Algorithm = &SHA512;
 mod custom_error;
 mod gf256;
 mod interpolation;
+mod secret;
 mod share_data;
 mod share_format;
 mod sss;
 mod validation;
 
-pub use sss::generate_shares;
-pub use sss::recover_secret;
+pub use sss::{generate_shares, recover_secret};
 pub use custom_error::RustyError;
+
+pub mod wrapped_secrets;
 
 #[cfg(test)]
 mod tests;

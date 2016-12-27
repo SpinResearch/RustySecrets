@@ -34,7 +34,7 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> io::Re
         return Err(other_io_err("Threshold K can not be larger than N", None, None, None));
     }
 
-    let shares = try!(secret_share(&*secret, k, n));
+    let shares = try!(secret_share(secret, k, n));
 
     let signatures = if sign_shares {
         let shares_to_sign = shares.iter()
