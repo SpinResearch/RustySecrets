@@ -23,6 +23,7 @@ mod gf256;
 mod interpolation;
 #[allow(unused_qualifications)]
 mod secret;
+#[allow(unused_qualifications)]
 mod share_data;
 mod share_format;
 mod validation;
