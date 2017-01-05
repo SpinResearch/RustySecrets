@@ -4,34 +4,12 @@
 
 Rusty Secrets is an implementation of a threshold [Shamir's secret sharing scheme](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing).
 
-#### ⚠️ This code is available for peer-review. Do not use in production apps yet. Shares format and algorithm likely to change ⚠️
 
 ## Design goals
 
-The main use for this library is to split a secret of an arbitrary length in n different shares and t-out-of-n shares are required to recover it. The dealer is assumed to be honest (and competent). We further assume that our adversary will only be able to compromise at most k-1 shares. Shares are kept offline.
+The main use for this library is to split a secret of an arbitrary length in *n* different shares and *t*-out-of-*n* shares are required to recover it. The dealer is assumed to be honest (and competent). We further assume that our adversary will only be able to compromise at most *t-1* shares. Shares are kept offline.
 
 A typical use case for this library would be splitting an encryption key to a TrueCrypt-like volume.
-
-## Choosing a scheme
-
-The Shamir's Secret Sharing scheme has been chosen for this implementation for the following reasons.
-
-### Information-theoretic security
-
-Shamir's secret sharing is known to have the perfect secrecy property.
-In the context of (K,N)-threshold schemes this means that if you have
-less than K shares available, you have absolutely no information about
-what the secret is except for its length (typical secrets would be an AES-256 key, all have the same length).
-
-Information-theoretic security gives us strong guarantees:
-
-- 1) That there are provably no faster attacks than brute force exhaustion of key space.
-- 2) An encryption protocol that has information-theoretic security does not depend for its effectiveness on unproven assumptions about computational hardness, and such an algorithm is not vulnerable to future developments in computer power such as quantum computing. Source: [Wikipedia]( https://en.wikipedia.org/wiki/Information-theoretic_security “Information Theoretic Security”)
-
-
-### Peer-review
-
-The Shamir secret sharing scheme has been around since 1979 and has been [well studied](https://scholar.google.ch/scholar?cites=12714240754634232446&as_sdt=2005&sciodt=0,5&hl=en).
 
 ## Implementation
 
@@ -47,7 +25,21 @@ A share is built out of three parts separated with a dash: K-N-D.
 
 - K specifies the number of shares necessary to recover the secret.
 - N is the identifier of the share and varies between 1 and n where n is the total number of generated shares.
-- The D part is a Base64 encoding of a `ShareData` protobuf.
+- The D part is a Base64 encoding of a `ShareData` protobuf containing information about the share, and if signed, the signature.
+
+### Signatures
+
+There are a few issues with regular Shamir's secret sharing that we wanted to address:
+
+- a share can be corrupted or incorrectly entered. 
+- a malicious share holder can modify the secret that would be recovered by modifying his share.
+- a user has multiple shares from different secret shares and he doesn't know which one belongs to a specific instance.
+
+All of these issues would result in a corrupted secret being outputted and the program, that wouldn't even know that the secret got corrupted, wouldn't be able to give any actionable information.
+
+We addressed this by signing the shares by the dealer and encoding the public key into each share. After the generation of the shares, the dealer erases both the secret and the private signing key used to sign the shares. When recovering the secret, the program verifies that public keys and if some shares do not have the same public key, or a valid signature of that public key, signals the issue to the user with a helpful message.
+
+Signing shares is optional and the usefulness of signing the shares depends on the use case. Since we're using hash-based signatures (using SHA-512 Merkle signing), there is a large overhead from using signatures.
 
 ## Vocabulary
 
