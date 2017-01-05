@@ -41,6 +41,17 @@ We addressed this by signing the shares by the dealer and encoding the public ke
 
 Signing shares is optional and the usefulness of signing the shares depends on the use case. Since we're using hash-based signatures (using SHA-512 Merkle signing), there is a large overhead from using signatures.
 
+## Bug Reporting
+
+Please report bugs either as pull requests or as issues in [the issue
+tracker](https://github.com/SpinResearch/RustySecrets/issues). *RustySecrets* has a
+**full disclosure** vulnerability policy. **Please do NOT attempt to report
+any security vulnerability in this code privately to anybody.**
+
+## License
+
+See [LICENSE](LICENSE).
+
 ## Vocabulary
 
 - Dealer: Entity that will perform key splitting from a master secret
