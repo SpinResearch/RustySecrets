@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `rusty_secrets` crate.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, rusty_secrets">
+    <meta name="description" content="API documentation for the Rust `sss` mod in crate `rusty_secrets`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, sss">
 
-    <title>rusty_secrets - Rust</title>
+    <title>rusty_secrets::sss - Rust</title>
 
-    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../main.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
     
 
     
@@ -28,7 +28,7 @@
 
     <nav class="sidebar">
         
-        <p class='location'></p><script>window.sidebarCurrent = {name: 'rusty_secrets', ty: 'mod', relpath: '../'};</script>
+        <p class='location'><a href='../index.html'>rusty_secrets</a></p><script>window.sidebarCurrent = {name: 'sss', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
     </nav>
 
     <nav class="sub">
@@ -43,34 +43,26 @@
     </nav>
 
     <section id='main' class="content mod">
-<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>rusty_secrets</a></span><span class='out-of-band'><span id='render-detail'>
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>rusty_secrets</a>::<wbr><a class='mod' href=''>sss</a></span><span class='out-of-band'><span id='render-detail'>
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a id='src-0' class='srclink' href='../src/rusty_secrets/src/lib.rs.html#1-35' title='goto source code'>[src]</a></span></h1>
-<div class='docblock'><p><code>RustySecrets</code> implements Shamir&#39;s secret sharing in Rust. It provides the possibility to sign shares.</p>
-</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+               </span><a id='src-448' class='srclink' href='../../src/rusty_secrets/src/sss.rs.html#1-128' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>SSS provides Shamir&#39;s secret sharing with raw data.</p>
+</div><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
 <table>
                        <tr class=' module-item'>
-                           <td><a class='mod' href='sss/index.html'
-                                  title='rusty_secrets::sss'>sss</a></td>
+                           <td><a class='fn' href='fn.generate_shares.html'
+                                  title='rusty_secrets::sss::generate_shares'>generate_shares</a></td>
                            <td class='docblock-short'>
-                                <p>SSS provides Shamir&#39;s secret sharing with raw data.</p>
+                                <p>Performs threshold k-out-of-n Shamir&#39;s secret sharing.</p>
                            </td>
                        </tr>
                        <tr class=' module-item'>
-                           <td><a class='mod' href='wrapped_secrets/index.html'
-                                  title='rusty_secrets::wrapped_secrets'>wrapped_secrets</a></td>
+                           <td><a class='fn' href='fn.recover_secret.html'
+                                  title='rusty_secrets::sss::recover_secret'>recover_secret</a></td>
                            <td class='docblock-short'>
-                                <p>(Beta) <code>wrapped_secrets</code> provides Shamir&#39;s secret sharing with a wrapped secret. It currently offers versioning and MIME information about the data.</p>
-                           </td>
-                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
-<table>
-                       <tr class=' module-item'>
-                           <td><a class='struct' href='struct.RustyError.html'
-                                  title='rusty_secrets::RustyError'>RustyError</a></td>
-                           <td class='docblock-short'>
-                                <p>Error struct used for generating an <code>io::Error</code> from a generic description.</p>
+                                <p>Recovers the secret from a k-out-of-n Shamir&#39;s secret sharing.</p>
                            </td>
                        </tr></table></section>
     <section id='search' class="content hidden"></section>
@@ -126,11 +118,11 @@
     
 
     <script>
-        window.rootPath = "../";
+        window.rootPath = "../../";
         window.currentCrate = "rusty_secrets";
     </script>
-    <script src="../jquery.js"></script>
-    <script src="../main.js"></script>
-    <script defer src="../search-index.js"></script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
 </body>
 </html>

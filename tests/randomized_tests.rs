@@ -1,6 +1,6 @@
 extern crate rusty_secrets;
 
-use rusty_secrets::{generate_shares, recover_secret};
+use rusty_secrets::*;
 
 #[ignore]
 #[test]
@@ -13,12 +13,18 @@ fn test_reasonable_splits() {
                   across public lines."
         .to_string()
         .into_bytes();
+
+    let mime_type = "image/jpeg";
+
     for is_signing in &[true, false] {
         for k in 1..max_shares {
             for n in k..max_shares {
-                let shares = generate_shares(k, n, &secret, *is_signing).unwrap();
+                let shares = wrapped_secrets::generate_shares(k, n, &secret, mime_type,*is_signing).unwrap();
                 println!("Testing {} out-of- {}", k, n);
-                assert_eq!(secret, recover_secret(shares, *is_signing).unwrap());
+
+                let s = wrapped_secrets::recover_secret(shares, *is_signing).unwrap();
+                assert_eq!(s.get_secret().to_owned(), secret);
+                assert_eq!(mime_type, s.get_mime_type());
             }
         }
     }
