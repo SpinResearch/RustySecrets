@@ -1,6 +1,6 @@
 extern crate rusty_secrets;
 
-use rusty_secrets::recover_secret;
+use rusty_secrets::sss::recover_secret;
 
 #[test]
 #[should_panic(expected = "No shares were provided.")]

@@ -1,12 +1,12 @@
-// #![deny(
-//     missing_docs,
-//     missing_debug_implementations, missing_copy_implementations,
-//     trivial_casts, trivial_numeric_casts,
-//     unsafe_code, unstable_features,
-//     unused_import_braces, unused_qualifications
-// )]
+//! `RustySecrets` implements Shamir's secret sharing in Rust. It provides the possibility to sign shares.
 
-//! `RustySecrets` implements Shamir Secret Sharing in Rust. It provides the possibility to sign shares.
+#![deny(
+    missing_docs,
+    missing_debug_implementations, missing_copy_implementations,
+    trivial_casts, trivial_numeric_casts,
+    unsafe_code, unstable_features,
+    unused_import_braces, unused_qualifications
+)]
 
 extern crate protobuf;
 extern crate rustc_serialize as serialize;
@@ -24,12 +24,11 @@ mod interpolation;
 mod secret;
 mod share_data;
 mod share_format;
-mod sss;
 mod validation;
 
-pub use sss::{generate_shares, recover_secret};
 pub use custom_error::RustyError;
 
+pub mod sss;
 pub mod wrapped_secrets;
 
 #[cfg(test)]

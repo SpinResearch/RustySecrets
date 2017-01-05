@@ -1,3 +1,5 @@
+//! SSS provides Shamir's secret sharing with raw data.
+
 use custom_error::{RustyError, other_io_err};
 use digest;
 use interpolation::{encode, lagrange_interpolate};
@@ -13,12 +15,12 @@ fn new_vec<T: Clone>(n: usize, x: T) -> Vec<T> {
     repeat(x).take(n).collect()
 }
 
-/// Performs threshold k-out-of-n Shamir secret sharing.
+/// Performs threshold k-out-of-n Shamir's secret sharing.
 ///
 /// # Examples
 ///
 /// ```
-/// use rusty_secrets::generate_shares;
+/// use rusty_secrets::sss::generate_shares;
 /// let secret = "These programs were never about terrorism: they’re about economic spying,
 ///               social control, and diplomatic manipulation. They’re about power.".to_string();
 ///
@@ -66,7 +68,7 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> io::Re
     Ok(result)
 }
 
-pub fn secret_share(src: &[u8], k: u8, n: u8) -> Result<Vec<Vec<u8>>, RustyError> {
+fn secret_share(src: &[u8], k: u8, n: u8) -> Result<Vec<Vec<u8>>, RustyError> {
     let mut result = Vec::with_capacity(n as usize);
     for _ in 0..(n as usize) {
         result.push(new_vec(src.len(), 0u8));
@@ -87,14 +89,14 @@ pub fn secret_share(src: &[u8], k: u8, n: u8) -> Result<Vec<Vec<u8>>, RustyError
 }
 
 
-/// Recovers the secret from a k-out-of-n Shamir secret sharing.
+/// Recovers the secret from a k-out-of-n Shamir's secret sharing.
 ///
 /// At least `k` distinct shares need to be provided to recover the share.
 ///
 /// # Examples
 ///
 /// ```
-/// use rusty_secrets::recover_secret;
+/// use rusty_secrets::sss::recover_secret;
 /// let share1 = "2-1-Cha7s14Q/mSwWko0ittr+/Uf79RHQMIP".to_string();
 /// let share2 = "2-4-ChaydsUJDypD9ZWxwvIICh/cmZvzusOF".to_string();
 /// let shares = vec![share1, share2];

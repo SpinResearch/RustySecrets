@@ -1,5 +1,4 @@
 use std::convert;
-use std::error;
 use std::error::Error;
 use std::fmt;
 use std::io;
@@ -10,10 +9,11 @@ use std::num;
 pub struct RustyError {
     descr: &'static str,
     detail: Option<String>,
-    share_num: Option<u8>,
+    share_index: Option<u8>,
     share_groups: Option<Vec<Vec<u8>>>
 }
 
+#[derive(Debug)]
 pub enum RustyErrorTypes {
     DuplicateShareNum(u8),
     DuplicateShareData(u8),
@@ -28,28 +28,32 @@ pub enum RustyErrorTypes {
 
 impl RustyError {
     /// Initializes a new error with a description and optional detail string.
-    fn new(descr: &'static str, detail: Option<String>, share_num: Option<u8>, share_groups: Option<Vec<Vec<u8>>>) -> RustyError {
+    fn new(descr: &'static str, detail: Option<String>, share_index: Option<u8>, share_groups: Option<Vec<Vec<u8>>>) -> RustyError {
         RustyError {
             descr: descr,
             detail: detail,
-            share_num: share_num,
+            share_index: share_index,
             share_groups: share_groups
         }
     }
 
+    /// Returns a `RustyError` with a given `RustyErrorType`.
     pub fn with_type(error_type: RustyErrorTypes) -> RustyError {
         RustyError {
             descr: RustyError::descr_for_type(&error_type),
             detail: RustyError::detail_for_type(&error_type),
-            share_num: RustyError::share_num_for_type(&error_type),
+            share_index: RustyError::share_num_for_type(&error_type),
             share_groups: RustyError::share_groups_for_type(error_type),
         }
     }
 
-    pub fn share_num(&self) -> Option<u8> {
-        self.share_num
+    /// Returns the index of the share that raised the error, if any.
+    pub fn share_index(&self) -> Option<u8> {
+        self.share_index
     }
 
+    /// Returns the group of shares that were generated during the same secret share.
+    /// It can be used to provide a debug message to the user telling him what shares are incompatible.
     pub fn share_groups(&self) -> Option<Vec<Vec<u8>>> {
         self.share_groups.clone()
     }
@@ -106,11 +110,11 @@ impl fmt::Display for RustyError {
     }
 }
 
-impl error::Error for RustyError {
+impl Error for RustyError {
     fn description(&self) -> &str {
         self.descr
     }
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&Error> {
         None
     }
 }

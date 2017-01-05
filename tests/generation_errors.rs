@@ -1,6 +1,6 @@
 extern crate rusty_secrets;
 
-use rusty_secrets::generate_shares;
+use rusty_secrets::sss::generate_shares;
 
 #[test]
 #[should_panic(expected = "Threshold K can not be larger than N")]

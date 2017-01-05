@@ -168,8 +168,12 @@
 <span id="124">124</span>
 <span id="125">125</span>
 <span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
 </pre><pre class='rust '>
-<span class='kw'>use</span> <span class='ident'>custom_error</span>::<span class='ident'>other_io_err</span>;
+<span class='doccomment'>//! SSS provides Shamir&#39;s secret sharing with raw data.</span>
+
+<span class='kw'>use</span> <span class='ident'>custom_error</span>::{<span class='ident'>RustyError</span>, <span class='ident'>other_io_err</span>};
 <span class='kw'>use</span> <span class='ident'>digest</span>;
 <span class='kw'>use</span> <span class='ident'>interpolation</span>::{<span class='ident'>encode</span>, <span class='ident'>lagrange_interpolate</span>};
 <span class='kw'>use</span> <span class='ident'>merkle_sigs</span>::<span class='ident'>sign_data_vec</span>;
@@ -184,12 +188,12 @@
     <span class='ident'>repeat</span>(<span class='ident'>x</span>).<span class='ident'>take</span>(<span class='ident'>n</span>).<span class='ident'>collect</span>()
 }
 
-<span class='doccomment'>/// Performs threshold k-out-of-n Shamir secret sharing.</span>
+<span class='doccomment'>/// Performs threshold k-out-of-n Shamir&#39;s secret sharing.</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// # Examples</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// ```</span>
-<span class='doccomment'>/// use rusty_secrets::generate_shares;</span>
+<span class='doccomment'>/// use rusty_secrets::sss::generate_shares;</span>
 <span class='doccomment'>/// let secret = &quot;These programs were never about terrorism: they’re about economic spying,</span>
 <span class='doccomment'>///               social control, and diplomatic manipulation. They’re about power.&quot;.to_string();</span>
 <span class='doccomment'>///</span>
@@ -202,10 +206,10 @@
 <span class='doccomment'>/// ```</span>
 <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>generate_shares</span>(<span class='ident'>k</span>: <span class='ident'>u8</span>, <span class='ident'>n</span>: <span class='ident'>u8</span>, <span class='ident'>secret</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>], <span class='ident'>sign_shares</span>: <span class='ident'>bool</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;&gt;</span> {
     <span class='kw'>if</span> <span class='ident'>k</span> <span class='op'>&gt;</span> <span class='ident'>n</span> {
-        <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>other_io_err</span>(<span class='string'>&quot;Threshold K can not be larger than N&quot;</span>, <span class='prelude-val'>None</span>));
+        <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>other_io_err</span>(<span class='string'>&quot;Threshold K can not be larger than N&quot;</span>, <span class='prelude-val'>None</span>, <span class='prelude-val'>None</span>, <span class='prelude-val'>None</span>));
     }
 
-    <span class='kw'>let</span> <span class='ident'>shares</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>secret_share</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>secret</span>, <span class='ident'>k</span>, <span class='ident'>n</span>));
+    <span class='kw'>let</span> <span class='ident'>shares</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>secret_share</span>(<span class='ident'>secret</span>, <span class='ident'>k</span>, <span class='ident'>n</span>));
 
     <span class='kw'>let</span> <span class='ident'>signatures</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ident'>sign_shares</span> {
         <span class='kw'>let</span> <span class='ident'>shares_to_sign</span> <span class='op'>=</span> <span class='ident'>shares</span>.<span class='ident'>iter</span>()
@@ -237,7 +241,7 @@
     <span class='prelude-val'>Ok</span>(<span class='ident'>result</span>)
 }
 
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>secret_share</span>(<span class='ident'>src</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>], <span class='ident'>k</span>: <span class='ident'>u8</span>, <span class='ident'>n</span>: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;&gt;</span><span class='op'>&gt;</span> {
+<span class='kw'>fn</span> <span class='ident'>secret_share</span>(<span class='ident'>src</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>], <span class='ident'>k</span>: <span class='ident'>u8</span>, <span class='ident'>n</span>: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;&gt;</span>, <span class='ident'>RustyError</span><span class='op'>&gt;</span> {
     <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>Vec</span>::<span class='ident'>with_capacity</span>(<span class='ident'>n</span> <span class='kw'>as</span> <span class='ident'>usize</span>);
     <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..(<span class='ident'>n</span> <span class='kw'>as</span> <span class='ident'>usize</span>) {
         <span class='ident'>result</span>.<span class='ident'>push</span>(<span class='ident'>new_vec</span>(<span class='ident'>src</span>.<span class='ident'>len</span>(), <span class='number'>0u8</span>));
@@ -258,14 +262,14 @@
 }
 
 
-<span class='doccomment'>/// Recovers the secret from a k-out-of-n Shamir secret sharing.</span>
+<span class='doccomment'>/// Recovers the secret from a k-out-of-n Shamir&#39;s secret sharing.</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// At least `k` distinct shares need to be provided to recover the share.</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// # Examples</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// ```</span>
-<span class='doccomment'>/// use rusty_secrets::recover_secret;</span>
+<span class='doccomment'>/// use rusty_secrets::sss::recover_secret;</span>
 <span class='doccomment'>/// let share1 = &quot;2-1-Cha7s14Q/mSwWko0ittr+/Uf79RHQMIP&quot;.to_string();</span>
 <span class='doccomment'>/// let share2 = &quot;2-4-ChaydsUJDypD9ZWxwvIICh/cmZvzusOF&quot;.to_string();</span>
 <span class='doccomment'>/// let shares = vec![share1, share2];</span>
@@ -279,7 +283,7 @@
 <span class='doccomment'>/// 	}</span>
 <span class='doccomment'>/// }</span>
 <span class='doccomment'>/// ```</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>recover_secret</span>(<span class='ident'>shares</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span>, <span class='ident'>verify_signatures</span>: <span class='ident'>bool</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;&gt;</span> {
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>recover_secret</span>(<span class='ident'>shares</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span>, <span class='ident'>verify_signatures</span>: <span class='ident'>bool</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>RustyError</span><span class='op'>&gt;</span> {
     <span class='kw'>let</span> (<span class='ident'>k</span>, <span class='ident'>shares</span>) <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>process_and_validate_shares</span>(<span class='ident'>shares</span>, <span class='ident'>verify_signatures</span>));
 
     <span class='kw'>let</span> <span class='ident'>slen</span> <span class='op'>=</span> <span class='ident'>shares</span>[<span class='number'>0</span>].<span class='number'>1</span>.<span class='ident'>len</span>();
@@ -352,11 +356,9 @@
     <script>
         window.rootPath = "../../../";
         window.currentCrate = "rusty_secrets";
-        window.playgroundUrl = "";
     </script>
     <script src="../../../jquery.js"></script>
     <script src="../../../main.js"></script>
-    
     <script defer src="../../../search-index.js"></script>
 </body>
 </html>
