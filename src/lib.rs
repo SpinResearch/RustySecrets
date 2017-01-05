@@ -21,6 +21,7 @@ static digest: &'static Algorithm = &SHA512;
 mod custom_error;
 mod gf256;
 mod interpolation;
+#[allow(unused_qualifications)]
 mod secret;
 mod share_data;
 mod share_format;
