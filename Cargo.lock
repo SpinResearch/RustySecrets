@@ -3,9 +3,9 @@ name = "rusty_secrets"
 version = "0.0.3"
 dependencies = [
  "merkle_sigs 1.0.0 (git+https://github.com/SpinResearch/merkle_sigs.rs)",
- "protobuf 1.0.24 (registry+https://github.com/rust-lang/crates.io-index)",
+ "protobuf 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
- "ring 0.6.0-alpha1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ring 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.22 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -15,7 +15,7 @@ version = "1.0.0"
 source = "git+https://github.com/SpinResearch/lamport.rs#9f9fdb749fc62b20404aa4430369e473212c6147"
 dependencies = [
  "rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
- "ring 0.6.0-alpha1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ring 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -25,7 +25,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "libc"
-version = "0.2.18"
+version = "0.2.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -33,8 +33,8 @@ name = "merkle"
 version = "1.0.0"
 source = "git+https://github.com/SpinResearch/merkle.rs#249234cacaf2891ee4371846b6a32bfae0743ab9"
 dependencies = [
- "protobuf 1.0.24 (registry+https://github.com/rust-lang/crates.io-index)",
- "ring 0.6.0-alpha1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "protobuf 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ring 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -44,12 +44,12 @@ source = "git+https://github.com/SpinResearch/merkle_sigs.rs#c9125872e759405e55c
 dependencies = [
  "lamport_sigs 1.0.0 (git+https://github.com/SpinResearch/lamport.rs)",
  "merkle 1.0.0 (git+https://github.com/SpinResearch/merkle.rs)",
- "ring 0.6.0-alpha1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ring 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "protobuf"
-version = "1.0.24"
+version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -57,15 +57,16 @@ name = "rand"
 version = "0.3.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "libc 0.2.18 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.2.20 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "ring"
-version = "0.6.0-alpha1"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "lazy_static 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.2.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "untrusted 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -82,11 +83,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [metadata]
 "checksum lamport_sigs 1.0.0 (git+https://github.com/SpinResearch/lamport.rs)" = "<none>"
 "checksum lazy_static 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "6abe0ee2e758cd6bc8a2cd56726359007748fbf4128da998b65d0b70f881e19b"
-"checksum libc 0.2.18 (registry+https://github.com/rust-lang/crates.io-index)" = "a51822fc847e7a8101514d1d44e354ba2ffa7d4c194dcab48870740e327cac70"
+"checksum libc 0.2.20 (registry+https://github.com/rust-lang/crates.io-index)" = "684f330624d8c3784fb9558ca46c4ce488073a8d22450415c5eb4f4cfb0d11b5"
 "checksum merkle 1.0.0 (git+https://github.com/SpinResearch/merkle.rs)" = "<none>"
 "checksum merkle_sigs 1.0.0 (git+https://github.com/SpinResearch/merkle_sigs.rs)" = "<none>"
-"checksum protobuf 1.0.24 (registry+https://github.com/rust-lang/crates.io-index)" = "6ec4c2fe04370298218a09ab53a534febf54c160c5554e4de987b6d73c916d5d"
+"checksum protobuf 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "22eaac7d4be49a479dbd875f6f84ab79eef282aa51ba36ce884ec10efd91d355"
 "checksum rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)" = "022e0636ec2519ddae48154b028864bdce4eaf7d35226ab8e65c611be97b189d"
-"checksum ring 0.6.0-alpha1 (registry+https://github.com/rust-lang/crates.io-index)" = "0c9d14fdd6779c80311183b64598d57e640993fd1732119ce2cedb3234217532"
+"checksum ring 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)" = "f171b03b4d8db3b2b2de34661ad25b8f21749a7b94fbb0090463be285122cd83"
 "checksum rustc-serialize 0.3.22 (registry+https://github.com/rust-lang/crates.io-index)" = "237546c689f20bb44980270c73c3b9edd0891c1be49cc1274406134a66d3957b"
 "checksum untrusted 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "193df64312e3515fd983ded55ad5bcaa7647a035804828ed757e832ce6029ef3"

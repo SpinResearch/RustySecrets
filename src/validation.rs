@@ -22,13 +22,6 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
     let mut rh_compatibility_sets = HashMap::new();
 
     for (counter, line) in shares_strings.iter().enumerate() {
-        if k_compatibility_sets.len() == 1 {
-            let k = k_compatibility_sets.keys().last().unwrap();
-            if *k == shares.len() as u8 {
-                break;
-            }
-        }
-
         let share_index = counter as u8;
         let (share_data, k, n, sig_pair) = try!(share_format::share_from_string(line,
                                                                                 counter as u8,
@@ -60,7 +53,7 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
             return Err(RustyError::with_type(RustyErrorTypes::DuplicateShareNum(share_index)));
         };
 
-        if shares.iter().any(|s| s.1 == share_data) {
+        if shares.iter().any(|s| s.1 == share_data) && k != 1 { // When k = 1, shares data can be the same
             return Err(RustyError::with_type(RustyErrorTypes::DuplicateShareData(share_index)));
         };
 
