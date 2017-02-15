@@ -2,7 +2,7 @@
 name = "rusty_secrets"
 version = "0.0.3"
 dependencies = [
- "merkle_sigs 1.0.0 (git+https://github.com/SpinResearch/merkle_sigs.rs)",
+ "merkle_sigs 1.1.0 (git+https://github.com/SpinResearch/merkle_sigs.rs?tag=1.1.0)",
  "protobuf 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "ring 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -11,8 +11,8 @@ dependencies = [
 
 [[package]]
 name = "lamport_sigs"
-version = "1.0.0"
-source = "git+https://github.com/SpinResearch/lamport.rs#9f9fdb749fc62b20404aa4430369e473212c6147"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "ring 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -30,8 +30,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "merkle"
-version = "1.0.0"
-source = "git+https://github.com/SpinResearch/merkle.rs#249234cacaf2891ee4371846b6a32bfae0743ab9"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "protobuf 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "ring 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -39,11 +39,11 @@ dependencies = [
 
 [[package]]
 name = "merkle_sigs"
-version = "1.0.0"
-source = "git+https://github.com/SpinResearch/merkle_sigs.rs#c9125872e759405e55cdf0609f5c32fece181793"
+version = "1.1.0"
+source = "git+https://github.com/SpinResearch/merkle_sigs.rs?tag=1.1.0#0f59ad68950343361459b6c2d0ef38fe027ef2aa"
 dependencies = [
- "lamport_sigs 1.0.0 (git+https://github.com/SpinResearch/lamport.rs)",
- "merkle 1.0.0 (git+https://github.com/SpinResearch/merkle.rs)",
+ "lamport_sigs 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "merkle 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ring 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -81,11 +81,11 @@ version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [metadata]
-"checksum lamport_sigs 1.0.0 (git+https://github.com/SpinResearch/lamport.rs)" = "<none>"
+"checksum lamport_sigs 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "ac2b4034ed440248c0ed8c71e62ca29144d5575f06b14b1b5282af22a3c3d7d8"
 "checksum lazy_static 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "6abe0ee2e758cd6bc8a2cd56726359007748fbf4128da998b65d0b70f881e19b"
 "checksum libc 0.2.20 (registry+https://github.com/rust-lang/crates.io-index)" = "684f330624d8c3784fb9558ca46c4ce488073a8d22450415c5eb4f4cfb0d11b5"
-"checksum merkle 1.0.0 (git+https://github.com/SpinResearch/merkle.rs)" = "<none>"
-"checksum merkle_sigs 1.0.0 (git+https://github.com/SpinResearch/merkle_sigs.rs)" = "<none>"
+"checksum merkle 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e486010d2297fa55dc1727e811f7fe35e8eda4e60659da3c3964f98499a3a35b"
+"checksum merkle_sigs 1.1.0 (git+https://github.com/SpinResearch/merkle_sigs.rs?tag=1.1.0)" = "<none>"
 "checksum protobuf 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "22eaac7d4be49a479dbd875f6f84ab79eef282aa51ba36ce884ec10efd91d355"
 "checksum rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)" = "022e0636ec2519ddae48154b028864bdce4eaf7d35226ab8e65c611be97b189d"
 "checksum ring 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)" = "f171b03b4d8db3b2b2de34661ad25b8f21749a7b94fbb0090463be285122cd83"
