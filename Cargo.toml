@@ -11,7 +11,7 @@ build = "build.rs"
 [dependencies]
 rustc-serialize = "^0.3.18"
 rand = "^0.3.14"
-ring = "^0.6.2"
-merkle_sigs = { git = "https://github.com/SpinResearch/merkle_sigs.rs", tag = "1.1.0" }
+ring = "^0.11.0"
+merkle_sigs = { git = "https://github.com/SpinResearch/merkle_sigs.rs" }
 protobuf = "^1.2.0"
 
