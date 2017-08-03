@@ -14,16 +14,17 @@ fn test_reasonable_splits() {
         .to_string()
         .into_bytes();
 
-    let mime_type = "image/jpeg";
+    let mime_type = "image/jpeg".to_string();
 
     for is_signing in &[true, false] {
         for k in 1..max_shares {
             for n in k..max_shares {
-                let shares = wrapped_secrets::generate_shares(k, n, &secret, mime_type,*is_signing).unwrap();
+                let shares = wrapped_secrets::generate_shares(k, n, &secret, Some(mime_type.clone()), *is_signing).unwrap();
                 println!("Testing {} out-of- {}", k, n);
 
                 let s = wrapped_secrets::recover_secret(shares, *is_signing).unwrap();
                 assert_eq!(s.get_secret().to_owned(), secret);
+                assert!(s.has_mime_type());
                 assert_eq!(mime_type, s.get_mime_type());
             }
         }

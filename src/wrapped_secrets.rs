@@ -16,18 +16,21 @@ use std::io;
 /// let secret = "These programs were never about terrorism: they’re about economic spying,
 ///               social control, and diplomatic manipulation. They’re about power.".to_string();
 ///
-/// match generate_shares(7, 10, &secret.into_bytes(), "text/html", true){
+/// match generate_shares(7, 10, &secret.into_bytes(), Some("text/html".to_string()), true){
 /// 	Ok(shares) => {
 /// 		// Do something with the shares
 /// 	},
 /// 	Err(_) => {}// Deal with error}
 /// }
 /// ```
-pub fn generate_shares(k: u8, n: u8, secret: &[u8], mime_type: &str, sign_shares: bool) -> io::Result<Vec<String>> {
+pub fn generate_shares(k: u8, n: u8, secret: &[u8], mime_type: Option<String>, sign_shares: bool) -> io::Result<Vec<String>> {
     let mut rusty_secret = RustySecret::new();
     rusty_secret.set_version(RustySecretsVersions::INITIAL_RELEASE);
-    rusty_secret.set_mime_type(mime_type.to_owned());
     rusty_secret.set_secret(secret.to_owned());
+
+    for mt in mime_type {
+        rusty_secret.set_mime_type(mt);
+    }
 
     sss::generate_shares(k, n, rusty_secret.write_to_bytes().unwrap().as_slice(), sign_shares)
 }
