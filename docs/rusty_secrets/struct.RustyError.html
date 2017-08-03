@@ -9,6 +9,7 @@
 
     <title>rusty_secrets::RustyError - Rust</title>
 
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
     <link rel="stylesheet" type="text/css" href="../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../main.css">
     
@@ -16,7 +17,7 @@
     
     
 </head>
-<body class="rustdoc">
+<body class="rustdoc struct">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -28,7 +29,7 @@
 
     <nav class="sidebar">
         
-        <p class='location'><a href='index.html'>rusty_secrets</a></p><script>window.sidebarCurrent = {name: 'RustyError', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+        <p class='location'>Struct RustyError</p><div class="block items"><ul><li><a href="#methods">Methods</a></li><li><a href="#implementations">Trait Implementations</a></li></ul></div><p class='location'><a href='index.html'>rusty_secrets</a></p><script>window.sidebarCurrent = {name: 'RustyError', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
     </nav>
 
     <nav class="sub">
@@ -42,34 +43,34 @@
         </form>
     </nav>
 
-    <section id='main' class="content struct">
-<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>rusty_secrets</a>::<wbr><a class='struct' href=''>RustyError</a></span><span class='out-of-band'><span id='render-detail'>
+    <section id='main' class="content">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>rusty_secrets</a>::<wbr><a class="struct" href=''>RustyError</a></span><span class='out-of-band'><span id='render-detail'>
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a id='src-522' class='srclink' href='../src/rusty_secrets/src/custom_error.rs.html#9-14' title='goto source code'>[src]</a></span></h1>
+               </span><a class='srclink' href='../src/rusty_secrets/custom_error.rs.html#9-14' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct RustyError { /* fields omitted */ }</pre><div class='docblock'><p>Error struct used for generating an <code>io::Error</code> from a generic description.</p>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../rusty_secrets/struct.RustyError.html' title='rusty_secrets::RustyError'>RustyError</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-17' class='srclink' href='../src/rusty_secrets/src/custom_error.rs.html#29-102' title='goto source code'>[src]</a></span></h3>
-<div class='impl-items'><h4 id='method.with_type' class='method'><span id='with_type.v' class='invisible'><code>fn <a href='#method.with_type' class='fnname'>with_type</a>(error_type: RustyErrorTypes) -&gt; <a class='struct' href='../rusty_secrets/struct.RustyError.html' title='rusty_secrets::RustyError'>RustyError</a></code></span></h4>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class="struct" href="../rusty_secrets/struct.RustyError.html" title="struct rusty_secrets::RustyError">RustyError</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rusty_secrets/custom_error.rs.html#29-102' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.with_type' class="method"><span id='with_type.v' class='invisible'><code>fn <a href='#method.with_type' class='fnname'>with_type</a>(error_type: RustyErrorTypes) -&gt; <a class="struct" href="../rusty_secrets/struct.RustyError.html" title="struct rusty_secrets::RustyError">RustyError</a></code></span></h4>
 <div class='docblock'><p>Returns a <code>RustyError</code> with a given <code>RustyErrorType</code>.</p>
-</div><h4 id='method.share_index' class='method'><span id='share_index.v' class='invisible'><code>fn <a href='#method.share_index' class='fnname'>share_index</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>&gt;</code></span></h4>
+</div><h4 id='method.share_index' class="method"><span id='share_index.v' class='invisible'><code>fn <a href='#method.share_index' class='fnname'>share_index</a>(&amp;self) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a>&gt;</code></span></h4>
 <div class='docblock'><p>Returns the index of the share that raised the error, if any.</p>
-</div><h4 id='method.share_groups' class='method'><span id='share_groups.v' class='invisible'><code>fn <a href='#method.share_groups' class='fnname'>share_groups</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>&gt;&gt;&gt;</code></span></h4>
+</div><h4 id='method.share_groups' class="method"><span id='share_groups.v' class='invisible'><code>fn <a href='#method.share_groups' class='fnname'>share_groups</a>(&amp;self) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html" title="struct collections::vec::Vec">Vec</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html" title="struct collections::vec::Vec">Vec</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a>&gt;&gt;&gt;</code></span></h4>
 <div class='docblock'><p>Returns the group of shares that were generated during the same secret share.
 It can be used to provide a debug message to the user telling him what shares are incompatible.</p>
-</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../rusty_secrets/struct.RustyError.html' title='rusty_secrets::RustyError'>RustyError</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-527' class='srclink' href='../src/rusty_secrets/src/custom_error.rs.html#8' title='goto source code'>[src]</a></span></h3>
-<div class='impl-items'><h4 id='method.fmt' class='method'><span id='fmt.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></span></h4>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> for <a class="struct" href="../rusty_secrets/struct.RustyError.html" title="struct rusty_secrets::RustyError">RustyError</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rusty_secrets/custom_error.rs.html#8' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.fmt' class="method"><span id='fmt.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>) -&gt; <a class="type" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></code></span></h4>
 <div class='docblock'><p>Formats the value using the given formatter.</p>
-</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html' title='core::fmt::Display'>Display</a> for <a class='struct' href='../rusty_secrets/struct.RustyError.html' title='rusty_secrets::RustyError'>RustyError</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-46' class='srclink' href='../src/rusty_secrets/src/custom_error.rs.html#104-111' title='goto source code'>[src]</a></span></h3>
-<div class='impl-items'><h4 id='method.fmt-1' class='method'><span id='fmt.v-1' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></span></h4>
-<div class='docblock'><p>Formats the value using the given formatter.</p>
-</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>Error</a> for <a class='struct' href='../rusty_secrets/struct.RustyError.html' title='rusty_secrets::RustyError'>RustyError</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-52' class='srclink' href='../src/rusty_secrets/src/custom_error.rs.html#113-120' title='goto source code'>[src]</a></span></h3>
-<div class='impl-items'><h4 id='method.description' class='method'><span id='description.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html#tymethod.description' class='fnname'>description</a>(&amp;self) -&gt; &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a></code></span></h4>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html" title="trait core::fmt::Display">Display</a> for <a class="struct" href="../rusty_secrets/struct.RustyError.html" title="struct rusty_secrets::RustyError">RustyError</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rusty_secrets/custom_error.rs.html#104-111' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.fmt-1' class="method"><span id='fmt.v-1' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>) -&gt; <a class="type" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></code></span></h4>
+<div class='docblock'><p>Formats the value using the given formatter. <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html#tymethod.fmt">Read more</a></p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/std/error/trait.Error.html" title="trait std::error::Error">Error</a> for <a class="struct" href="../rusty_secrets/struct.RustyError.html" title="struct rusty_secrets::RustyError">RustyError</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rusty_secrets/custom_error.rs.html#113-120' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.description' class="method"><span id='description.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html#tymethod.description' class='fnname'>description</a>(&amp;self) -&gt; &amp;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a></code></span></h4>
 <div class='docblock'><p>A short description of the error. <a href="https://doc.rust-lang.org/nightly/std/error/trait.Error.html#tymethod.description">Read more</a></p>
-</div><h4 id='method.cause' class='method'><span id='cause.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html#method.cause' class='fnname'>cause</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;<a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>Error</a>&gt;</code></span></h4>
+</div><h4 id='method.cause' class="method"><span id='cause.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html#method.cause' class='fnname'>cause</a>(&amp;self) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;<a class="trait" href="https://doc.rust-lang.org/nightly/std/error/trait.Error.html" title="trait std::error::Error">Error</a>&gt;</code></span></h4>
 <div class='docblock'><p>The lower-level cause of this error, if any. <a href="https://doc.rust-lang.org/nightly/std/error/trait.Error.html#method.cause">Read more</a></p>
-</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/std/io/error/struct.Error.html' title='std::io::error::Error'>Error</a>&gt; for <a class='struct' href='../rusty_secrets/struct.RustyError.html' title='rusty_secrets::RustyError'>RustyError</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-57' class='srclink' href='../src/rusty_secrets/src/custom_error.rs.html#122-128' title='goto source code'>[src]</a></span></h3>
-<div class='impl-items'><h4 id='method.from' class='method'><span id='from.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#tymethod.from' class='fnname'>from</a>(err: <a class='struct' href='https://doc.rust-lang.org/nightly/std/io/error/struct.Error.html' title='std::io::error::Error'>Error</a>) -&gt; <a class='struct' href='../rusty_secrets/struct.RustyError.html' title='rusty_secrets::RustyError'>RustyError</a></code></span></h4>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/convert/trait.From.html" title="trait core::convert::From">From</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/std/io/error/struct.Error.html" title="struct std::io::error::Error">Error</a>&gt; for <a class="struct" href="../rusty_secrets/struct.RustyError.html" title="struct rusty_secrets::RustyError">RustyError</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rusty_secrets/custom_error.rs.html#122-128' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.from' class="method"><span id='from.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#tymethod.from' class='fnname'>from</a>(err: <a class="struct" href="https://doc.rust-lang.org/nightly/std/io/error/struct.Error.html" title="struct std::io::error::Error">Error</a>) -&gt; <a class="struct" href="../rusty_secrets/struct.RustyError.html" title="struct rusty_secrets::RustyError">RustyError</a></code></span></h4>
 <div class='docblock'><p>Performs the conversion.</p>
 </div></div></section>
     <section id='search' class="content hidden"></section>
@@ -128,7 +129,6 @@ It can be used to provide a debug message to the user telling him what shares ar
         window.rootPath = "../";
         window.currentCrate = "rusty_secrets";
     </script>
-    <script src="../jquery.js"></script>
     <script src="../main.js"></script>
     <script defer src="../search-index.js"></script>
 </body>
