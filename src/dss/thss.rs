@@ -1,36 +1,31 @@
 
-//! Deterministic secret sharing
+//! Simple thresold secret sharing scheme
 
-#[allow(unknown_lints)]
-mod errors {
-
-    // Create the Error, ErrorKind, ResultExt, and Result types
-    error_chain! {
-        errors {
-            KMustBeSmallerThanN(k: u8, n: u8) {
-                description("k must be smaller than or equal to n")
-                display("k must be smaller than or equal to n, got: k = {}, n = {}", k, n)
-            }
-
-            CannotGenerateRandomNumbers {
-                description("cannot generate random numbers")
-                display("cannot generate random numbers")
-            }
-        }
-
-        foreign_links {
-            Io(::std::io::Error);
-        }
-    }
-
-}
-
-use self::errors::*;
+use dss::errors::*;
 
 use gf256::Gf256;
 use interpolation::lagrange_interpolate;
 
-use ring::rand::{SystemRandom, SecureRandom};
+use ring::rand::SecureRandom;
+
+/// A simple thresold sharing scheme
+/// TODO: Figure out a way to get rid of the type parameter (with impl trait maybe?)
+#[allow(missing_debug_implementations)]
+pub struct SharingScheme<R: SecureRandom> {
+    /// The number of shares necessary to recover the secret
+    pub k: u8,
+    /// The total number of shares to be dealt
+    pub n: u8,
+    /// The randomness source
+    pub random: R,
+}
+
+impl<R: SecureRandom> SharingScheme<R> {
+    /// Constructs a new sharing scheme
+    pub fn new(k: u8, n: u8, random: R) -> Self {
+        SharingScheme { k, n, random }
+    }
+}
 
 /// A share
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -45,19 +40,27 @@ pub struct Share {
     pub data: Vec<u8>,
 }
 
-/// Split the `secret` into `n` shares, with `k`-out-of-`n` shares required to recover it
-pub fn generate_shares(k: u8, n: u8, secret: &[u8]) -> Result<Vec<Share>> {
+/// Split a secret following a given sharing scheme
+pub fn generate_shares<R>(scheme: &SharingScheme<R>, secret: &[u8]) -> Result<Vec<Share>>
+where
+    R: SecureRandom,
+{
+    let k = scheme.k;
+    let n = scheme.n;
+
     if k > n {
         bail!(ErrorKind::KMustBeSmallerThanN(k, n));
     }
 
     let m = secret.len();
-    let rands = rand(k as usize, m)?;
+
+    let rands = get_random_bytes(&scheme.random, k as usize, m)?;
 
     let shares = (0..n)
         .map(|id| {
             let data = (0..m)
                 .map(|i| {
+                    // FIXME: Extract into its own function
                     let mut f = Gf256::from_byte(secret[i]);
                     for l in 0..(k - 1) as usize {
                         let r = Gf256::from_byte(rands[i * (k as usize - 1) + l]);
@@ -77,7 +80,7 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8]) -> Result<Vec<Share>> {
 
 /// Recover the secret from the given set of shares
 pub fn recover_secret(shares: &[Share]) -> Result<Vec<u8>> {
-    verify_shares(shares)?;
+    check_shares(shares)?;
 
     let m = shares[0].data.len();
 
@@ -96,31 +99,43 @@ pub fn recover_secret(shares: &[Share]) -> Result<Vec<u8>> {
 }
 
 // FIXME: assert -> bail
-fn verify_shares(shares: &[Share]) -> Result<()> {
-    assert!(!shares.is_empty());
+fn check_shares(shares: &[Share]) -> Result<()> {
+    if shares.is_empty() {
+        bail!(ErrorKind::MustContainAtLeastOneShare);
+    }
 
     let k = shares[0].k;
     let n = shares[0].n;
     let m = shares[0].data.len();
 
-    assert!(k <= n);
-
-    for share in shares {
-        assert_eq!(k, share.k);
-        assert_eq!(n, share.n);
-        assert_eq!(m, share.data.len());
-        assert!(share.id < n);
+    if k > n {
+        bail!(ErrorKind::KMustBeSmallerThanN(k, n));
     }
 
-    assert!(shares.len() >= shares[0].k as usize);
+    for share in shares {
+        if k != share.k || n != share.n || m != share.data.len() {
+            bail!(ErrorKind::SharesDontConformTo(k, n, m));
+        }
+
+        if share.id >= n {
+            bail!(ErrorKind::ShareIdentifierGreaterThanN(share.id, n));
+        }
+    }
+
+    if shares.len() < k as usize {
+        bail!(ErrorKind::NotEnoughSharesProvided(
+            shares.len(),
+            shares[0].k as usize,
+        ));
+    }
 
     Ok(())
 }
 
-fn rand(k: usize, m: usize) -> Result<Vec<u8>> {
+fn get_random_bytes<R: SecureRandom>(random: &R, k: usize, m: usize) -> Result<Vec<u8>> {
     let mut rl = vec![0; (k - 1) * m];
 
-    SystemRandom::new().fill(&mut rl).chain_err(|| {
+    random.fill(&mut rl).chain_err(|| {
         ErrorKind::CannotGenerateRandomNumbers
     })?;
 
@@ -132,11 +147,14 @@ mod tests {
 
     use super::*;
 
+    use ring::rand::SystemRandom;
+
     #[test]
     fn it_works() {
         let secret = "Hello, World!".to_string().into_bytes();
 
-        let shares = generate_shares(7, 10, &secret).unwrap();
+        let scheme = SharingScheme::new(7, 10, SystemRandom::new());
+        let shares = generate_shares(&scheme, &secret).unwrap();
         let recovered = recover_secret(&shares).unwrap();
 
         assert_eq!(secret, recovered);
