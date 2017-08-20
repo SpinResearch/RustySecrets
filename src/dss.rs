@@ -39,6 +39,8 @@ pub struct Share {
     pub id: u8,
     /// The number of shares necessary to recover the secret
     pub k: u8,
+    /// The total number of shares that have been dealt
+    pub n: u8,
     /// The share data itself
     pub data: Vec<u8>,
 }
@@ -66,7 +68,7 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8]) -> Result<Vec<Share>> {
                 })
                 .collect();
 
-            Share { id, k, data }
+            Share { id, k, n, data }
         })
         .collect();
 
@@ -75,7 +77,44 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8]) -> Result<Vec<Share>> {
 
 /// Recover the secret from the given set of shares
 pub fn recover_secret(shares: &[Share]) -> Result<Vec<u8>> {
-    unimplemented!()
+    verify_shares(shares)?;
+
+    let m = shares[0].data.len();
+
+    let secret = (0..m)
+        .map(|i| {
+            let points = shares
+                .iter()
+                .map(|share| (share.id, share.data[i]))
+                .collect::<Vec<_>>();
+
+            lagrange_interpolate(&points)
+        })
+        .collect();
+
+    Ok(secret)
+}
+
+// FIXME: assert -> bail
+fn verify_shares(shares: &[Share]) -> Result<()> {
+    assert!(!shares.is_empty());
+
+    let k = shares[0].k;
+    let n = shares[0].n;
+    let m = shares[0].data.len();
+
+    assert!(k <= n);
+
+    for share in shares {
+        assert_eq!(k, share.k);
+        assert_eq!(n, share.n);
+        assert_eq!(m, share.data.len());
+        assert!(share.id < n);
+    }
+
+    assert!(shares.len() >= shares[0].k as usize);
+
+    Ok(())
 }
 
 fn rand(k: usize, m: usize) -> Result<Vec<u8>> {
