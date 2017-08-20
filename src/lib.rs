@@ -19,6 +19,8 @@ extern crate rustc_serialize as serialize;
 extern crate rand;
 extern crate merkle_sigs;
 extern crate ring;
+extern crate sha3;
+extern crate digest;
 
 use ring::digest::{Algorithm, SHA512};
 #[allow(non_upper_case_globals)]
