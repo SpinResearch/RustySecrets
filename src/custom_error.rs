@@ -10,7 +10,7 @@ pub struct RustyError {
     descr: &'static str,
     detail: Option<String>,
     share_index: Option<u8>,
-    share_groups: Option<Vec<Vec<u8>>>
+    share_groups: Option<Vec<Vec<u8>>>,
 }
 
 #[derive(Debug)]
@@ -23,17 +23,22 @@ pub enum RustyErrorTypes {
     MissingShares(u8, usize),
     MissingSignature(u8),
     SecretDeserializationIssue,
-    ShareParsingError(u8, String)
+    ShareParsingError(u8, String),
 }
 
 impl RustyError {
     /// Initializes a new error with a description and optional detail string.
-    fn new(descr: &'static str, detail: Option<String>, share_index: Option<u8>, share_groups: Option<Vec<Vec<u8>>>) -> RustyError {
+    fn new(
+        descr: &'static str,
+        detail: Option<String>,
+        share_index: Option<u8>,
+        share_groups: Option<Vec<Vec<u8>>>,
+    ) -> RustyError {
         RustyError {
             descr: descr,
             detail: detail,
             share_index: share_index,
-            share_groups: share_groups
+            share_groups: share_groups,
         }
     }
 
@@ -63,40 +68,53 @@ impl RustyError {
             RustyErrorTypes::EmptyShares => "No shares were provided.",
             RustyErrorTypes::IncompatibleSets(_) => "The shares are incompatible with each other.",
             RustyErrorTypes::InvalidSignature(_, _) => "The signature of this share is not valid.",
-            RustyErrorTypes::MissingShares(_, _) => "The number of shares provided is insufficient to recover the secret.",
-            RustyErrorTypes::MissingSignature(_) => "Signature is missing while shares are required to be signed.",
-            RustyErrorTypes::SecretDeserializationIssue => "An issue was encountered deserializing the secret.
-            Updating to the latest version of RustySecrets might help fix this.",
+            RustyErrorTypes::MissingShares(_, _) => {
+                "The number of shares provided is insufficient to recover the secret."
+            }
+            RustyErrorTypes::MissingSignature(_) => {
+                "Signature is missing while shares are required to be signed."
+            }
+            RustyErrorTypes::SecretDeserializationIssue => {
+                "An issue was encountered deserializing the secret. \
+                 Updating to the latest version of RustySecrets might help fix this."
+            }
             RustyErrorTypes::ShareParsingError(_, _) => "This share is incorrectly formatted.",
-            RustyErrorTypes::DuplicateShareNum(_) => "This share number has already been used by a previous share.",
-            RustyErrorTypes::DuplicateShareData(_) => "The data encoded in this share is the same as the one found in a previous share."
+            RustyErrorTypes::DuplicateShareNum(_) => {
+                "This share number has already been used by a previous share."
+            }
+            RustyErrorTypes::DuplicateShareData(_) => {
+                "The data encoded in this share is the same as the one found in a previous share."
+            }
         }
     }
 
     fn detail_for_type(error_type: &RustyErrorTypes) -> Option<String> {
         match *error_type {
-            RustyErrorTypes::MissingShares(required, found) => Some(format!("{} shares are required to recover the secret,
-                                                                   found only {}.", required, found)),
+            RustyErrorTypes::MissingShares(required, found) => Some(format!(
+                "{} shares are required to recover the secret, found only {}.",
+                required,
+                found
+            )),
             RustyErrorTypes::ShareParsingError(_, ref description) => Some(description.clone()),
-            _ => None
+            _ => None,
         }
     }
 
-    fn share_groups_for_type(error_type: RustyErrorTypes) -> Option<Vec<Vec<u8>>>{
+    fn share_groups_for_type(error_type: RustyErrorTypes) -> Option<Vec<Vec<u8>>> {
         match error_type {
             RustyErrorTypes::IncompatibleSets(groups) => Some(groups),
-            _ => None
+            _ => None,
         }
     }
 
     fn share_num_for_type(error_type: &RustyErrorTypes) -> Option<u8> {
         match *error_type {
-            RustyErrorTypes::InvalidSignature(share_num, _)
-            | RustyErrorTypes::MissingSignature(share_num)
-            | RustyErrorTypes::ShareParsingError(share_num, _)
-            | RustyErrorTypes::DuplicateShareNum(share_num)
-            | RustyErrorTypes::DuplicateShareData(share_num) => Some(share_num),
-            _ => None
+            RustyErrorTypes::InvalidSignature(share_num, _) |
+            RustyErrorTypes::MissingSignature(share_num) |
+            RustyErrorTypes::ShareParsingError(share_num, _) |
+            RustyErrorTypes::DuplicateShareNum(share_num) |
+            RustyErrorTypes::DuplicateShareData(share_num) => Some(share_num),
+            _ => None,
         }
     }
 }
@@ -135,8 +153,12 @@ impl From<RustyError> for io::Error {
 
 /// Returns an `io::Error` from description string and optional detail string.
 /// Particularly useful in `Result` expressions.
-pub fn other_io_err(descr: &'static str, detail: Option<String>,
-                    share_num: Option<u8>, share_groups: Option<Vec<Vec<u8>>>) -> io::Error {
+pub fn other_io_err(
+    descr: &'static str,
+    detail: Option<String>,
+    share_num: Option<u8>,
+    share_groups: Option<Vec<Vec<u8>>>,
+) -> io::Error {
     convert::From::from(RustyError::new(descr, detail, share_num, share_groups))
 }
 

@@ -23,7 +23,13 @@ use std::io;
 /// 	Err(_) => {}// Deal with error}
 /// }
 /// ```
-pub fn generate_shares(k: u8, n: u8, secret: &[u8], mime_type: Option<String>, sign_shares: bool) -> io::Result<Vec<String>> {
+pub fn generate_shares(
+    k: u8,
+    n: u8,
+    secret: &[u8],
+    mime_type: Option<String>,
+    sign_shares: bool,
+) -> io::Result<Vec<String>> {
     let mut rusty_secret = RustySecret::new();
     rusty_secret.set_version(RustySecretsVersions::INITIAL_RELEASE);
     rusty_secret.set_secret(secret.to_owned());
@@ -32,7 +38,12 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8], mime_type: Option<String>, s
         rusty_secret.set_mime_type(mt);
     }
 
-    sss::generate_shares(k, n, rusty_secret.write_to_bytes().unwrap().as_slice(), sign_shares)
+    sss::generate_shares(
+        k,
+        n,
+        rusty_secret.write_to_bytes().unwrap().as_slice(),
+        sign_shares,
+    )
 }
 
 /// Recovers the secret from a k-out-of-n Shamir's secret sharing.
@@ -56,9 +67,13 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8], mime_type: Option<String>, s
 /// 	}
 /// }
 /// ```
-pub fn recover_secret(shares: Vec<String>, verify_signatures: bool) -> Result<RustySecret, RustyError> {
+pub fn recover_secret(
+    shares: Vec<String>,
+    verify_signatures: bool,
+) -> Result<RustySecret, RustyError> {
     let secret = try!(sss::recover_secret(shares, verify_signatures));
 
-    protobuf::parse_from_bytes::<RustySecret>(secret.as_slice())
-    .map_err(|_| RustyError::with_type(RustyErrorTypes::SecretDeserializationIssue))
+    protobuf::parse_from_bytes::<RustySecret>(secret.as_slice()).map_err(|_| {
+        RustyError::with_type(RustyErrorTypes::SecretDeserializationIssue)
+    })
 }

@@ -19,7 +19,13 @@ fn test_reasonable_splits() {
     for is_signing in &[true, false] {
         for k in 1..max_shares {
             for n in k..max_shares {
-                let shares = wrapped_secrets::generate_shares(k, n, &secret, Some(mime_type.clone()), *is_signing).unwrap();
+                let shares = wrapped_secrets::generate_shares(
+                    k,
+                    n,
+                    &secret,
+                    Some(mime_type.clone()),
+                    *is_signing,
+                ).unwrap();
                 println!("Testing {} out-of- {}", k, n);
 
                 let s = wrapped_secrets::recover_secret(shares, *is_signing).unwrap();

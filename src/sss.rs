@@ -33,13 +33,19 @@ fn new_vec<T: Clone>(n: usize, x: T) -> Vec<T> {
 /// ```
 pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> io::Result<Vec<String>> {
     if k > n {
-        return Err(other_io_err("Threshold K can not be larger than N", None, None, None));
+        return Err(other_io_err(
+            "Threshold K can not be larger than N",
+            None,
+            None,
+            None,
+        ));
     }
 
     let shares = try!(secret_share(secret, k, n));
 
     let signatures = if sign_shares {
-        let shares_to_sign = shares.iter()
+        let shares_to_sign = shares
+            .iter()
             .enumerate()
             .map(|(i, x)| format_share_for_signing(k, (i + 1) as u8, x))
             .collect::<Vec<_>>();
@@ -58,9 +64,12 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> io::Re
     let mut result = Vec::with_capacity(n as usize);
 
     for ((index, share), signature_pair) in
-        shares.into_iter()
-            .enumerate()
-            .zip(signatures.unwrap_or_else(|| vec![None; n as usize]).into_iter()) {
+        shares.into_iter().enumerate().zip(
+            signatures
+                .unwrap_or_else(|| vec![None; n as usize])
+                .into_iter(),
+        )
+    {
         let share_string = share_string_from(share, k, (index + 1) as u8, signature_pair);
         result.push(share_string);
     }
