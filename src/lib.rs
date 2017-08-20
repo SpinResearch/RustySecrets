@@ -8,6 +8,12 @@
     unused_import_braces, unused_qualifications
 )]
 
+// `error_chain!` can recurse deeply
+#![recursion_limit = "1024"]
+
+#[macro_use]
+extern crate error_chain;
+
 extern crate protobuf;
 extern crate rustc_serialize as serialize;
 extern crate rand;
@@ -32,6 +38,8 @@ pub use custom_error::RustyError;
 
 pub mod sss;
 pub mod wrapped_secrets;
+
+pub mod dss;
 
 #[cfg(test)]
 mod tests;

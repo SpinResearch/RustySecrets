@@ -10,7 +10,7 @@ fn get_tables() -> &'static Tables {
 }
 
 /// Type for elements of a finite field with 256 elements
-#[derive(Copy,Clone,PartialEq,Eq)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub struct Gf256 {
     pub poly: u8,
 }
@@ -34,6 +34,10 @@ impl Gf256 {
     pub fn to_byte(&self) -> u8 {
         self.poly
     }
+    pub fn exp(power: u8) -> Gf256 {
+        let tabs = get_tables();
+        Gf256::from_byte(tabs.exp[power as usize])
+    }
     pub fn log(&self) -> Option<u8> {
         if self.poly == 0 {
             None
@@ -42,9 +46,23 @@ impl Gf256 {
             Some(tabs.log[self.poly as usize])
         }
     }
-    pub fn exp(power: u8) -> Gf256 {
-        let tabs = get_tables();
-        Gf256 { poly: tabs.exp[power as usize] }
+    pub fn pow(&self, mut exp: u8) -> Gf256 {
+        let mut base = *self;
+        let mut acc = Self::one();
+
+        while exp > 1 {
+            if (exp & 1) == 1 {
+                acc = acc * base;
+            }
+            exp /= 2;
+            base = base * base;
+        }
+
+        if exp == 1 {
+            acc = acc * base;
+        }
+
+        acc
     }
 }
 
