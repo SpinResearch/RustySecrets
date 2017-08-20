@@ -126,3 +126,20 @@ fn rand(k: usize, m: usize) -> Result<Vec<u8>> {
 
     Ok(rl)
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn it_works() {
+        let secret = "Hello, World!".to_string().into_bytes();
+
+        let shares = generate_shares(7, 10, &secret).unwrap();
+        let recovered = recover_secret(&shares).unwrap();
+
+        assert_eq!(secret, recovered);
+    }
+
+}
