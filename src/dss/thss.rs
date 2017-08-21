@@ -1,7 +1,7 @@
 
 //! Simple threshold secret sharing scheme
 
-use std::collections::HashSet;
+use std::collections::{HashSet, BTreeMap};
 
 use dss::errors::*;
 use dss::random::{get_random_bytes, random_len};
@@ -10,6 +10,20 @@ use gf256::Gf256;
 use interpolation::lagrange_interpolate;
 
 use ring::rand::{SecureRandom, SystemRandom};
+
+/// TODO
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct MetaData {
+    /// TODO
+    pub tags: BTreeMap<String, Vec<u8>>,
+}
+
+impl MetaData {
+    /// TODO
+    pub fn new(tags: BTreeMap<String, Vec<u8>>) -> Self {
+        MetaData { tags }
+    }
+}
 
 /// A share
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -22,6 +36,8 @@ pub struct Share {
     pub n: u8,
     /// The share data itself
     pub data: Vec<u8>,
+    /// Metadata associated with this share
+    pub metadata: Option<MetaData>,
 }
 
 /// A simple threshold sharing scheme
@@ -47,7 +63,13 @@ impl<R: SecureRandom> SharingScheme<R> {
     /// Split a secret following a given sharing `scheme`,
     /// with `k` being the number of shares necessary to recover the secret,
     /// and `n` the total number of shares to be dealt.
-    pub fn split_secret(&self, k: u8, n: u8, secret: &[u8]) -> Result<Vec<Share>> {
+    pub fn split_secret(
+        &self,
+        k: u8,
+        n: u8,
+        secret: &[u8],
+        metadata: &Option<MetaData>,
+    ) -> Result<Vec<Share>> {
         if k < 1 || n < 1 {
             bail!(ErrorKind::InvalidSplitParametersZero(k, n));
         }
@@ -75,7 +97,13 @@ impl<R: SecureRandom> SharingScheme<R> {
                     })
                     .collect();
 
-                Share { id, k, n, data }
+                Share {
+                    id,
+                    k,
+                    n,
+                    data,
+                    metadata: metadata.clone(),
+                }
             })
             .collect();
 
@@ -83,7 +111,7 @@ impl<R: SecureRandom> SharingScheme<R> {
     }
 
     /// Recover the secret from the given set of shares
-    pub fn recover_secret(&self, shares: &[Share]) -> Result<Vec<u8>> {
+    pub fn recover_secret(&self, shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
         self.check_shares(shares)?;
 
         let m = shares[0].data.len();
@@ -99,7 +127,9 @@ impl<R: SecureRandom> SharingScheme<R> {
             })
             .collect();
 
-        Ok(secret)
+        let metadata = shares[0].metadata.clone();
+
+        Ok((secret, metadata))
     }
 
     // TODO: Deduplicate this function
@@ -159,10 +189,11 @@ mod tests {
         let secret = "Hello, World!".to_string().into_bytes();
 
         let scheme = SharingScheme::default();
-        let shares = scheme.split_secret(7, 10, &secret).unwrap();
-        let recovered = scheme.recover_secret(&shares).unwrap();
+        let shares = scheme.split_secret(7, 10, &secret, &None).unwrap();
+        let (recovered, metadata) = scheme.recover_secret(&shares).unwrap();
 
         assert_eq!(secret, recovered);
+        assert_eq!(None, metadata);
     }
 
 }

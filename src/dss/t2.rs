@@ -5,6 +5,7 @@ use std::collections::HashSet;
 
 use dss::errors::*;
 use dss::thss;
+use dss::thss::MetaData;
 use dss::random::{get_random_bytes, random_len, FixedRandom};
 
 use sha3::Shake256;
@@ -24,6 +25,8 @@ pub struct Share {
     pub data: Vec<u8>,
     /// The hash value common to the whole deal
     pub hash: Vec<u8>,
+    /// TODO
+    pub metadata: Option<MetaData>,
 }
 
 /// Deterministic threshold sharing scheme
@@ -58,7 +61,13 @@ impl<R: SecureRandom> SharingScheme<R> {
     /// Split a secret following a given sharing `scheme`,
     /// with `k` being the number of shares necessary to recover the secret,
     /// and `n` the total number of shares to be dealt.
-    pub fn split_secret(&self, k: u8, n: u8, secret: &[u8]) -> Result<Vec<Share>> {
+    pub fn split_secret(
+        &self,
+        k: u8,
+        n: u8,
+        secret: &[u8],
+        metadata: &Option<MetaData>,
+    ) -> Result<Vec<Share>> {
         if k < 1 || n < 1 {
             bail!(ErrorKind::InvalidSplitParametersZero(k, n));
         }
@@ -87,7 +96,7 @@ impl<R: SecureRandom> SharingScheme<R> {
         let underlying = thss::SharingScheme::new(FixedRandom::new(&seed));
 
         let message = [secret, &rand].concat();
-        let shares = underlying.split_secret(k, n, &message)?;
+        let shares = underlying.split_secret(k, n, &message, metadata)?;
 
         let res = shares
             .into_iter()
@@ -98,6 +107,7 @@ impl<R: SecureRandom> SharingScheme<R> {
                     n: share.n,
                     data: share.data,
                     hash: hash.clone(),
+                    metadata: share.metadata.clone(),
                 }
             })
             .collect();
@@ -106,7 +116,7 @@ impl<R: SecureRandom> SharingScheme<R> {
     }
 
     /// Recover the secret from the given set of shares
-    pub fn recover_secret(&self, shares: &[Share]) -> Result<Vec<u8>> {
+    pub fn recover_secret(&self, shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
         self.check_shares(shares)?;
 
         let underlying_shares = shares
@@ -117,17 +127,24 @@ impl<R: SecureRandom> SharingScheme<R> {
                     k: share.k,
                     n: share.n,
                     data: share.data.clone(),
+                    metadata: share.metadata.clone(),
                 }
             })
             .collect::<Vec<_>>();
 
         let underlying = thss::SharingScheme::default();
-        let mut secret = underlying.recover_secret(&underlying_shares)?;
+        let recovered = underlying.recover_secret(&underlying_shares)?;
+        let (mut secret, metadata) = recovered;
         let secret_len = secret.len() - self.r;
         let rand = secret.split_off(secret_len);
 
         let sub_scheme = SharingScheme::new(self.r, self.s, FixedRandom::new(&rand))?;
-        let test_shares = sub_scheme.split_secret(shares[0].k, shares[0].n, &secret)?;
+        let test_shares = sub_scheme.split_secret(
+            shares[0].k,
+            shares[0].n,
+            &secret,
+            &metadata,
+        )?;
 
         let ids = shares.iter().map(|share| share.id).collect::<HashSet<_>>();
 
@@ -146,7 +163,7 @@ impl<R: SecureRandom> SharingScheme<R> {
             }
         }
 
-        Ok(secret)
+        Ok((secret, metadata))
     }
 
     // TODO: Deduplicate this function
@@ -211,13 +228,14 @@ mod tests {
         let secret = "Hello, World!".to_string().into_bytes();
 
         let scheme = SharingScheme::default();
-        let shares = scheme.split_secret(7, 10, &secret).unwrap();
+        let shares = scheme.split_secret(7, 10, &secret, &None).unwrap();
 
         assert_eq!(shares.len(), 10);
 
-        let recovered = scheme.recover_secret(&shares[2..9]).unwrap();
+        let (recovered, metadata) = scheme.recover_secret(&shares[2..9]).unwrap();
 
         assert_eq!(secret, recovered);
+        assert_eq!(None, metadata);
     }
 
 }
