@@ -5,9 +5,7 @@ use std::collections::{HashSet, BTreeMap};
 
 use dss::errors::*;
 use dss::random::{get_random_bytes, random_len};
-
-use gf256::Gf256;
-use interpolation::lagrange_interpolate;
+use interpolation::{lagrange_interpolate, evaluate};
 
 use ring::rand::{SecureRandom, SystemRandom};
 
@@ -83,22 +81,20 @@ impl<R: SecureRandom> SharingScheme<R> {
         let rands = get_random_bytes(&self.random, random_len(k as usize, m))?;
 
         let shares = (0..n)
-            .map(|id| {
+            .map(|j| {
                 let data = (0..m)
                     .map(|i| {
-                        // FIXME: Extract into its own function
-                        let mut f = Gf256::from_byte(secret[i]);
+                        /// TODO: Document and extract
+                        let mut poly = Vec::new();
                         for l in 0..(k - 1) as usize {
-                            let r = Gf256::from_byte(rands[i * (k as usize - 1) + l]);
-                            let s = Gf256::from_byte(id).pow(l as u8 + 1);
-                            f = f + r * s;
+                            poly.push(rands[i * (k as usize - 1) + l]);
                         }
-                        f.to_byte()
+                        evaluate(secret[i], k, j, &poly)
                     })
                     .collect();
 
                 Share {
-                    id,
+                    id: j,
                     k,
                     n,
                     data,

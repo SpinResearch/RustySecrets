@@ -17,6 +17,19 @@ pub fn encode<W: Write>(src: &[u8], n: u8, w: &mut W) -> io::Result<()> {
     Ok(())
 }
 
+/// TODO: Figure out how to call this and whether it's actually different
+/// from `encode`
+/// Evaluate a polynomial at j
+pub fn evaluate(m: u8, k: u8, j: u8, poly: &[u8]) -> u8 {
+    let mut acc = Gf256::from_byte(m);
+    for l in 0..(k - 1) as usize {
+        let r = Gf256::from_byte(poly[l]);
+        let s = Gf256::from_byte(j).pow(l as u8 + 1);
+        acc = acc + r * s;
+    }
+    acc.to_byte()
+}
+
 /// evaluates an interpolated polynomial at `Gf256::zero()` where
 /// the polynomial is determined using Lagrangian interpolation
 /// based on the given x/y coordinates `src`.
