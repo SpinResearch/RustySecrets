@@ -63,6 +63,11 @@ error_chain! {
             description("the data encoded in this share is the same as the one found in a previous share")
             display("the data encoded in share #{} is the same as the one found in a previous share", share_id)
         }
+
+        CorruptedShare(share_id: u8) {
+            description("A share is corrupted")
+            display("Share #{} is corrupted.", share_id)
+        }
     }
 
     foreign_links {

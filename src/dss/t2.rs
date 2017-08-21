@@ -12,7 +12,6 @@ use digest::{Input, XofReader, ExtendableOutput};
 use ring::rand::{SystemRandom, SecureRandom};
 
 /// A share
-/// TODO: Deduplicate Share struct
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Share {
     /// The identifier of the share (varies between 1 and n where n is the total number of generated shares)
@@ -23,6 +22,8 @@ pub struct Share {
     pub n: u8,
     /// The share data itself
     pub data: Vec<u8>,
+    /// The hash value common to the whole deal
+    pub hash: Vec<u8>,
 }
 
 /// Deterministic threshold sharing scheme
@@ -76,11 +77,11 @@ impl<R: SecureRandom> SharingScheme<R> {
 
         let seed_len = random_len(k as usize, secret.len() + self.r);
 
-        let mut h = vec![0; self.s];
+        let mut hash = vec![0; self.s];
         let mut seed = vec![0; seed_len];
 
         let mut reader = shake.xof_result();
-        reader.read(&mut h);
+        reader.read(&mut hash);
         reader.read(&mut seed);
 
         let underlying = thss::SharingScheme::new(FixedRandom::new(&seed));
@@ -95,7 +96,8 @@ impl<R: SecureRandom> SharingScheme<R> {
                     id: share.id,
                     k: share.k,
                     n: share.n,
-                    data: [share.data, h.clone()].concat(),
+                    data: share.data,
+                    hash: hash.clone(),
                 }
             })
             .collect();
@@ -110,12 +112,11 @@ impl<R: SecureRandom> SharingScheme<R> {
         let underlying_shares = shares
             .into_iter()
             .map(|share| {
-                let len = share.data.len() - self.s;
                 thss::Share {
                     id: share.id,
                     k: share.k,
                     n: share.n,
-                    data: share.data[0..len].to_vec(),
+                    data: share.data.clone(),
                 }
             })
             .collect::<Vec<_>>();
@@ -128,13 +129,10 @@ impl<R: SecureRandom> SharingScheme<R> {
         let sub_scheme = SharingScheme::new(self.r, self.s, FixedRandom::new(&rand))?;
         let test_shares = sub_scheme.split_secret(shares[0].k, shares[0].n, &secret)?;
 
-        let ids = shares
-            // .sort_by_key(|share| share.id)
-            .iter()
-            .map(|share| share.id)
-            .collect::<HashSet<_>>();
+        let ids = shares.iter().map(|share| share.id).collect::<HashSet<_>>();
 
         // TODO: Sort shares by id before zipping
+        // .sort_by_key(|share| share.id)
         let matching_shares = shares.iter().zip(test_shares.iter().filter(|share| {
             ids.contains(&share.id)
         }));
@@ -160,6 +158,7 @@ impl<R: SecureRandom> SharingScheme<R> {
         let k = shares[0].k;
         let n = shares[0].n;
         let m = shares[0].data.len();
+        let h = &shares[0].hash;
 
         if k > n {
             bail!(ErrorKind::InvalidSplitParametersSmaller(k, n));
@@ -188,6 +187,10 @@ impl<R: SecureRandom> SharingScheme<R> {
             }
 
             data_seen.insert(&share.data);
+
+            if &share.hash != h {
+                bail!(ErrorKind::CorruptedShare(share.id));
+            }
         }
 
         if shares.len() < k as usize {
