@@ -1,0 +1,33 @@
+
+[package]
+name = "rusty_secrets-fuzz"
+version = "0.0.1"
+authors = ["Automatically generated"]
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+arbitrary = "0.1.0"
+
+[dependencies.rusty_secrets]
+path = ".."
+[dependencies.libfuzzer-sys]
+git = "https://github.com/rust-fuzz/libfuzzer-sys.git"
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[[bin]]
+name = "t2_1"
+path = "fuzz_targets/t2_1.rs"
+
+[[bin]]
+name = "thss_1"
+path = "fuzz_targets/thss_1.rs"
+
+[[bin]]
+name = "sss_1"
+path = "fuzz_targets/sss_1.rs"

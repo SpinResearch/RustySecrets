@@ -1,0 +1,26 @@
+#![no_main]
+#[macro_use]
+extern crate libfuzzer_sys;
+extern crate rusty_secrets;
+extern crate arbitrary;
+
+use rusty_secrets::dss::thss::*;
+use arbitrary::{RingBuffer, Unstructured};
+
+fuzz_target!(|data: &[u8]| {
+    // ...
+    if let Ok(mut buffer) = RingBuffer::new(data, data.len()) {
+        let mut kn = vec![0; 2];
+        buffer.fill_buffer(&mut kn).unwrap();
+
+        let k = kn[0];
+        let n = kn[1];
+
+        let scheme = SharingScheme::default();
+
+        scheme
+            .split_secret(k, n, &data)
+            .and_then(|ss| scheme.recover_secret(&ss))
+            .unwrap_or(Vec::new());
+    }
+});
