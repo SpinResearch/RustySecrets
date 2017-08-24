@@ -32,27 +32,25 @@ pub struct Share {
 
 /// An implementation of the T2 transform over a threshold secret sharing scheme,
 /// as described in the 'New Directions in Secret Sharing' paper.
-/// TODO: Figure out a way to get rid of the type parameter (with impl trait maybe?)
 #[allow(missing_debug_implementations)]
-#[derive(Debug, Clone, Copy)]
-pub struct SharingScheme<R: SecureRandom> {
+pub struct SharingScheme {
     /// How many random bytes to read from the underlying entropy source
     pub r: usize,
     ///
     pub s: usize,
     /// The entropy source to use to generate random bytes
-    random: R,
+    random: Box<SecureRandom>,
 }
 
-impl Default for SharingScheme<SystemRandom> {
+impl Default for SharingScheme {
     fn default() -> Self {
-        SharingScheme::new(256, 256, SystemRandom::new()).unwrap()
+        SharingScheme::new(256, 256, Box::new(SystemRandom::new())).unwrap()
     }
 }
 
-impl<R: SecureRandom> SharingScheme<R> {
+impl SharingScheme {
     /// Constructs a new sharing scheme
-    pub fn new(r: usize, s: usize, random: R) -> Result<Self> {
+    pub fn new(r: usize, s: usize, random: Box<SecureRandom>) -> Result<Self> {
         if r < 128 || s < 128 {
             bail!(ErrorKind::InvalidT2Parameters(r, s));
         }
@@ -78,7 +76,7 @@ impl<R: SecureRandom> SharingScheme<R> {
             bail!(ErrorKind::InvalidThreshold(k, n));
         }
 
-        let rand = get_random_bytes(&self.random, self.r)?;
+        let rand = get_random_bytes(self.random.as_ref(), self.r)?;
 
         let mut shake = Shake256::default();
         shake.process(&[0]);
@@ -95,7 +93,8 @@ impl<R: SecureRandom> SharingScheme<R> {
         reader.read(&mut hash);
         reader.read(&mut seed);
 
-        let underlying = thss::SharingScheme::new(FixedRandom::new(&seed));
+        let underlying_random = FixedRandom::new(seed);
+        let underlying = thss::SharingScheme::new(Box::new(underlying_random));
 
         let message = [secret, &rand].concat();
         let shares = underlying.split_secret(k, n, &message, metadata)?;
@@ -140,7 +139,8 @@ impl<R: SecureRandom> SharingScheme<R> {
         let secret_len = secret.len() - self.r;
         let rand = secret.split_off(secret_len);
 
-        let sub_scheme = SharingScheme::new(self.r, self.s, FixedRandom::new(&rand))?;
+        let sub_random = FixedRandom::new(rand.to_vec());
+        let sub_scheme = SharingScheme::new(self.r, self.s, Box::new(sub_random))?;
         let mut test_shares = sub_scheme.split_secret(
             shares[0].k,
             shares[0].n,

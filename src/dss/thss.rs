@@ -40,22 +40,21 @@ pub struct Share {
 }
 
 /// A simple threshold sharing scheme
-/// TODO: Figure out a way to get rid of the type parameter (with impl trait maybe?)
 #[allow(missing_debug_implementations)]
-pub struct SharingScheme<R: SecureRandom> {
+pub struct SharingScheme {
     /// The randomness source
-    pub random: R,
+    pub random: Box<SecureRandom>,
 }
 
-impl Default for SharingScheme<SystemRandom> {
+impl Default for SharingScheme {
     fn default() -> Self {
-        SharingScheme::new(SystemRandom::new())
+        SharingScheme::new(Box::new(SystemRandom::new()))
     }
 }
 
-impl<R: SecureRandom> SharingScheme<R> {
+impl SharingScheme {
     /// Constructs a new sharing scheme
-    pub fn new(random: R) -> Self {
+    pub fn new(random: Box<SecureRandom>) -> Self {
         SharingScheme { random }
     }
 
@@ -78,7 +77,7 @@ impl<R: SecureRandom> SharingScheme<R> {
         }
 
         let rands_len = random_len(k as usize, secret.len());
-        let rands = get_random_bytes(&self.random, rands_len)?;
+        let rands = get_random_bytes(self.random.as_ref(), rands_len)?;
 
         let shares = (0..n)
             .map(|id| {

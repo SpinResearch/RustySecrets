@@ -13,7 +13,7 @@ pub(crate) fn random_len(k: usize, m: usize) -> usize {
     (k - 1) * m
 }
 
-pub(crate) fn get_random_bytes<R: SecureRandom>(random: &R, len: usize) -> Result<Vec<u8>> {
+pub(crate) fn get_random_bytes(random: &SecureRandom, len: usize) -> Result<Vec<u8>> {
     let mut rl = vec![0; len];
 
     random.fill(&mut rl).chain_err(|| {
@@ -23,21 +23,20 @@ pub(crate) fn get_random_bytes<R: SecureRandom>(random: &R, len: usize) -> Resul
     Ok(rl)
 }
 
-pub(crate) struct FixedRandom<'a> {
-    src: &'a [u8],
+pub(crate) struct FixedRandom {
+    src: Vec<u8>,
 }
 
-impl<'a> FixedRandom<'a> {
-    pub(crate) fn new(src: &'a [u8]) -> Self {
+impl FixedRandom {
+    pub(crate) fn new(src: Vec<u8>) -> Self {
         if src.is_empty() {
             panic!("The source slice of FixedRandom cannot be empty!");
         }
-
         FixedRandom { src }
     }
 }
 
-impl<'a> SecureRandom for FixedRandom<'a> {
+impl SecureRandom for FixedRandom {
     fn fill(&self, dst: &mut [u8]) -> std::result::Result<(), Unspecified> {
         if dst.len() > self.src.len() {
             return Err(Unspecified);
