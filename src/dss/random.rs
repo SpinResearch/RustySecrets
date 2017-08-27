@@ -28,8 +28,11 @@ pub(crate) struct FixedRandom<'a> {
 }
 
 impl<'a> FixedRandom<'a> {
-    /// TODO
     pub(crate) fn new(src: &'a [u8]) -> Self {
+        if src.is_empty() {
+            panic!("The source slice of FixedRandom cannot be empty!");
+        }
+
         FixedRandom { src }
     }
 }
