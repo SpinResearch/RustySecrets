@@ -84,7 +84,7 @@ impl<R: SecureRandom> SharingScheme<R> {
             .map(|j| {
                 let data = (0..m)
                     .map(|i| {
-                        /// TODO: Document and extract
+                        // TODO: Document and extract
                         let mut poly = Vec::new();
                         for l in 0..(k - 1) as usize {
                             poly.push(rands[i * (k as usize - 1) + l]);
