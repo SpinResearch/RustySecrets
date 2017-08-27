@@ -181,7 +181,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
+    fn split_then_recover_yields_original_secret() {
         let secret = "Hello, World!".to_string().into_bytes();
 
         let scheme = SharingScheme::default();
