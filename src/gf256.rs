@@ -1,7 +1,7 @@
 //! This module provides the Gf256 type which is used to represent
 //! elements of a finite field with 256 elements.
 
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, Div, Mul, Sub, Neg};
 
 include!(concat!(env!("OUT_DIR"), "/nothinghardcoded.rs"));
 
@@ -10,7 +10,7 @@ fn get_tables() -> &'static Tables {
 }
 
 /// Type for elements of a finite field with 256 elements
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Debug, Clone, PartialEq, Eq)]
 pub struct Gf256 {
     pub poly: u8,
 }
@@ -105,4 +105,124 @@ impl Div<Gf256> for Gf256 {
             Gf256 { poly: 0 }
         }
     }
+}
+
+impl Neg for Gf256 {
+    type Output = Gf256;
+    fn neg(self) -> Gf256 {
+        Gf256::zero() - self
+    }
+}
+
+#[cfg(test)]
+#[allow(trivial_casts)]
+mod tests {
+
+    use super::*;
+    use quickcheck::*;
+
+    mod vectors {
+        use super::*;
+        use std::fs::File;
+        use std::io::{BufRead, BufReader};
+        use itertools::Itertools;
+        use flate2::read::GzDecoder;
+
+        macro_rules! mk_test {
+            ($id:ident, $op:expr, $val:expr) => {
+                mk_test!($id, $op, $val, 0);
+            };
+            ($id:ident, $op:expr, $val:expr, $y:expr) => {
+                #[test]
+                fn $id() {
+                    let results = (0..256).cartesian_product($y..256).map(|(i, j)| {
+                        let (i, j) = (Gf256::from_byte(i as u8), Gf256::from_byte(j as u8));
+                        (i.to_byte(), j.to_byte(), $val(i, j).to_byte())
+                    });
+
+                    let ref_path = format!("tests/fixtures/gf256/gf256_{}.txt.gz", stringify!($id));
+                    let reference = BufReader::new(GzDecoder::new(File::open(ref_path).unwrap()).unwrap());
+
+                    for ((i, j, k), line) in results.zip(reference.lines()) {
+                        let left = format!("{} {} {} = {}", i, $op, j, k);
+                        let right = line.unwrap();
+                        assert_eq!(left, right);
+                    }
+                }
+            }
+        }
+
+        mk_test!(add, "+", |i: Gf256, j: Gf256| i + j);
+        mk_test!(sub, "-", |i: Gf256, j: Gf256| i - j);
+        mk_test!(mul, "*", |i: Gf256, j: Gf256| i * j);
+        mk_test!(div, "/", |i: Gf256, j: Gf256| i.div(j), 1);
+        mk_test!(pow, "^", |i: Gf256, j: Gf256| i.pow(j.to_byte()));
+    }
+
+    impl Arbitrary for Gf256 {
+        fn arbitrary<G: Gen>(gen: &mut G) -> Gf256 {
+            Gf256::from_byte(u8::arbitrary(gen))
+        }
+    }
+
+    mod addition {
+        use super::*;
+
+        quickcheck! {
+            fn law_associativity(a: Gf256, b: Gf256, c: Gf256) -> bool {
+                (a + b) + c == a + (b + c)
+            }
+
+            fn law_commutativity(a: Gf256, b: Gf256) -> bool {
+                a + b == b + a
+            }
+
+            fn law_distributivity(a: Gf256, b: Gf256, c: Gf256) -> bool {
+                a * (b + c) == a * b + a * c
+            }
+
+            fn law_identity(a: Gf256) -> bool {
+                a + Gf256::zero() == a && Gf256::zero() + a == a
+            }
+
+            fn law_inverses(a: Gf256) -> bool {
+                a + (-a) == Gf256::zero() && (-a) + a == Gf256::zero()
+            }
+        }
+    }
+
+    mod multiplication {
+        use super::*;
+
+        quickcheck! {
+            fn law_associativity(a: Gf256, b: Gf256, c: Gf256) -> bool {
+                (a * b) * c == a * (b * c)
+            }
+
+            fn law_commutativity(a: Gf256, b: Gf256) -> bool {
+                a * b == b * a
+            }
+
+            fn law_distributivity(a: Gf256, b: Gf256, c: Gf256) -> bool {
+                (a + b) * c == a * c + b * c
+            }
+
+            fn law_identity(a: Gf256) -> bool {
+                a * Gf256::one() == a && Gf256::one() * a == a
+            }
+
+            fn law_inverses(a: Gf256) -> TestResult {
+                if a == Gf256::zero() {
+                    return TestResult::discard();
+                }
+
+                let left = a * (Gf256::one() / a) == Gf256::one();
+                let right = (Gf256::one() / a) * a == Gf256::one();
+
+                TestResult::from_bool(left && right)
+            }
+        }
+
+    }
+
 }

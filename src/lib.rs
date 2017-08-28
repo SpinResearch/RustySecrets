@@ -45,3 +45,13 @@ pub mod dss;
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+extern crate itertools;
+
+#[cfg(test)]
+extern crate flate2;
+
+#[cfg(test)]
+#[macro_use]
+extern crate quickcheck;

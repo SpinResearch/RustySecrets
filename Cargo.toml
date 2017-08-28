@@ -14,10 +14,14 @@ rand = "^0.3.14"
 ring = "^0.11.0"
 merkle_sigs = "^1.2.1"
 protobuf = "^1.2.0"
-
 sha3 = "^0.6"
 digest = "^0.6"
 
 [dependencies.error-chain]
 version = "0.11.0-rc.2"
 default-features = false
+
+[dev-dependencies]
+itertools = "0.6.2"
+quickcheck = "0.4.1"
+flate2 = "0.2"
