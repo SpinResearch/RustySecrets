@@ -24,11 +24,9 @@ pub fn process_and_validate_shares(
 
     for (counter, line) in shares_strings.iter().enumerate() {
         let share_index = counter as u8;
-        let (share_data, k, n, sig_pair) = try!(share_format::share_from_string(
-            line,
-            counter as u8,
-            verify_signatures,
-        ));
+        let (share_data, k, n, sig_pair) =
+            share_format::share_from_string(line, counter as u8, verify_signatures)?;
+
         if verify_signatures {
             if sig_pair.is_none() {
                 bail!(ErrorKind::MissingSignature(share_index));

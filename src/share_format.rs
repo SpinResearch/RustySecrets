@@ -54,8 +54,8 @@ pub fn share_from_string(s: &str, index: u8, is_signed: bool) -> ParsedShare {
     }
     let (k, n, p3) = {
         let mut iter = parts.into_iter();
-        let k = try!(iter.next().unwrap().parse::<u8>());
-        let n = try!(iter.next().unwrap().parse::<u8>());
+        let k = iter.next().unwrap().parse::<u8>()?;
+        let n = iter.next().unwrap().parse::<u8>()?;
         let p3 = iter.next().unwrap();
         (k, n, p3)
     };

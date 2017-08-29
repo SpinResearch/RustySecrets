@@ -67,7 +67,7 @@ pub fn generate_shares(
 /// }
 /// ```
 pub fn recover_secret(shares: Vec<String>, verify_signatures: bool) -> Result<RustySecret> {
-    let secret = try!(sss::recover_secret(shares, verify_signatures));
+    let secret = sss::recover_secret(shares, verify_signatures)?;
 
     protobuf::parse_from_bytes::<RustySecret>(secret.as_slice())
         .chain_err(|| ErrorKind::SecretDeserializationError)

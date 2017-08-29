@@ -35,7 +35,7 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result
         bail!(ErrorKind::InvalidThreshold(k, n));
     }
 
-    let shares = try!(secret_share(secret, k, n));
+    let shares = secret_share(secret, k, n)?;
 
     let signatures = if sign_shares {
         let shares_to_sign = shares
@@ -78,12 +78,12 @@ fn secret_share(src: &[u8], k: u8, n: u8) -> Result<Vec<Vec<u8>>> {
     }
     let mut col_in = new_vec(k as usize, 0u8);
     let mut col_out = Vec::with_capacity(n as usize);
-    let mut osrng = try!(OsRng::new());
+    let mut osrng = OsRng::new()?;
     for (c, &s) in src.iter().enumerate() {
         col_in[0] = s;
         osrng.fill_bytes(&mut col_in[1..]);
         col_out.clear();
-        try!(encode(&*col_in, n, &mut col_out));
+        encode(&*col_in, n, &mut col_out)?;
         for (&y, share) in col_out.iter().zip(result.iter_mut()) {
             share[c] = y;
         }
@@ -114,7 +114,7 @@ fn secret_share(src: &[u8], k: u8, n: u8) -> Result<Vec<Vec<u8>>> {
 /// }
 /// ```
 pub fn recover_secret(shares: Vec<String>, verify_signatures: bool) -> Result<Vec<u8>> {
-    let (k, shares) = try!(process_and_validate_shares(shares, verify_signatures));
+    let (k, shares) = process_and_validate_shares(shares, verify_signatures)?;
 
     let slen = shares[0].1.len();
     let mut col_in = Vec::with_capacity(k as usize);
