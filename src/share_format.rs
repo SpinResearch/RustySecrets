@@ -1,5 +1,4 @@
-use custom_error::{RustyError, RustyErrorTypes};
-use custom_error::pie2error;
+use errors::*;
 use digest;
 use merkle_sigs::{MerklePublicKey, Proof, PublicKey};
 use protobuf;
@@ -9,10 +8,7 @@ use serialize::base64::{self, FromBase64, ToBase64};
 use share_data::ShareData;
 use std::error::Error;
 
-type ParsedShare = Result<
-    (Vec<u8>, u8, u8, Option<(Vec<Vec<u8>>, Proof<MerklePublicKey>)>),
-    RustyError,
->;
+type ParsedShare = Result<(Vec<u8>, u8, u8, Option<(Vec<Vec<u8>>, Proof<MerklePublicKey>)>)>;
 
 fn base64_config() -> serialize::base64::Config {
     base64::Config {
@@ -46,46 +42,46 @@ pub fn share_from_string(s: &str, index: u8, is_signed: bool) -> ParsedShare {
     let parts: Vec<_> = s.trim().split('-').collect();
 
     if parts.len() != 3 {
-        return Err(RustyError::with_type(RustyErrorTypes::ShareParsingError(
-            index,
-            format!(
-                "Expected 3 parts separated by a minus sign. Found {}.",
-                s
-            ),
-        )));
+        bail! {
+            ErrorKind::ShareParsingError(
+                index,
+                format!(
+                    "Expected 3 parts separated by a minus sign. Found {}.",
+                    s
+                ),
+            )
+        };
     }
     let (k, n, p3) = {
         let mut iter = parts.into_iter();
-        let k = try!(iter.next().unwrap().parse::<u8>().map_err(pie2error));
-        let n = try!(iter.next().unwrap().parse::<u8>().map_err(pie2error));
+        let k = try!(iter.next().unwrap().parse::<u8>());
+        let n = try!(iter.next().unwrap().parse::<u8>());
         let p3 = iter.next().unwrap();
         (k, n, p3)
     };
     if k < 1 || n < 1 {
-        return Err(RustyError::with_type(RustyErrorTypes::ShareParsingError(
-            index,
-            format!("Found illegal parameters K: {} N: {}.", k, n),
-        )));
+        bail! {
+            ErrorKind::ShareParsingError(
+                index,
+                format!("Found illegal parameters K: {} N: {}.", k, n),
+            )
+        }
     }
 
-    let raw_data = try!(p3.from_base64().map_err(|_| {
-        RustyError::with_type(RustyErrorTypes::ShareParsingError(
-            index,
-            "Base64 decoding of data block failed".to_owned(),
-        ))
-    }));
+    let raw_data = p3.from_base64().chain_err(|| {
+        ErrorKind::ShareParsingError(index, "Base64 decoding of data block failed".to_owned())
+    })?;
 
-    let protobuf_data = try!(
-        protobuf::parse_from_bytes::<ShareData>(raw_data.as_slice()).map_err(|e| {
-            RustyError::with_type(RustyErrorTypes::ShareParsingError(
+    let protobuf_data = protobuf::parse_from_bytes::<ShareData>(raw_data.as_slice())
+        .map_err(|e| {
+            ErrorKind::ShareParsingError(
                 index,
                 format!(
                     "Protobuf decoding of data block failed with error: {} .",
                     e.description()
                 ),
-            ))
-        })
-    );
+            )
+        })?;
 
     let share = Vec::from(protobuf_data.get_shamir_data());
 

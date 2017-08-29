@@ -1,13 +1,12 @@
 //! SSS provides Shamir's secret sharing with raw data.
 
-use custom_error::{RustyError, other_io_err};
+use errors::*;
 use digest;
 use interpolation::{encode, lagrange_interpolate};
 use merkle_sigs::sign_data_vec;
 use rand::{OsRng, Rng};
 use share_format::format_share_for_signing;
 use share_format::share_string_from;
-use std::io;
 use std::iter::repeat;
 use validation::process_and_validate_shares;
 
@@ -31,14 +30,9 @@ fn new_vec<T: Clone>(n: usize, x: T) -> Vec<T> {
 /// 	Err(_) => {}// Deal with error}
 /// }
 /// ```
-pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> io::Result<Vec<String>> {
+pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result<Vec<String>> {
     if k > n {
-        return Err(other_io_err(
-            "Threshold K can not be larger than N",
-            None,
-            None,
-            None,
-        ));
+        bail!(ErrorKind::InvalidThreshold(k, n));
     }
 
     let shares = try!(secret_share(secret, k, n));
@@ -77,7 +71,7 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> io::Re
     Ok(result)
 }
 
-fn secret_share(src: &[u8], k: u8, n: u8) -> Result<Vec<Vec<u8>>, RustyError> {
+fn secret_share(src: &[u8], k: u8, n: u8) -> Result<Vec<Vec<u8>>> {
     let mut result = Vec::with_capacity(n as usize);
     for _ in 0..(n as usize) {
         result.push(new_vec(src.len(), 0u8));
@@ -119,7 +113,7 @@ fn secret_share(src: &[u8], k: u8, n: u8) -> Result<Vec<Vec<u8>>, RustyError> {
 /// 	}
 /// }
 /// ```
-pub fn recover_secret(shares: Vec<String>, verify_signatures: bool) -> Result<Vec<u8>, RustyError> {
+pub fn recover_secret(shares: Vec<String>, verify_signatures: bool) -> Result<Vec<u8>> {
     let (k, shares) = try!(process_and_validate_shares(shares, verify_signatures));
 
     let slen = shares[0].1.len();

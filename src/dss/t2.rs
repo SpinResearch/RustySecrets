@@ -3,7 +3,7 @@
 
 use std::collections::HashSet;
 
-use dss::errors::*;
+use errors::*;
 use dss::thss;
 use dss::thss::MetaData;
 use dss::random::{get_random_bytes, random_len, FixedRandom};
@@ -73,7 +73,7 @@ impl<R: SecureRandom> SharingScheme<R> {
         }
 
         if k > n {
-            bail!(ErrorKind::InvalidSplitParametersSmaller(k, n));
+            bail!(ErrorKind::InvalidThreshold(k, n));
         }
 
         let rand = get_random_bytes(&self.random, self.r)?;
@@ -178,7 +178,7 @@ impl<R: SecureRandom> SharingScheme<R> {
         let h = &shares[0].hash;
 
         if k > n {
-            bail!(ErrorKind::InvalidSplitParametersSmaller(k, n));
+            bail!(ErrorKind::InvalidThreshold(k, n));
         }
 
         let mut id_seen: HashSet<u8> = HashSet::new();
@@ -186,7 +186,7 @@ impl<R: SecureRandom> SharingScheme<R> {
 
         for share in shares {
             if k != share.k || n != share.n || m != share.data.len() {
-                bail!(ErrorKind::IncompatibleSets);
+                bail!(ErrorKind::IncompatibleSets(Vec::new())); // FIXME
             }
 
             if share.id >= n {

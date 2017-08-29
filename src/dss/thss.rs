@@ -3,7 +3,7 @@
 
 use std::collections::{HashSet, BTreeMap};
 
-use dss::errors::*;
+use errors::*;
 use dss::random::{get_random_bytes, random_len};
 use interpolation::{lagrange_interpolate, evaluate};
 
@@ -73,7 +73,7 @@ impl<R: SecureRandom> SharingScheme<R> {
         }
 
         if k > n {
-            bail!(ErrorKind::InvalidSplitParametersSmaller(k, n));
+            bail!(ErrorKind::InvalidThreshold(k, n));
         }
 
         let m = secret.len();
@@ -139,7 +139,7 @@ impl<R: SecureRandom> SharingScheme<R> {
         let m = shares[0].data.len();
 
         if k > n {
-            bail!(ErrorKind::InvalidSplitParametersSmaller(k, n));
+            bail!(ErrorKind::InvalidThreshold(k, n));
         }
 
         let mut id_seen: HashSet<u8> = HashSet::new();
@@ -147,7 +147,7 @@ impl<R: SecureRandom> SharingScheme<R> {
 
         for share in shares {
             if k != share.k || n != share.n || m != share.data.len() {
-                bail!(ErrorKind::IncompatibleSets);
+                bail!(ErrorKind::IncompatibleSets(Vec::new())); // FIXME
             }
 
             if share.id >= n {

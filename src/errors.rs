@@ -9,9 +9,9 @@ use dss::t2;
 error_chain! {
     errors {
         /// k must be smaller than or equal to n
-        InvalidSplitParametersSmaller(k: u8, n: u8) {
-            description("Parameter k must be smaller than or equal to n")
-            display("Parameter k must be smaller than or equal to n, got: k = {}, n = {}.", k, n)
+        InvalidThreshold(k: u8, n: u8) {
+            description("Threshold k must be smaller than or equal to n")
+            display("Threshold k must be smaller than or equal to n, got: k = {}, n = {}.", k, n)
         }
 
         EmptyShares {
@@ -19,7 +19,7 @@ error_chain! {
             display("No shares were provided.")
         }
 
-        IncompatibleSets {
+        IncompatibleSets(sets: Vec<Vec<u8>>) {
             description("The shares are incompatible with each other.")
             display("The shares are incompatible with each other.")
         }
@@ -31,7 +31,24 @@ error_chain! {
 
         MissingShares(provided: usize, required: usize) {
             description("The number of shares provided is insufficient to recover the secret.")
-            display("The number of shares provided is insufficient to recover the secret. Provided: {}, required: {}.", provided, required)
+            display("{} shares are required to recover the secret, found only {}.", required, provided)
+        }
+
+        InvalidSignature(share_id: u8, signature: String) {
+            description("The signature of this share is not valid.")
+        }
+
+        MissingSignature(share_id: u8) {
+            description("Signature is missing while shares are required to be signed.")
+        }
+
+        SecretDeserializationError {
+            description("An issue was encountered deserializing the secret. \
+                         Updating to the latest version of RustySecrets might help fix this.")
+        }
+
+        ShareParsingError(share_id: u8, data: String) {
+            description("This share is incorrectly formatted.")
         }
 
         InvalidT2Parameters(r: usize, s: usize) {
@@ -72,5 +89,6 @@ error_chain! {
 
     foreign_links {
         Io(::std::io::Error);
+        IntegerParsingError(::std::num::ParseIntError);
     }
 }

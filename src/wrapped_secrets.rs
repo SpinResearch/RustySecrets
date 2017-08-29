@@ -1,11 +1,10 @@
 //! (Beta) `wrapped_secrets` provides Shamir's secret sharing with a wrapped secret. It currently offers versioning and MIME information about the data.
 
-use custom_error::{RustyError, RustyErrorTypes};
+use errors::*;
 use protobuf;
 use protobuf::Message;
 use secret::{RustySecret, RustySecretsVersions};
 use sss;
-use std::io;
 
 /// Performs threshold k-out-of-n Shamir's secret sharing.
 ///
@@ -29,7 +28,7 @@ pub fn generate_shares(
     secret: &[u8],
     mime_type: Option<String>,
     sign_shares: bool,
-) -> io::Result<Vec<String>> {
+) -> Result<Vec<String>> {
     let mut rusty_secret = RustySecret::new();
     rusty_secret.set_version(RustySecretsVersions::INITIAL_RELEASE);
     rusty_secret.set_secret(secret.to_owned());
@@ -67,13 +66,9 @@ pub fn generate_shares(
 /// 	}
 /// }
 /// ```
-pub fn recover_secret(
-    shares: Vec<String>,
-    verify_signatures: bool,
-) -> Result<RustySecret, RustyError> {
+pub fn recover_secret(shares: Vec<String>, verify_signatures: bool) -> Result<RustySecret> {
     let secret = try!(sss::recover_secret(shares, verify_signatures));
 
-    protobuf::parse_from_bytes::<RustySecret>(secret.as_slice()).map_err(|_| {
-        RustyError::with_type(RustyErrorTypes::SecretDeserializationIssue)
-    })
+    protobuf::parse_from_bytes::<RustySecret>(secret.as_slice())
+        .chain_err(|| ErrorKind::SecretDeserializationError)
 }

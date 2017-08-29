@@ -1,7 +1,7 @@
 
 use std;
 
-use dss::errors::*;
+use errors::*;
 
 use ring::error::Unspecified;
 use ring::rand::SecureRandom;

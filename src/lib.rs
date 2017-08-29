@@ -26,7 +26,6 @@ use ring::digest::{Algorithm, SHA512};
 #[allow(non_upper_case_globals)]
 static digest: &'static Algorithm = &SHA512;
 
-mod custom_error;
 mod gf256;
 mod interpolation;
 #[allow(unused_qualifications)]
@@ -36,11 +35,9 @@ mod share_data;
 mod share_format;
 mod validation;
 
-pub use custom_error::RustyError;
-
+pub mod errors;
 pub mod sss;
 pub mod wrapped_secrets;
-
 pub mod dss;
 
 #[cfg(test)]

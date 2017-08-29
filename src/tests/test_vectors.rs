@@ -1,5 +1,3 @@
-extern crate protobuf;
-extern crate rustc_serialize as serialize;
 
 use protobuf::Message;
 use share_data;
