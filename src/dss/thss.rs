@@ -5,36 +5,37 @@ use std::collections::{HashSet, BTreeMap};
 
 use errors::*;
 use dss::random::{get_random_bytes, random_len};
-use interpolation::{lagrange_interpolate, evaluate};
+use interpolation::{lagrange_interpolate, encode_secret};
 
 use ring::rand::{SecureRandom, SystemRandom};
 
-/// TODO
+/// A share's public metadata.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct MetaData {
-    /// TODO
+    /// The tags associated with the share
     pub tags: BTreeMap<String, Vec<u8>>,
 }
 
 impl MetaData {
-    /// TODO
+    /// Construct a new MetaData struct.
     pub fn new(tags: BTreeMap<String, Vec<u8>>) -> Self {
         MetaData { tags }
     }
 }
 
-/// A share
+/// A share identified by an `id`, a threshold `k`, a number of total shares `n`,
+/// the `data` held in the share, and the share's `metadata`.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Share {
     /// The identifier of the share (varies between 1 and n where n is the total number of generated shares)
     pub id: u8,
-    /// The number of shares necessary to recover the secret
+    /// The number of shares necessary to recover the secret, aka a threshold
     pub k: u8,
     /// The total number of shares that have been dealt
     pub n: u8,
     /// The share data itself
     pub data: Vec<u8>,
-    /// Metadata associated with this share
+    /// The metadata associated with this share
     pub metadata: Option<MetaData>,
 }
 
@@ -76,25 +77,15 @@ impl<R: SecureRandom> SharingScheme<R> {
             bail!(ErrorKind::InvalidThreshold(k, n));
         }
 
-        let m = secret.len();
-
-        let rands = get_random_bytes(&self.random, random_len(k as usize, m))?;
+        let rands_len = random_len(k as usize, secret.len());
+        let rands = get_random_bytes(&self.random, rands_len)?;
 
         let shares = (0..n)
-            .map(|j| {
-                let data = (0..m)
-                    .map(|i| {
-                        // TODO: Document and extract
-                        let mut poly = Vec::new();
-                        for l in 0..(k - 1) as usize {
-                            poly.push(rands[i * (k as usize - 1) + l]);
-                        }
-                        evaluate(secret[i], k, j, &poly)
-                    })
-                    .collect();
+            .map(|id| {
+                let data = encode_secret(secret, k, id, &rands);
 
                 Share {
-                    id: j,
+                    id,
                     k,
                     n,
                     data,

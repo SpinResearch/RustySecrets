@@ -12,12 +12,13 @@ use sha3::Shake256;
 use digest::{Input, XofReader, ExtendableOutput};
 use ring::rand::{SystemRandom, SecureRandom};
 
-/// A share
+/// A share identified by an `id`, a threshold `k`, a number of total shares `n`,
+/// the `data` held in the share, and the share's `metadata`.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Share {
     /// The identifier of the share (varies between 1 and n where n is the total number of generated shares)
     pub id: u8,
-    /// The number of shares necessary to recover the secret
+    /// The number of shares necessary to recover the secret, aka a threshold
     pub k: u8,
     /// The total number of shares that have been dealt
     pub n: u8,
@@ -25,18 +26,19 @@ pub struct Share {
     pub data: Vec<u8>,
     /// The hash value common to the whole deal
     pub hash: Vec<u8>,
-    /// TODO
+    /// The metadata associated with this share
     pub metadata: Option<MetaData>,
 }
 
-/// Deterministic threshold sharing scheme
+/// An implementation of the T2 transform over a threshold secret sharing scheme,
+/// as described in the 'New Directions in Secret Sharing' paper.
 /// TODO: Figure out a way to get rid of the type parameter (with impl trait maybe?)
 #[allow(missing_debug_implementations)]
 #[derive(Debug, Clone, Copy)]
 pub struct SharingScheme<R: SecureRandom> {
     /// How many random bytes to read from the underlying entropy source
     pub r: usize,
-    /// TODO
+    ///
     pub s: usize,
     /// The entropy source to use to generate random bytes
     random: R,
@@ -139,20 +141,21 @@ impl<R: SecureRandom> SharingScheme<R> {
         let rand = secret.split_off(secret_len);
 
         let sub_scheme = SharingScheme::new(self.r, self.s, FixedRandom::new(&rand))?;
-        let test_shares = sub_scheme.split_secret(
+        let mut test_shares = sub_scheme.split_secret(
             shares[0].k,
             shares[0].n,
             &secret,
             &metadata,
         )?;
 
-        let ids = shares.iter().map(|share| share.id).collect::<HashSet<_>>();
+        test_shares.sort_by_key(|share| share.id);
 
-        // TODO: Sort shares by id before zipping
-        // .sort_by_key(|share| share.id)
-        let matching_shares = shares.iter().zip(test_shares.iter().filter(|share| {
-            ids.contains(&share.id)
-        }));
+        let mut sorted_shares = shares.to_vec();
+        sorted_shares.sort_by_key(|share| share.id);
+
+        let ids = shares.iter().map(|share| share.id).collect::<HashSet<_>>();
+        let relevant_test_shares = test_shares.iter().filter(|share| ids.contains(&share.id));
+        let matching_shares = sorted_shares.iter().zip(relevant_test_shares);
 
         for (share, test_share) in matching_shares {
             if share != test_share {
