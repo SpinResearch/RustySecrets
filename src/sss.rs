@@ -7,12 +7,7 @@ use merkle_sigs::sign_data_vec;
 use rand::{OsRng, Rng};
 use share_format::format_share_for_signing;
 use share_format::share_string_from;
-use std::iter::repeat;
 use validation::process_and_validate_shares;
-
-fn new_vec<T: Clone>(n: usize, x: T) -> Vec<T> {
-    repeat(x).take(n).collect()
-}
 
 /// Performs threshold k-out-of-n Shamir's secret sharing.
 ///
@@ -74,9 +69,9 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result
 fn secret_share(src: &[u8], k: u8, n: u8) -> Result<Vec<Vec<u8>>> {
     let mut result = Vec::with_capacity(n as usize);
     for _ in 0..(n as usize) {
-        result.push(new_vec(src.len(), 0u8));
+        result.push(vec![0u8; src.len()]);
     }
-    let mut col_in = new_vec(k as usize, 0u8);
+    let mut col_in = vec![0u8, k];
     let mut col_out = Vec::with_capacity(n as usize);
     let mut osrng = OsRng::new()?;
     for (c, &s) in src.iter().enumerate() {
