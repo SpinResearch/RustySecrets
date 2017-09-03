@@ -5,7 +5,7 @@ use protobuf;
 use protobuf::{Message, RepeatedField};
 use serialize;
 use serialize::base64::{self, FromBase64, ToBase64};
-use share_data::ShareData;
+use proto::ShareData;
 use std::error::Error;
 
 type ParsedShare = Result<(Vec<u8>, u8, u8, Option<(Vec<Vec<u8>>, Proof<MerklePublicKey>)>)>;

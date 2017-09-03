@@ -28,10 +28,6 @@ static digest: &'static Algorithm = &SHA512;
 
 mod gf256;
 mod interpolation;
-#[allow(unused_qualifications)]
-mod secret;
-#[allow(unused_qualifications)]
-mod share_data;
 mod share_format;
 mod validation;
 
@@ -39,9 +35,7 @@ pub mod errors;
 pub mod sss;
 pub mod wrapped_secrets;
 pub mod dss;
-
-#[cfg(test)]
-mod tests;
+pub mod proto;
 
 #[cfg(test)]
 extern crate itertools;

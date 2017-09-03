@@ -10,7 +10,7 @@ mod shared;
 mod wrapped_secrets {
 
     use test::{Bencher, black_box};
-    use rusty_secrets::wrapped_secrets;
+    use rusty_secrets::wrapped_secrets::WrappedSecrets;
     use shared;
 
     macro_rules! bench_generate {
@@ -18,9 +18,10 @@ mod wrapped_secrets {
             #[bench]
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
+                let ws = WrappedSecrets::default();
 
                 b.iter(move || {
-                    let shares = wrapped_secrets::generate_shares($k, $n, secret, None, $signed).unwrap();
+                    let shares = ws.generate_shares($k, $n, secret, None, $signed).unwrap();
                     black_box(shares);
                 });
             }
@@ -32,11 +33,12 @@ mod wrapped_secrets {
             #[bench]
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
-                let all_shares = wrapped_secrets::generate_shares($k, $n, &secret, None, $signed).unwrap();
+                let ws = WrappedSecrets::default();
+                let all_shares = ws.generate_shares($k, $n, &secret, None, $signed).unwrap();
                 let shares = &all_shares.into_iter().take($k).collect::<Vec<_>>().clone();
 
                 b.iter(|| {
-                    let result = wrapped_secrets::recover_secret(shares.to_vec(), $signed).unwrap();
+                    let result = WrappedSecrets::recover_secret(shares.to_vec(), $signed).unwrap();
                     black_box(result);
                 });
             }

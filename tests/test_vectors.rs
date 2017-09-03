@@ -1,8 +1,13 @@
 
+extern crate rusty_secrets;
+extern crate protobuf;
+extern crate rustc_serialize as serialize;
+
 use protobuf::Message;
-use share_data;
-use sss::recover_secret;
 use serialize::base64::{self, FromBase64, ToBase64};
+
+use rusty_secrets::proto::ShareData;
+use rusty_secrets::sss::SSS;
 
 pub fn wrap_from_sellibitze(share: &str) -> String {
     let parts: Vec<_> = share.trim().split('-').collect();
@@ -13,7 +18,7 @@ pub fn wrap_from_sellibitze(share: &str) -> String {
         ..base64::STANDARD
     };
 
-    let mut share_protobuf = share_data::ShareData::new();
+    let mut share_protobuf = ShareData::new();
     share_protobuf.set_shamir_data(share_data);
 
     let b64_share = share_protobuf.write_to_bytes().unwrap().to_base64(config);
@@ -33,7 +38,7 @@ fn test_recover_sellibitze() {
 
     let mut secret = "My secret".to_string().into_bytes();
     secret.push(10);
-    assert_eq!(recover_secret(shares, false).unwrap(), secret);
+    assert_eq!(SSS::recover_secret(shares, false).unwrap(), secret);
 }
 
 // Generated with code on master branch on the 6th of April.
@@ -58,7 +63,7 @@ fn test_recover_es_test_vectors() {
     let secret = "The immoral cannot be made moral through the use of secret law."
         .to_string()
         .into_bytes();
-    assert_eq!(recover_secret(shares, false).unwrap(), secret);
+    assert_eq!(SSS::recover_secret(shares, false).unwrap(), secret);
 }
 
 #[test]
@@ -75,5 +80,5 @@ fn test_recover_sellibitze_more_than_threshold_shars() {
 
     let mut secret = "My secret".to_string().into_bytes();
     secret.push(10);
-    assert_eq!(recover_secret(shares, false).unwrap(), secret);
+    assert_eq!(SSS::recover_secret(shares, false).unwrap(), secret);
 }

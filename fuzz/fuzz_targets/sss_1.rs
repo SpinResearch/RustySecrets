@@ -4,7 +4,7 @@ extern crate libfuzzer_sys;
 extern crate rusty_secrets;
 extern crate arbitrary;
 
-use rusty_secrets::sss;
+use rusty_secrets::sss::SSS;
 use arbitrary::{RingBuffer, Unstructured};
 
 fuzz_target!(|data: &[u8]| {
@@ -16,9 +16,10 @@ fuzz_target!(|data: &[u8]| {
         let k = kn[0];
         let n = kn[1];
 
-        sss::generate_shares(k, n, &data, false)
+        let sss = SSS::default();
+        sss.generate_shares(k, n, &data, false)
             .map_err(|err| err.into())
-            .and_then(|ss| sss::recover_secret(ss, false))
+            .and_then(|ss| SSS::recover_secret(ss, false))
             .unwrap_or(Vec::new());
     }
 });
