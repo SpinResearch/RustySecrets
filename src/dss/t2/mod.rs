@@ -3,32 +3,18 @@
 
 use std::collections::HashSet;
 
-use errors::*;
-use dss::thss;
-use dss::thss::MetaData;
-use dss::random::{get_random_bytes, random_len, FixedRandom};
-
 use sha3::Shake256;
 use digest::{Input, XofReader, ExtendableOutput};
 use ring::rand::{SystemRandom, SecureRandom};
 
-/// A share identified by an `id`, a threshold `k`, a number of total shares `n`,
-/// the `data` held in the share, and the share's `metadata`.
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Share {
-    /// The identifier of the share (varies between 1 and n where n is the total number of generated shares)
-    pub id: u8,
-    /// The number of shares necessary to recover the secret, aka a threshold
-    pub k: u8,
-    /// The total number of shares that have been dealt
-    pub n: u8,
-    /// The share data itself
-    pub data: Vec<u8>,
-    /// The hash value common to the whole deal
-    pub hash: Vec<u8>,
-    /// The metadata associated with this share
-    pub metadata: Option<MetaData>,
-}
+use errors::*;
+use dss::thss;
+use dss::thss::MetaData;
+use dss::random::{get_random_bytes, random_len, FixedRandom};
+use share::validation::validate_shares;
+
+mod share;
+pub use self::share::*;
 
 /// An implementation of the T2 transform over a threshold secret sharing scheme,
 /// as described in the 'New Directions in Secret Sharing' paper.
@@ -118,10 +104,10 @@ impl SharingScheme {
 
     /// Recover the secret from the given set of shares
     pub fn recover_secret(&self, shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
-        self.check_shares(shares)?;
+        let (_, shares) = validate_shares(shares.to_vec(), true)?;
 
         let underlying_shares = shares
-            .into_iter()
+            .iter()
             .map(|share| {
                 thss::Share {
                     id: share.id,
@@ -169,56 +155,17 @@ impl SharingScheme {
         Ok((secret, metadata))
     }
 
-    // TODO: Deduplicate this function
-    fn check_shares(&self, shares: &[Share]) -> Result<()> {
-        if shares.is_empty() {
-            bail!(ErrorKind::EmptyShares);
-        }
+    // FIXME: Is CorruptedShare needed?
+    // fn check_shares(&self, shares: &[Share]) -> Result<()> {
+    //     let k = shares[0].k;
+    //     let n = shares[0].n;
+    //     let m = shares[0].data.len();
+    //     let h = &shares[0].hash;
 
-        let k = shares[0].k;
-        let n = shares[0].n;
-        let m = shares[0].data.len();
-        let h = &shares[0].hash;
-
-        if k > n {
-            bail!(ErrorKind::InvalidThreshold(k, n));
-        }
-
-        let mut id_seen: HashSet<u8> = HashSet::new();
-        let mut data_seen: HashSet<&Vec<u8>> = HashSet::new();
-
-        for share in shares {
-            if k != share.k || n != share.n || m != share.data.len() {
-                bail!(ErrorKind::IncompatibleSets(Vec::new())); // FIXME
-            }
-
-            if share.id >= n {
-                bail!(ErrorKind::ShareIdentifierTooBig(share.id, n));
-            }
-
-            if id_seen.contains(&share.id) {
-                bail!(ErrorKind::DuplicateShareId(share.id));
-            }
-
-            id_seen.insert(share.id);
-
-            if data_seen.contains(&share.data) {
-                bail!(ErrorKind::DuplicateShareData(share.id));
-            }
-
-            data_seen.insert(&share.data);
-
-            if &share.hash != h {
-                bail!(ErrorKind::CorruptedShare(share.id));
-            }
-        }
-
-        if shares.len() < k as usize {
-            bail!(ErrorKind::MissingShares(shares.len(), shares[0].k as usize));
-        }
-
-        Ok(())
-    }
+    //     if &share.hash != h {
+    //         bail!(ErrorKind::CorruptedShare(share.id));
+    //     }
+    // }
 }
 
 #[cfg(test)]

@@ -1,12 +1,11 @@
 extern crate rusty_secrets;
 
-use rusty_secrets::sss::SSS;
+use rusty_secrets::sss;
 
 #[test]
 #[should_panic(expected = "InvalidThreshold")]
 fn test_generate_invalid_k() {
     let share1 = "2-1-1YAYwmOHqZ69jA".to_string().into_bytes();
 
-    let sss = SSS::new();
-    sss.generate_shares(10, 5, share1.as_slice(), true).unwrap();
+    sss::generate_shares(10, 5, share1.as_slice(), true).unwrap();
 }

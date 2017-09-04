@@ -5,10 +5,9 @@ use protobuf;
 use protobuf::{Message, RepeatedField};
 use serialize;
 use serialize::base64::{self, FromBase64, ToBase64};
+use sss::Share;
 use proto::ShareData;
 use std::error::Error;
-
-type ParsedShare = Result<(Vec<u8>, u8, u8, Option<(Vec<Vec<u8>>, Proof<MerklePublicKey>)>)>;
 
 fn base64_config() -> serialize::base64::Config {
     base64::Config {
@@ -38,13 +37,13 @@ pub fn share_string_from(
     format!("{}-{}-{}", threshold, share_num, b64_share)
 }
 
-pub fn share_from_string(s: &str, index: u8, is_signed: bool) -> ParsedShare {
+pub fn share_from_string(s: &str, id: u8, is_signed: bool) -> Result<Share> {
     let parts: Vec<_> = s.trim().split('-').collect();
 
     if parts.len() != 3 {
         bail! {
             ErrorKind::ShareParsingError(
-                index,
+                id,
                 format!(
                     "Expected 3 parts separated by a minus sign. Found {}.",
                     s
@@ -62,20 +61,20 @@ pub fn share_from_string(s: &str, index: u8, is_signed: bool) -> ParsedShare {
     if k < 1 || n < 1 {
         bail! {
             ErrorKind::ShareParsingError(
-                index,
+                id,
                 format!("Found illegal parameters K: {} N: {}.", k, n),
             )
         }
     }
 
     let raw_data = p3.from_base64().chain_err(|| {
-        ErrorKind::ShareParsingError(index, "Base64 decoding of data block failed".to_owned())
+        ErrorKind::ShareParsingError(id, "Base64 decoding of data block failed".to_owned())
     })?;
 
     let protobuf_data = protobuf::parse_from_bytes::<ShareData>(raw_data.as_slice())
         .map_err(|e| {
             ErrorKind::ShareParsingError(
-                index,
+                id,
                 format!(
                     "Protobuf decoding of data block failed with error: {} .",
                     e.description()
@@ -83,9 +82,9 @@ pub fn share_from_string(s: &str, index: u8, is_signed: bool) -> ParsedShare {
             )
         })?;
 
-    let share = Vec::from(protobuf_data.get_shamir_data());
+    let data = Vec::from(protobuf_data.get_shamir_data());
 
-    if is_signed {
+    let signature_pair = if is_signed {
         let p_result = Proof::parse_from_bytes(protobuf_data.get_proof(), digest);
 
         let p_opt = p_result.unwrap();
@@ -99,11 +98,18 @@ pub fn share_from_string(s: &str, index: u8, is_signed: bool) -> ParsedShare {
         };
 
         let signature = protobuf_data.get_signature();
-
-        Ok((share, k, n, Some((Vec::from(signature), proof))))
+        Some((Vec::from(signature), proof).into())
     } else {
-        Ok((share, k, n, None))
-    }
+        None
+    };
+
+    Ok(Share {
+        id: n, // FIXME: `n` represents the `id` provided in the share string
+        data,
+        k,
+        n,
+        signature_pair,
+    })
 }
 
 pub fn format_share_for_signing(k: u8, i: u8, data: &[u8]) -> Vec<u8> {

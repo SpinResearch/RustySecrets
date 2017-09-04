@@ -1,43 +1,15 @@
 
 //! Simple threshold secret sharing scheme
 
-use std::collections::{HashSet, BTreeMap};
+use ring::rand::{SecureRandom, SystemRandom};
 
 use errors::*;
 use dss::random::{get_random_bytes, random_len};
 use interpolation::{lagrange_interpolate, encode_secret};
+use share::validation::validate_shares;
 
-use ring::rand::{SecureRandom, SystemRandom};
-
-/// A share's public metadata.
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct MetaData {
-    /// The tags associated with the share
-    pub tags: BTreeMap<String, Vec<u8>>,
-}
-
-impl MetaData {
-    /// Construct a new MetaData struct.
-    pub fn new(tags: BTreeMap<String, Vec<u8>>) -> Self {
-        MetaData { tags }
-    }
-}
-
-/// A share identified by an `id`, a threshold `k`, a number of total shares `n`,
-/// the `data` held in the share, and the share's `metadata`.
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Share {
-    /// The identifier of the share (varies between 1 and n where n is the total number of generated shares)
-    pub id: u8,
-    /// The number of shares necessary to recover the secret, aka a threshold
-    pub k: u8,
-    /// The total number of shares that have been dealt
-    pub n: u8,
-    /// The share data itself
-    pub data: Vec<u8>,
-    /// The metadata associated with this share
-    pub metadata: Option<MetaData>,
-}
+mod share;
+pub use self::share::*;
 
 /// A simple threshold sharing scheme
 #[allow(missing_debug_implementations)]
@@ -98,8 +70,9 @@ impl SharingScheme {
 
     /// Recover the secret from the given set of shares
     pub fn recover_secret(&self, shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
-        self.check_shares(shares)?;
+        let (_, shares) = validate_shares(shares.to_vec(), true)?;
 
+        // FIXME: Check that the data length is the same for all shares.
         let m = shares[0].data.len();
 
         let secret = (0..m)
@@ -116,52 +89,6 @@ impl SharingScheme {
         let metadata = shares[0].metadata.clone();
 
         Ok((secret, metadata))
-    }
-
-    // TODO: Deduplicate this function
-    fn check_shares(&self, shares: &[Share]) -> Result<()> {
-        if shares.is_empty() {
-            bail!(ErrorKind::EmptyShares);
-        }
-
-        let k = shares[0].k;
-        let n = shares[0].n;
-        let m = shares[0].data.len();
-
-        if k > n {
-            bail!(ErrorKind::InvalidThreshold(k, n));
-        }
-
-        let mut id_seen: HashSet<u8> = HashSet::new();
-        let mut data_seen: HashSet<&Vec<u8>> = HashSet::new();
-
-        for share in shares {
-            if k != share.k || n != share.n || m != share.data.len() {
-                bail!(ErrorKind::IncompatibleSets(Vec::new())); // FIXME
-            }
-
-            if share.id >= n {
-                bail!(ErrorKind::ShareIdentifierTooBig(share.id, n));
-            }
-
-            if id_seen.contains(&share.id) {
-                bail!(ErrorKind::DuplicateShareId(share.id));
-            }
-
-            id_seen.insert(share.id);
-
-            if data_seen.contains(&share.data) {
-                bail!(ErrorKind::DuplicateShareData(share.id));
-            }
-
-            data_seen.insert(&share.data);
-        }
-
-        if shares.len() < k as usize {
-            bail!(ErrorKind::MissingShares(shares.len(), shares[0].k as usize));
-        }
-
-        Ok(())
     }
 }
 

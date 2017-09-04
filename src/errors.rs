@@ -3,6 +3,8 @@
 
 #![allow(unknown_lints, missing_docs)]
 
+use std::collections::HashSet;
+
 use dss::t2;
 
 /// Create the Error, ErrorKind, ResultExt, and Result types
@@ -19,7 +21,7 @@ error_chain! {
             display("No shares were provided.")
         }
 
-        IncompatibleSets(sets: Vec<Vec<u8>>) {
+        IncompatibleSets(sets: Vec<HashSet<u8>>) {
             description("The shares are incompatible with each other.")
             display("The shares are incompatible with each other.")
         }
