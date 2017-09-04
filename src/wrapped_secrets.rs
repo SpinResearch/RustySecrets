@@ -46,7 +46,7 @@ impl WrappedSecrets {
         rusty_secret.set_version(RustySecretsVersions::INITIAL_RELEASE);
         rusty_secret.set_secret(secret.to_owned());
 
-        for mt in mime_type {
+        if let Some(mt) = mime_type {
             rusty_secret.set_mime_type(mt);
         }
 

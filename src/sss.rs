@@ -126,7 +126,7 @@ impl SSS {
     /// }
     /// ```
     pub fn recover_secret(shares: Vec<String>, verify_signatures: bool) -> Result<Vec<u8>> {
-        let (k, shares) = process_and_validate_shares(shares, verify_signatures)?;
+        let (k, shares) = process_and_validate_shares(&shares, verify_signatures)?;
 
         let slen = shares[0].1.len();
         let mut col_in = Vec::with_capacity(k as usize);

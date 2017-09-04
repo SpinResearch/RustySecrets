@@ -86,7 +86,7 @@ impl Mul<Gf256> for Gf256 {
     type Output = Gf256;
     fn mul(self, rhs: Gf256) -> Gf256 {
         if let (Some(l1), Some(l2)) = (self.log(), rhs.log()) {
-            let tmp = ((l1 as u16) + (l2 as u16)) % 255;
+            let tmp = (u16::from(l1) + u16::from(l2)) % 255;
             Gf256::exp(tmp as u8)
         } else {
             Gf256 { poly: 0 }
@@ -99,7 +99,7 @@ impl Div<Gf256> for Gf256 {
     fn div(self, rhs: Gf256) -> Gf256 {
         let l2 = rhs.log().expect("division by zero");
         if let Some(l1) = self.log() {
-            let tmp = ((l1 as u16) + 255 - (l2 as u16)) % 255;
+            let tmp = (u16::from(l1) + 255 - u16::from(l2)) % 255;
             Gf256::exp(tmp as u8)
         } else {
             Gf256 { poly: 0 }

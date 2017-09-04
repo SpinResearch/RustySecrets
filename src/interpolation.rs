@@ -4,7 +4,7 @@ use std::io::prelude::*;
 
 /// evaluates a polynomial at x=1, 2, 3, ... n (inclusive)
 pub fn encode<W: Write>(src: &[u8], n: u8, w: &mut W) -> io::Result<()> {
-    for raw_x in 1..((n as u16) + 1) {
+    for raw_x in 1..(u16::from(n) + 1) {
         let x = Gf256::from_byte(raw_x as u8);
         let mut fac = Gf256::one();
         let mut acc = Gf256::zero();
@@ -36,8 +36,8 @@ pub fn encode_secret(secret: &[u8], k: u8, share_id: u8, rands: &[u8]) -> Vec<u8
 /// polynomial at x = `j`, and adding the result to `m`.
 pub fn encode_secret_byte(m: u8, j: u8, poly: &[u8]) -> u8 {
     let mut acc = Gf256::from_byte(m);
-    for l in 0..poly.len() {
-        let r = Gf256::from_byte(poly[l]);
+    for (l, p) in poly.iter().enumerate() {
+        let r = Gf256::from_byte(*p);
         let s = Gf256::from_byte(j).pow(l as u8 + 1);
         acc = acc + r * s;
     }
@@ -57,7 +57,7 @@ pub fn lagrange_interpolate(src: &[(u8, u8)]) -> u8 {
             if i != j {
                 let xj = Gf256::from_byte(raw_xj);
                 let delta = xi - xj;
-                assert!(delta.poly != 0, "Duplicate shares");
+                assert_ne!(delta.poly, 0, "Duplicate shares");
                 prod = prod * xj / delta;
             }
         }
