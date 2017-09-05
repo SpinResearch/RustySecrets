@@ -3,7 +3,7 @@ use std::io;
 use std::io::prelude::*;
 
 /// evaluates a polynomial at x=1, 2, 3, ... n (inclusive)
-pub fn encode<W: Write>(src: &[u8], n: u8, w: &mut W) -> io::Result<()> {
+pub(crate) fn encode<W: Write>(src: &[u8], n: u8, w: &mut W) -> io::Result<()> {
     for raw_x in 1..(u16::from(n) + 1) {
         let x = Gf256::from_byte(raw_x as u8);
         let mut fac = Gf256::one();
@@ -18,7 +18,7 @@ pub fn encode<W: Write>(src: &[u8], n: u8, w: &mut W) -> io::Result<()> {
 }
 
 /// Encode the given `secret`.
-pub fn encode_secret(secret: &[u8], k: u8, share_id: u8, rands: &[u8]) -> Vec<u8> {
+pub(crate) fn encode_secret(secret: &[u8], k: u8, share_id: u8, rands: &[u8]) -> Vec<u8> {
     secret
         .into_iter()
         .enumerate()
@@ -34,7 +34,7 @@ pub fn encode_secret(secret: &[u8], k: u8, share_id: u8, rands: &[u8]) -> Vec<u8
 
 /// Encode the given secret byte `m`, by evaluating the given
 /// polynomial at x = `j`, and adding the result to `m`.
-pub fn encode_secret_byte(m: u8, j: u8, poly: &[u8]) -> u8 {
+pub(crate) fn encode_secret_byte(m: u8, j: u8, poly: &[u8]) -> u8 {
     let mut acc = Gf256::from_byte(m);
     for (l, p) in poly.iter().enumerate() {
         let r = Gf256::from_byte(*p);
@@ -47,7 +47,7 @@ pub fn encode_secret_byte(m: u8, j: u8, poly: &[u8]) -> u8 {
 /// evaluates an interpolated polynomial at `Gf256::zero()` where
 /// the polynomial is determined using Lagrangian interpolation
 /// based on the given x/y coordinates `src`.
-pub fn lagrange_interpolate(src: &[(u8, u8)]) -> u8 {
+pub(crate) fn lagrange_interpolate(src: &[(u8, u8)]) -> u8 {
     let mut sum = Gf256::zero();
     for (i, &(raw_xi, raw_yi)) in src.iter().enumerate() {
         let xi = Gf256::from_byte(raw_xi);

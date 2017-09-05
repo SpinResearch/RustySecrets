@@ -10,7 +10,7 @@ mod shared;
 mod sss {
 
     use test::{Bencher, black_box};
-    use rusty_secrets::sss::{recover_secret, generate_shares};
+    use rusty_secrets::sss;
     use shared;
 
     macro_rules! bench_generate {
@@ -20,7 +20,7 @@ mod sss {
                 let secret = shared::$secret();
 
                 b.iter(move || {
-                    let shares = generate_shares($k, $n, secret, $signed).unwrap();
+                    let shares = sss::generate_shares($k, $n, secret, $signed).unwrap();
                     black_box(shares);
                 });
             }
@@ -32,11 +32,11 @@ mod sss {
             #[bench]
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
-                let all_shares = generate_shares($k, $n, &secret, $signed).unwrap();
+                let all_shares = sss::generate_shares($k, $n, &secret, $signed).unwrap();
                 let shares = &all_shares.into_iter().take($k).collect::<Vec<_>>().clone();
 
                 b.iter(|| {
-                    let result = recover_secret(shares.to_vec(), $signed).unwrap();
+                    let result = sss::recover_secret(shares.to_vec(), $signed).unwrap();
                     black_box(result);
                 });
             }

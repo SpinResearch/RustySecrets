@@ -20,8 +20,7 @@ mod thss {
                 let secret = shared::$secret();
 
                 b.iter(move || {
-                    let scheme = thss::SharingScheme::default();
-                    let shares = scheme.split_secret($k, $n, &secret, &None).unwrap();
+                    let shares = thss::split_secret($k, $n, &secret, &None).unwrap();
                     black_box(shares);
                 });
             }
@@ -33,12 +32,11 @@ mod thss {
             #[bench]
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
-                let scheme = thss::SharingScheme::default();
-                let all_shares = scheme.split_secret($k, $n, &secret, &None).unwrap();
+                let all_shares = thss::split_secret($k, $n, &secret, &None).unwrap();
                 let shares = &all_shares.into_iter().take($k).collect::<Vec<_>>().clone();
 
                 b.iter(|| {
-                    let result = scheme.recover_secret(&shares.to_vec()).unwrap();
+                    let result = thss::recover_secret(&shares.to_vec()).unwrap();
                     black_box(result);
                 });
             }

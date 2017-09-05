@@ -11,23 +11,38 @@ use share::validation::validate_shares;
 mod share;
 pub use self::share::*;
 
+/// TODO: Doc
+pub fn split_secret(
+    k: u8,
+    n: u8,
+    secret: &[u8],
+    metadata: &Option<MetaData>,
+) -> Result<Vec<Share>> {
+    ThSS::default().split_secret(k, n, secret, metadata)
+}
+
+/// TODO: Doc
+pub fn recover_secret(shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
+    ThSS::default().recover_secret(shares)
+}
+
 /// A simple threshold sharing scheme
 #[allow(missing_debug_implementations)]
-pub struct SharingScheme {
+pub(crate) struct ThSS {
     /// The randomness source
     pub random: Box<SecureRandom>,
 }
 
-impl Default for SharingScheme {
+impl Default for ThSS {
     fn default() -> Self {
-        SharingScheme::new(Box::new(SystemRandom::new()))
+        Self::new(Box::new(SystemRandom::new()))
     }
 }
 
-impl SharingScheme {
+impl ThSS {
     /// Constructs a new sharing scheme
     pub fn new(random: Box<SecureRandom>) -> Self {
-        SharingScheme { random }
+        Self { random }
     }
 
     /// Split a secret following a given sharing `scheme`,
@@ -101,9 +116,8 @@ mod tests {
     fn split_then_recover_yields_original_secret() {
         let secret = "Hello, World!".to_string().into_bytes();
 
-        let scheme = SharingScheme::default();
-        let shares = scheme.split_secret(7, 10, &secret, &None).unwrap();
-        let (recovered, metadata) = scheme.recover_secret(&shares).unwrap();
+        let shares = split_secret(7, 10, &secret, &None).unwrap();
+        let (recovered, metadata) = recover_secret(&shares).unwrap();
 
         assert_eq!(secret, recovered);
         assert_eq!(None, metadata);

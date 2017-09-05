@@ -9,17 +9,32 @@ use ring::rand::{SystemRandom, SecureRandom};
 
 use errors::*;
 use dss::thss;
-use dss::thss::MetaData;
+use dss::thss::{ThSS, MetaData};
 use dss::random::{get_random_bytes, random_len, FixedRandom};
 use share::validation::validate_shares;
 
 mod share;
 pub use self::share::*;
 
+/// TODO: Doc
+pub fn split_secret(
+    k: u8,
+    n: u8,
+    secret: &[u8],
+    metadata: &Option<MetaData>,
+) -> Result<Vec<Share>> {
+    T2::default().split_secret(k, n, secret, metadata)
+}
+
+/// TODO: Doc
+pub fn recover_secret(shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
+    T2::default().recover_secret(shares)
+}
+
 /// An implementation of the T2 transform over a threshold secret sharing scheme,
 /// as described in the 'New Directions in Secret Sharing' paper.
 #[allow(missing_debug_implementations)]
-pub struct SharingScheme {
+pub(crate) struct T2 {
     /// How many random bytes to read from the underlying entropy source
     pub r: usize,
     ///
@@ -28,20 +43,20 @@ pub struct SharingScheme {
     random: Box<SecureRandom>,
 }
 
-impl Default for SharingScheme {
+impl Default for T2 {
     fn default() -> Self {
-        SharingScheme::new(256, 256, Box::new(SystemRandom::new())).unwrap()
+        Self::new(256, 256, Box::new(SystemRandom::new())).unwrap()
     }
 }
 
-impl SharingScheme {
+impl T2 {
     /// Constructs a new sharing scheme
     pub fn new(r: usize, s: usize, random: Box<SecureRandom>) -> Result<Self> {
         if r < 128 || s < 128 {
             bail!(ErrorKind::InvalidT2Parameters(r, s));
         }
 
-        Ok(SharingScheme { r, s, random })
+        Ok(Self { r, s, random })
     }
 
     /// Split a secret following a given sharing `scheme`,
@@ -80,7 +95,7 @@ impl SharingScheme {
         reader.read(&mut seed);
 
         let underlying_random = FixedRandom::new(seed);
-        let underlying = thss::SharingScheme::new(Box::new(underlying_random));
+        let underlying = ThSS::new(Box::new(underlying_random));
 
         let message = [secret, &rand].concat();
         let shares = underlying.split_secret(k, n, &message, metadata)?;
@@ -119,14 +134,14 @@ impl SharingScheme {
             })
             .collect::<Vec<_>>();
 
-        let underlying = thss::SharingScheme::default();
+        let underlying = ThSS::default();
         let recovered = underlying.recover_secret(&underlying_shares)?;
         let (mut secret, metadata) = recovered;
         let secret_len = secret.len() - self.r;
         let rand = secret.split_off(secret_len);
 
         let sub_random = FixedRandom::new(rand.to_vec());
-        let sub_scheme = SharingScheme::new(self.r, self.s, Box::new(sub_random))?;
+        let sub_scheme = Self::new(self.r, self.s, Box::new(sub_random))?;
         let mut test_shares = sub_scheme.split_secret(
             shares[0].k,
             shares[0].n,
@@ -177,12 +192,11 @@ mod tests {
     fn it_works() {
         let secret = "Hello, World!".to_string().into_bytes();
 
-        let scheme = SharingScheme::default();
-        let shares = scheme.split_secret(7, 10, &secret, &None).unwrap();
+        let shares = split_secret(7, 10, &secret, &None).unwrap();
 
         assert_eq!(shares.len(), 10);
 
-        let (recovered, metadata) = scheme.recover_secret(&shares[2..9]).unwrap();
+        let (recovered, metadata) = recover_secret(&shares[2..9]).unwrap();
 
         assert_eq!(secret, recovered);
         assert_eq!(None, metadata);

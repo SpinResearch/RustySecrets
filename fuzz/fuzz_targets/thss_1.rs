@@ -8,7 +8,7 @@ use rusty_secrets::dss::thss::*;
 use arbitrary::{RingBuffer, Unstructured};
 
 fuzz_target!(|data: &[u8]| {
-    // ...
+    // ---
     if let Ok(mut buffer) = RingBuffer::new(data, data.len()) {
         let mut kn = vec![0; 2];
         buffer.fill_buffer(&mut kn).unwrap();
@@ -16,11 +16,9 @@ fuzz_target!(|data: &[u8]| {
         let k = kn[0];
         let n = kn[1];
 
-        let scheme = SharingScheme::default();
-
-        scheme
-            .split_secret(k, n, &data)
-            .and_then(|ss| scheme.recover_secret(&ss))
-            .unwrap_or(Vec::new());
+        split_secret(k, n, &data, &None)
+            .and_then(|ss| recover_secret(&ss))
+            .map(|_| ())
+            .unwrap_or(())
     }
 });

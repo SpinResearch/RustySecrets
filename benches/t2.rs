@@ -20,8 +20,7 @@ mod t2 {
                 let secret = shared::$secret();
 
                 b.iter(move || {
-                    let scheme = t2::SharingScheme::default();
-                    let shares = scheme.split_secret($k, $n, &secret, &None).unwrap();
+                    let shares = t2::split_secret($k, $n, &secret, &None).unwrap();
                     black_box(shares);
                 });
             }
@@ -33,12 +32,11 @@ mod t2 {
             #[bench]
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
-                let scheme = t2::SharingScheme::default();
-                let all_shares = scheme.split_secret($k, $n, &secret, &None).unwrap();
+                let all_shares = t2::split_secret($k, $n, &secret, &None).unwrap();
                 let shares = &all_shares.into_iter().take($k).collect::<Vec<_>>().clone();
 
                 b.iter(|| {
-                    let result = scheme.recover_secret(&shares.to_vec()).unwrap();
+                    let result = t2::recover_secret(&shares.to_vec()).unwrap();
                     black_box(result);
                 });
             }

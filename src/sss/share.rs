@@ -12,9 +12,9 @@ use share::format::{format_share_for_signing, share_string_from, share_from_stri
 /// A share identified by an `id`, a threshold `k`, a number of total shares `n`,
 /// the `data` held in the share, and the share's `metadata`.
 // #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-// FIXME: Write manual instances which ignore the signature
+// TODO: Write manual instances which ignore the signature
 #[derive(Clone, Debug)]
-pub struct Share {
+pub(crate) struct Share {
     /// The identifier of the share (varies between 1 and n where n is the total number of generated shares)
     pub id: u8,
     /// The number of shares necessary to recover the secret, aka a threshold
