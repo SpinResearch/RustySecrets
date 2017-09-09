@@ -9,6 +9,7 @@ use share::{IsShare, IsSignedShare};
 // 2) Validate group consistency
 // 3) Validate other properties, in no specific order
 
+/// TODO: Doc
 pub(crate) fn validate_signed_shares<S: IsSignedShare>(
     shares: Vec<S>,
     verify_signatures: bool,
@@ -22,6 +23,7 @@ pub(crate) fn validate_signed_shares<S: IsSignedShare>(
     Ok((threshold, shares))
 }
 
+/// TODO: Doc
 pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)> {
     if shares.is_empty() {
         bail!(ErrorKind::EmptyShares);
@@ -33,10 +35,12 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
     let mut k_compatibility_sets = HashMap::new();
 
     for share in shares {
-        let (id, k) = (share.get_id(), share.get_threshold());
+        let (id, threshold) = (share.get_id(), share.get_threshold());
 
-        k_compatibility_sets.entry(k).or_insert_with(HashSet::new);
-        let k_set = k_compatibility_sets.get_mut(&k).unwrap();
+        k_compatibility_sets.entry(threshold).or_insert_with(
+            HashSet::new,
+        );
+        let k_set = k_compatibility_sets.get_mut(&threshold).unwrap();
         k_set.insert(id);
 
         if result.iter().any(|s| s.get_id() == id) {
@@ -44,14 +48,14 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
         }
 
         if result.iter().any(|s| s.get_data() == share.get_data()) && share.get_threshold() != 1 {
-            // When k = 1, shares data can be the same
+            // When threshold = 1, shares data can be the same
             bail!(ErrorKind::DuplicateShareData(id));
         }
 
         result.push(share);
     }
 
-    // Validate k
+    // Validate threshold
 
     let k_sets = k_compatibility_sets.keys().count();
 
@@ -71,12 +75,12 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
     }
 
     // It is safe to unwrap because k_sets == 1
-    let k = k_compatibility_sets.keys().last().unwrap().to_owned();
+    let threshold = k_compatibility_sets.keys().last().unwrap().to_owned();
 
-    if shares_count < k as usize {
-        bail!(ErrorKind::MissingShares(k as usize, shares_count));
+    if shares_count < threshold as usize {
+        bail!(ErrorKind::MissingShares(threshold as usize, shares_count));
     }
 
-    result.truncate(k as usize);
-    Ok((k, result))
+    result.truncate(threshold as usize);
+    Ok((threshold, result))
 }
