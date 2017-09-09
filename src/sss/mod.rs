@@ -12,6 +12,8 @@ mod format;
 mod scheme;
 pub(crate) use self::scheme::*;
 
+mod math;
+
 /// Performs threshold k-out-of-n Shamir's secret sharing.
 ///
 /// # Examples

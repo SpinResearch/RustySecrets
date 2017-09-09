@@ -31,7 +31,7 @@ pub use util::Void;
 
 mod share;
 mod gf256;
-mod interpolation;
+mod lagrange;
 
 pub mod errors;
 pub mod sss;

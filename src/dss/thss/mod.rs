@@ -5,11 +5,14 @@ use ring::rand::{SecureRandom, SystemRandom};
 
 use errors::*;
 use dss::random::{get_random_bytes, random_len};
-use interpolation::{lagrange_interpolate, encode_secret};
+use lagrange::lagrange_interpolate;
 use share::validation::validate_shares;
 
 mod share;
 pub use self::share::*;
+
+mod math;
+use self::math::encode_secret;
 
 /// TODO: Doc
 pub fn split_secret(

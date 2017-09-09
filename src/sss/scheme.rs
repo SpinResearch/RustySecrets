@@ -6,10 +6,12 @@ use rand::{OsRng, Rng};
 use merkle_sigs::sign_data_vec;
 
 use errors::*;
-use interpolation::{encode, lagrange_interpolate};
-use sss::format::format_share_for_signing;
 use sss::Share;
+use sss::format::format_share_for_signing;
 use share::validation::validate_signed_shares;
+use lagrange::lagrange_interpolate;
+
+use super::math::encode;
 
 /// SSS provides Shamir's secret sharing with raw data.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
@@ -28,7 +30,7 @@ impl SSS {
             bail!(ErrorKind::InvalidThreshold(threshold, total_shares_count));
         }
 
-        let shares = self.secret_share(secret, threshold, total_shares_count)?;
+        let shares = Self::secret_share(secret, threshold, total_shares_count)?;
 
         let signatures = if sign_shares {
             let shares_to_sign = shares
@@ -72,12 +74,7 @@ impl SSS {
         Ok(result.collect())
     }
 
-    fn secret_share(
-        &self,
-        src: &[u8],
-        threshold: u8,
-        total_shares_count: u8,
-    ) -> Result<Vec<Vec<u8>>> {
+    fn secret_share(src: &[u8], threshold: u8, total_shares_count: u8) -> Result<Vec<Vec<u8>>> {
         let mut result = Vec::with_capacity(total_shares_count as usize);
         for _ in 0..(total_shares_count as usize) {
             result.push(vec![0u8; src.len()]);
@@ -96,7 +93,6 @@ impl SSS {
         }
         Ok(result)
     }
-
 
     /// Recovers the secret from a k-out-of-n Shamir's secret sharing.
     ///
