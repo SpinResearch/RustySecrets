@@ -33,10 +33,10 @@ mod wrapped_secrets {
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
                 let all_shares = wrapped_secrets::generate_shares($k, $n, &secret, None, $signed).unwrap();
-                let shares = &all_shares.into_iter().take($k).collect::<Vec<_>>().clone();
+                let shares = all_shares.into_iter().take($k).collect::<Vec<_>>();
 
                 b.iter(|| {
-                    let result = wrapped_secrets::recover_secret(shares.to_vec(), $signed).unwrap();
+                    let result = wrapped_secrets::recover_secret(&shares, $signed).unwrap();
                     black_box(result);
                 });
             }

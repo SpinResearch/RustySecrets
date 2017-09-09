@@ -9,7 +9,7 @@ use errors::*;
 use interpolation::{encode, lagrange_interpolate};
 use sss::format::format_share_for_signing;
 use sss::Share;
-use share::validation::validate_shares;
+use share::validation::validate_signed_shares;
 
 /// SSS provides Shamir's secret sharing with raw data.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
@@ -19,22 +19,24 @@ impl SSS {
     /// Performs threshold k-out-of-n Shamir's secret sharing.
     pub fn generate_shares(
         &self,
-        k: u8,
-        n: u8,
+        threshold: u8,
+        total_shares_count: u8,
         secret: &[u8],
         sign_shares: bool,
     ) -> Result<Vec<Share>> {
-        if k > n {
-            bail!(ErrorKind::InvalidThreshold(k, n));
+        if threshold > total_shares_count {
+            bail!(ErrorKind::InvalidThreshold(threshold, total_shares_count));
         }
 
-        let shares = self.secret_share(secret, k, n)?;
+        let shares = self.secret_share(secret, threshold, total_shares_count)?;
 
         let signatures = if sign_shares {
             let shares_to_sign = shares
                 .iter()
                 .enumerate()
-                .map(|(i, x)| format_share_for_signing(k, (i + 1) as u8, x))
+                .map(|(i, x)| {
+                    format_share_for_signing(threshold, (i + 1) as u8, x)
+                })
                 .collect::<Vec<_>>();
 
             let sign = sign_data_vec(&shares_to_sign, digest)
@@ -49,7 +51,7 @@ impl SSS {
         };
 
         let sig_pairs = signatures
-            .unwrap_or_else(|| vec![None; n as usize])
+            .unwrap_or_else(|| vec![None; total_shares_count as usize])
             .into_iter()
             .map(|sig_pair| sig_pair.map(From::from));
 
@@ -61,8 +63,7 @@ impl SSS {
 
             Share {
                 id,
-                k,
-                n,
+                threshold,
                 data,
                 signature_pair,
             }
@@ -71,19 +72,24 @@ impl SSS {
         Ok(result.collect())
     }
 
-    fn secret_share(&self, src: &[u8], k: u8, n: u8) -> Result<Vec<Vec<u8>>> {
-        let mut result = Vec::with_capacity(n as usize);
-        for _ in 0..(n as usize) {
+    fn secret_share(
+        &self,
+        src: &[u8],
+        threshold: u8,
+        total_shares_count: u8,
+    ) -> Result<Vec<Vec<u8>>> {
+        let mut result = Vec::with_capacity(total_shares_count as usize);
+        for _ in 0..(total_shares_count as usize) {
             result.push(vec![0u8; src.len()]);
         }
-        let mut col_in = vec![0u8, k];
-        let mut col_out = Vec::with_capacity(n as usize);
+        let mut col_in = vec![0u8, threshold];
+        let mut col_out = Vec::with_capacity(total_shares_count as usize);
         let mut osrng = OsRng::new()?;
         for (c, &s) in src.iter().enumerate() {
             col_in[0] = s;
             osrng.fill_bytes(&mut col_in[1..]);
             col_out.clear();
-            encode(&*col_in, n, &mut col_out)?;
+            encode(&*col_in, total_shares_count, &mut col_out)?;
             for (&y, share) in col_out.iter().zip(result.iter_mut()) {
                 share[c] = y;
             }
@@ -96,15 +102,15 @@ impl SSS {
     ///
     /// At least `k` distinct shares need to be provided to recover the share.
     pub fn recover_secret(shares: Vec<Share>, verify_signatures: bool) -> Result<Vec<u8>> {
-        let (k, shares) = validate_shares(shares, verify_signatures)?;
+        let (threshold, shares) = validate_signed_shares(shares, verify_signatures)?;
 
         let slen = shares[0].data.len();
-        let mut col_in = Vec::with_capacity(k as usize);
+        let mut col_in = Vec::with_capacity(threshold as usize);
         let mut secret = Vec::with_capacity(slen);
         for byteindex in 0..slen {
             col_in.clear();
-            for s in shares.iter().take(k as usize) {
-                col_in.push((s.n, s.data[byteindex]));
+            for s in shares.iter().take(threshold as usize) {
+                col_in.push((s.id, s.data[byteindex]));
             }
             secret.push(lagrange_interpolate(&*col_in));
         }

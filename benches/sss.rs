@@ -33,10 +33,10 @@ mod sss {
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
                 let all_shares = sss::generate_shares($k, $n, &secret, $signed).unwrap();
-                let shares = &all_shares.into_iter().take($k).collect::<Vec<_>>().clone();
+                let shares = all_shares.into_iter().take($k).collect::<Vec<_>>();
 
                 b.iter(|| {
-                    let result = sss::recover_secret(shares.to_vec(), $signed).unwrap();
+                    let result = sss::recover_secret(&shares, $signed).unwrap();
                     black_box(result);
                 });
             }

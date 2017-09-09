@@ -18,7 +18,7 @@ fuzz_target!(|data: &[u8]| {
 
         sss::generate_shares(k, n, &data, false)
             .map_err(|err| err.into())
-            .and_then(|ss| sss::recover_secret(ss, false))
+            .and_then(|ss| sss::recover_secret(&ss, false))
             .map(|_| ())
             .unwrap_or(())
     }

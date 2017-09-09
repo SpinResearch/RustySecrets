@@ -60,7 +60,7 @@ pub fn generate_shares(
 /// let share2 = "2-4-ChaydsUJDypD9ZWxwvIICh/cmZvzusOF".to_string();
 /// let shares = vec![share1, share2];
 ///
-/// match recover_secret(shares, false) {
+/// match recover_secret(&shares, false) {
 ///     Ok(secret) => {
 ///         // Do something with the secret
 ///     },
@@ -69,7 +69,7 @@ pub fn generate_shares(
 ///     }
 /// }
 /// ```
-pub fn recover_secret(shares: Vec<String>, verify_signatures: bool) -> Result<RustySecret> {
-    let shares = Share::parse_all(&shares, verify_signatures)?;
+pub fn recover_secret(shares: &[String], verify_signatures: bool) -> Result<RustySecret> {
+    let shares = Share::parse_all(shares, verify_signatures)?;
     WrappedSecrets::recover_secret(shares, verify_signatures)
 }

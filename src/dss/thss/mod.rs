@@ -46,34 +46,37 @@ impl ThSS {
     }
 
     /// Split a secret following a given sharing `scheme`,
-    /// with `k` being the number of shares necessary to recover the secret,
-    /// and `n` the total number of shares to be dealt.
+    /// with `threshold` being the number of shares necessary to recover the secret,
+    /// and `total_shares_count` the total number of shares to be dealt.
     pub fn split_secret(
         &self,
-        k: u8,
-        n: u8,
+        threshold: u8,
+        total_shares_count: u8,
         secret: &[u8],
         metadata: &Option<MetaData>,
     ) -> Result<Vec<Share>> {
-        if k < 1 || n < 1 {
-            bail!(ErrorKind::InvalidSplitParametersZero(k, n));
+        if threshold < 1 || total_shares_count < 1 {
+            bail!(ErrorKind::InvalidSplitParametersZero(
+                threshold,
+                total_shares_count,
+            ));
         }
 
-        if k > n {
-            bail!(ErrorKind::InvalidThreshold(k, n));
+        if threshold > total_shares_count {
+            bail!(ErrorKind::InvalidThreshold(threshold, total_shares_count));
         }
 
-        let rands_len = random_len(k as usize, secret.len());
+        let rands_len = random_len(threshold as usize, secret.len());
         let rands = get_random_bytes(self.random.as_ref(), rands_len)?;
 
-        let shares = (0..n)
+        let shares = (0..total_shares_count)
             .map(|id| {
-                let data = encode_secret(secret, k, id, &rands);
+                let data = encode_secret(secret, threshold, id, &rands);
 
                 Share {
                     id,
-                    k,
-                    n,
+                    threshold,
+                    total_shares_count,
                     data,
                     metadata: metadata.clone(),
                 }
@@ -85,7 +88,7 @@ impl ThSS {
 
     /// Recover the secret from the given set of shares
     pub fn recover_secret(&self, shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
-        let (_, shares) = validate_shares(shares.to_vec(), true)?;
+        let (_, shares) = validate_shares(shares.to_vec())?;
 
         // FIXME: Check that the data length is the same for all shares.
         let m = shares[0].data.len();

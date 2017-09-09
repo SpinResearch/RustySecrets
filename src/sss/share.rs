@@ -6,7 +6,7 @@ use merkle_sigs::{MerklePublicKey, Proof};
 use merkle_sigs::verify_data_vec_signature;
 
 use errors::*;
-use share::IsShare;
+use share::{IsShare, IsSignedShare};
 use sss::format::{format_share_for_signing, share_string_from, share_from_string};
 
 /// A share identified by an `id`, a threshold `k`, a number of total shares `n`,
@@ -18,9 +18,7 @@ pub(crate) struct Share {
     /// The identifier of the share (varies between 1 and n where n is the total number of generated shares)
     pub id: u8,
     /// The number of shares necessary to recover the secret, aka a threshold
-    pub k: u8,
-    /// The total number of shares that have been dealt
-    pub n: u8,
+    pub threshold: u8,
     /// The share data itself
     pub data: Vec<u8>,
     /// If the share is signed, this fields holds the signature
@@ -61,7 +59,7 @@ impl Share {
     pub fn into_string(self) -> String {
         share_string_from(
             self.data,
-            self.k,
+            self.threshold,
             self.id,
             self.signature_pair.map(Into::into),
         )
@@ -69,6 +67,24 @@ impl Share {
 }
 
 impl IsShare for Share {
+    fn get_id(&self) -> u8 {
+        self.id
+    }
+
+    fn get_data(&self) -> &[u8] {
+        &self.data
+    }
+
+    fn get_threshold(&self) -> u8 {
+        self.threshold
+    }
+
+    fn get_total_shares_count(&self) -> Option<u8> {
+        None
+    }
+}
+
+impl IsSignedShare for Share {
     type Signature = Option<SignaturePair>;
 
     fn verify_signatures(shares: &[Self]) -> Result<()> {
@@ -76,7 +92,7 @@ impl IsShare for Share {
 
         for share in shares {
             if !share.is_signed() {
-                bail!(ErrorKind::MissingSignature(share.id()));
+                bail!(ErrorKind::MissingSignature(share.get_id()));
             }
 
             let sig_pair = share.signature_pair.as_ref().unwrap();
@@ -85,9 +101,9 @@ impl IsShare for Share {
             let root_hash = &proof.root_hash;
 
             verify_data_vec_signature(
-                format_share_for_signing(share.k, share.n, share.data.as_slice()),
+                format_share_for_signing(share.threshold, share.id, share.data.as_slice()),
                 &(signature.to_vec(), proof.clone()),
-                &root_hash,
+                root_hash,
             ).map_err(|e| {
                 ErrorKind::InvalidSignature(share.id, String::from(e.description()))
             })?;
@@ -120,27 +136,11 @@ impl IsShare for Share {
         Ok(())
     }
 
-    fn id(&self) -> u8 {
-        self.id
-    }
-
-    fn data(&self) -> &[u8] {
-        &self.data
-    }
-
-    fn k(&self) -> u8 {
-        self.k
-    }
-
-    fn n(&self) -> u8 {
-        self.n
-    }
-
     fn is_signed(&self) -> bool {
         self.signature_pair.is_some()
     }
 
-    fn signature(&self) -> &Self::Signature {
+    fn get_signature(&self) -> &Self::Signature {
         &self.signature_pair
     }
 }

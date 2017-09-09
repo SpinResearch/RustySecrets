@@ -51,18 +51,19 @@ pub(crate) fn share_from_string(s: &str, id: u8, is_signed: bool) -> Result<Shar
             )
         };
     }
-    let (k, n, p3) = {
+    let (k, i, p3) = {
         let mut iter = parts.into_iter();
         let k = iter.next().unwrap().parse::<u8>()?;
-        let n = iter.next().unwrap().parse::<u8>()?;
+        let i = iter.next().unwrap().parse::<u8>()?;
         let p3 = iter.next().unwrap();
-        (k, n, p3)
+        (k, i, p3)
     };
-    if k < 1 || n < 1 {
+
+    if k < 1 || i < 1 {
         bail! {
             ErrorKind::ShareParsingError(
                 id,
-                format!("Found illegal parameters K: {} N: {}.", k, n),
+                format!("Found illegal share info: threshold = {}, identifier = {}.", k, i),
             )
         }
     }
@@ -104,10 +105,9 @@ pub(crate) fn share_from_string(s: &str, id: u8, is_signed: bool) -> Result<Shar
     };
 
     Ok(Share {
-        id: n, // FIXME: `n` represents the `id` provided in the share string
+        id: i,
         data,
-        k,
-        n,
+        threshold: k,
         signature_pair,
     })
 }

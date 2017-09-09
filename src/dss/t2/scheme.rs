@@ -84,8 +84,8 @@ impl T2 {
             .map(|share| {
                 Share {
                     id: share.id,
-                    k: share.k,
-                    n: share.n,
+                    threshold: share.threshold,
+                    total_shares_count: share.total_shares_count,
                     data: share.data,
                     hash: hash.clone(),
                     metadata: share.metadata.clone(),
@@ -98,15 +98,15 @@ impl T2 {
 
     /// Recover the secret from the given set of shares
     pub fn recover_secret(&self, shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
-        let (_, shares) = validate_shares(shares.to_vec(), true)?;
+        let (_, shares) = validate_shares(shares.to_vec())?;
 
         let underlying_shares = shares
             .iter()
             .map(|share| {
                 thss::Share {
                     id: share.id,
-                    k: share.k,
-                    n: share.n,
+                    threshold: share.threshold,
+                    total_shares_count: share.total_shares_count,
                     data: share.data.clone(),
                     metadata: share.metadata.clone(),
                 }
@@ -122,8 +122,8 @@ impl T2 {
         let sub_random = FixedRandom::new(rand.to_vec());
         let sub_scheme = Self::new(self.r, self.s, Box::new(sub_random))?;
         let mut test_shares = sub_scheme.split_secret(
-            shares[0].k,
-            shares[0].n,
+            shares[0].threshold,
+            shares[0].total_shares_count,
             &secret,
             &metadata,
         )?;

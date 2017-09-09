@@ -39,7 +39,7 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result
         })
 }
 
-/// Recovers the secret from a k-out-of-n Shamir's secret sharing.
+/// Recovers the secret from a k-out-of-n Shamir's secret sharing scheme.
 ///
 /// At least `k` distinct shares need to be provided to recover the share.
 ///
@@ -52,7 +52,7 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result
 /// let share2 = "2-4-ChaydsUJDypD9ZWxwvIICh/cmZvzusOF".to_string();
 /// let shares = vec![share1, share2];
 ///
-/// match recover_secret(shares, false) {
+/// match recover_secret(&shares, false) {
 ///     Ok(secret) => {
 ///         // Do something with the secret
 ///     },
@@ -61,7 +61,7 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result
 ///     }
 /// }
 /// ```
-pub fn recover_secret(shares: Vec<String>, verify_signatures: bool) -> Result<Vec<u8>> {
-    let shares = Share::parse_all(&shares, verify_signatures)?;
+pub fn recover_secret(shares: &[String], verify_signatures: bool) -> Result<Vec<u8>> {
+    let shares = Share::parse_all(shares, verify_signatures)?;
     SSS::recover_secret(shares, verify_signatures)
 }
