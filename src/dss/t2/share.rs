@@ -1,7 +1,7 @@
 
 use errors::*;
 use share::IsShare;
-use void::Void;
+use util::Void;
 
 pub use dss::thss::MetaData;
 

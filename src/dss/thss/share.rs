@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 
 use errors::*;
 use share::IsShare;
-use void::Void;
+use util::Void;
 
 /// A share's public metadata.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]

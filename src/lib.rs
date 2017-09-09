@@ -26,8 +26,8 @@ use ring::digest::{Algorithm, SHA512};
 #[allow(non_upper_case_globals)]
 static digest: &'static Algorithm = &SHA512;
 
-mod void;
-pub use void::Void;
+mod util;
+pub use util::Void;
 
 mod share;
 mod gf256;
