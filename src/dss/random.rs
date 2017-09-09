@@ -6,6 +6,7 @@ use errors::*;
 use ring::error::Unspecified;
 use ring::rand::SecureRandom;
 
+/// TODO: Doc.
 pub(crate) fn random_len(k: usize, m: usize) -> usize {
     assert!(k >= 1);
     assert!(m >= 1);
@@ -13,6 +14,7 @@ pub(crate) fn random_len(k: usize, m: usize) -> usize {
     (k - 1) * m
 }
 
+/// TODO: Doc.
 pub(crate) fn get_random_bytes(random: &SecureRandom, len: usize) -> Result<Vec<u8>> {
     let mut rl = vec![0; len];
 
@@ -23,6 +25,7 @@ pub(crate) fn get_random_bytes(random: &SecureRandom, len: usize) -> Result<Vec<
     Ok(rl)
 }
 
+/// TODO: Doc.
 pub(crate) struct FixedRandom {
     src: Vec<u8>,
 }

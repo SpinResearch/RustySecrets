@@ -43,7 +43,7 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result
 
 /// Recovers the secret from a k-out-of-n Shamir's secret sharing scheme.
 ///
-/// At least `k` distinct shares need to be provided to recover the share.
+/// At least `k` distinct shares need to be provided to recover the secret.
 ///
 /// # Examples
 ///
