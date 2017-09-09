@@ -35,20 +35,6 @@ impl IsShare for Share {
     fn get_total_shares_count(&self) -> Option<u8> {
         Some(self.total_shares_count)
     }
-
-    // type Signature = Void;
-
-    // fn verify_signatures(_shares: &[Self]) -> Result<()> {
-    //     Ok(())
-    // }
-
-    // fn is_signed(&self) -> bool {
-    //     false
-    // }
-
-    // fn signature(&self) -> &Self::Signature {
-    //     unimplemented!()
-    // }
 }
 
 impl HasMetaData for Share {
