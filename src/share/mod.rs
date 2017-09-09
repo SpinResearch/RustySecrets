@@ -3,7 +3,6 @@
 
 use errors::*;
 
-pub(crate) mod format;
 pub(crate) mod validation;
 
 /// TODO: Doc

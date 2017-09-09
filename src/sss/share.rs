@@ -7,7 +7,7 @@ use merkle_sigs::verify_data_vec_signature;
 
 use errors::*;
 use share::IsShare;
-use share::format::{format_share_for_signing, share_string_from, share_from_string};
+use sss::format::{format_share_for_signing, share_string_from, share_from_string};
 
 /// A share identified by an `id`, a threshold `k`, a number of total shares `n`,
 /// the `data` held in the share, and the share's `metadata`.
