@@ -1,7 +1,7 @@
 
-//! Implements the `T2` deterministic threshold secret sharing scheme.
+//! Implements the `SS1` deterministic threshold secret sharing scheme.
 //!
-//! This scheme is implemted as the *T2 transform* over the simple *threshold sharing scheme (ThSS)*
+//! This scheme is implemted as the *T2 transform* over the ThSS threshold sharing scheme.
 //! found in the `rusty_secrets::dss::thss` module.
 //!
 //! # Security properties
@@ -29,22 +29,22 @@ mod share;
 pub use self::share::*;
 
 mod scheme;
-use self::scheme::T2;
+use self::scheme::SS1;
 
 /// Performs threshold k-out-of-n deterministic secret sharing.
 ///
 /// # Examples
 ///
 /// ```
-/// use rusty_secrets::dss::t2;
+/// use rusty_secrets::dss::ss1;
 ///
 /// let secret = "These programs were never about terrorism: they’re about economic spying, \
 ///               social control, and diplomatic manipulation. They’re about power.";
 ///
-/// let mut metadata = t2::MetaData::new();
+/// let mut metadata = ss1::MetaData::new();
 /// metadata.tags.insert("mime_type".to_string(), "text/plain".to_string());
 ///
-/// match t2::split_secret(7, 10, &secret.as_bytes(), &Some(metadata)) {
+/// match ss1::split_secret(7, 10, &secret.as_bytes(), &Some(metadata)) {
 ///     Ok(shares) => {
 ///         // Do something with the shares
 ///     },
@@ -59,32 +59,32 @@ pub fn split_secret(
     secret: &[u8],
     metadata: &Option<MetaData>,
 ) -> Result<Vec<Share>> {
-    T2::default().split_secret(k, n, secret, metadata)
+    SS1::default().split_secret(k, n, secret, metadata)
 }
 
-/// Recovers the secret from a k-out-of-n deterministic secret sharing scheme (`T2`).
+/// Recovers the secret from a k-out-of-n deterministic secret sharing scheme (`SS1`).
 ///
 /// At least `k` distinct shares need to be provided to recover the secret.
 ///
 /// # Examples
 ///
 /// ```rust
-/// use rusty_secrets::dss::t2;
+/// use rusty_secrets::dss::ss1;
 ///
 /// let secret = "These programs were never about terrorism: they’re about economic spying, \
 ///               social control, and diplomatic manipulation. They’re about power.";
 ///
-/// let mut metadata = t2::MetaData::new();
+/// let mut metadata = ss1::MetaData::new();
 /// metadata.tags.insert("mime_type".to_string(), "text/plain".to_string());
 ///
-/// let shares = t2::split_secret(
+/// let shares = ss1::split_secret(
 ///     7,
 ///     10,
 ///     &secret.as_bytes(),
 ///     &Some(metadata)
 /// ).unwrap();
 ///
-/// match t2::recover_secret(&shares) {
+/// match ss1::recover_secret(&shares) {
 ///     Ok((secret, metadata)) => {
 ///         // Do something with the secret and the metadata
 ///     },
@@ -94,7 +94,7 @@ pub fn split_secret(
 /// }
 /// ```
 pub fn recover_secret(shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
-    T2::default().recover_secret(shares)
+    SS1::default().recover_secret(shares)
 }
 
 #[cfg(test)]

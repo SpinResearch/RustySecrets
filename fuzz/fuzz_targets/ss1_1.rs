@@ -4,7 +4,7 @@ extern crate libfuzzer_sys;
 extern crate rusty_secrets;
 extern crate arbitrary;
 
-use rusty_secrets::dss::t2::*;
+use rusty_secrets::dss::ss1::*;
 use arbitrary::{RingBuffer, Unstructured};
 
 fuzz_target!(|data: &[u8]| {

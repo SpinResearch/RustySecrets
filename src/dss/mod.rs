@@ -1,5 +1,5 @@
 
-//! Defines two different deterministic sharing schemes, ThSS and T2.
+//! Defines two different deterministic sharing schemes, ThSS and SS1.
 //!
 //! # Deterministic secret sharing
 //!
@@ -14,7 +14,7 @@
 //! **Scheme / Property** | **Basic** | **Priv1** | **Priv2** | **Auth1** | **Auth2** | **ErrDet** | **Repro** |
 //! :--------------------:|:---------:|:---------:|:---------:|:---------:|:---------:|:----------:|:---------:|
 //!  **ThSS**             |    Yes    |    Yes    |     No    |    No     |    No     |    Yes     |    No     |
-//!  **T2**               |    Yes    |    Yes    |     Yes   |    Yes    |    Yes    |    Yes     |    Yes    |
+//!  **SS1**              |    Yes    |    Yes    |     Yes   |    Yes    |    Yes    |    Yes     |    Yes    |
 //!
 //! # Security properties
 //!
@@ -29,6 +29,6 @@
 //! **Repro**    | Share reproducible: TODO
 
 pub mod thss;
-pub mod t2;
+pub mod ss1;
 
 mod random;

@@ -5,7 +5,7 @@
 
 use std::collections::HashSet;
 
-use dss::t2;
+use dss::ss1;
 
 /// Create the Error, ErrorKind, ResultExt, and Result types
 error_chain! {
@@ -53,9 +53,9 @@ error_chain! {
             description("This share is incorrectly formatted.")
         }
 
-        InvalidT2Parameters(r: usize, s: usize) {
-            description("Invalid parameters for the T2 sharing scheme")
-            display("Invalid parameters for the T2 sharing scheme: r = {}, s = {}.", r, s)
+        InvalidSS1Parameters(r: usize, s: usize) {
+            description("Invalid parameters for the SS1 sharing scheme")
+            display("Invalid parameters for the SS1 sharing scheme: r = {}, s = {}.", r, s)
         }
 
         InvalidSplitParametersZero(k: u8, n: u8) {
@@ -63,7 +63,7 @@ error_chain! {
             display("Parameters k and n must be greater than zero.")
         }
 
-        MismatchingShares(got: t2::Share, expected: t2::Share) {
+        MismatchingShares(got: ss1::Share, expected: ss1::Share) {
             description("Share mismatch during verification of secret recovery")
             display("Share mismatch during verification of secret recovery.")
         }

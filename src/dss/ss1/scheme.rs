@@ -13,7 +13,7 @@ use share::validation::validate_shares;
 use super::share::*;
 
 #[allow(missing_debug_implementations)]
-pub(crate) struct T2 {
+pub(crate) struct SS1 {
     /// How many random bytes to read from the underlying entropy source
     pub r: usize,
     ///
@@ -22,17 +22,17 @@ pub(crate) struct T2 {
     random: Box<SecureRandom>,
 }
 
-impl Default for T2 {
+impl Default for SS1 {
     fn default() -> Self {
         Self::new(256, 256, Box::new(SystemRandom::new())).unwrap()
     }
 }
 
-impl T2 {
+impl SS1 {
     /// Constructs a new sharing scheme
     pub fn new(r: usize, s: usize, random: Box<SecureRandom>) -> Result<Self> {
         if r < 128 || s < 128 {
-            bail!(ErrorKind::InvalidT2Parameters(r, s));
+            bail!(ErrorKind::InvalidSS1Parameters(r, s));
         }
 
         Ok(Self { r, s, random })

@@ -7,9 +7,9 @@ extern crate rusty_secrets;
 
 mod shared;
 
-mod t2 {
+mod ss1 {
 
-    use rusty_secrets::dss::t2;
+    use rusty_secrets::dss::ss1;
     use test::{Bencher, black_box};
     use shared;
 
@@ -20,7 +20,7 @@ mod t2 {
                 let secret = shared::$secret();
 
                 b.iter(move || {
-                    let shares = t2::split_secret($k, $n, &secret, &None).unwrap();
+                    let shares = ss1::split_secret($k, $n, &secret, &None).unwrap();
                     black_box(shares);
                 });
             }
@@ -32,11 +32,11 @@ mod t2 {
             #[bench]
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
-                let all_shares = t2::split_secret($k, $n, &secret, &None).unwrap();
+                let all_shares = ss1::split_secret($k, $n, &secret, &None).unwrap();
                 let shares = &all_shares.into_iter().take($k).collect::<Vec<_>>().clone();
 
                 b.iter(|| {
-                    let result = t2::recover_secret(&shares.to_vec()).unwrap();
+                    let result = ss1::recover_secret(&shares.to_vec()).unwrap();
                     black_box(result);
                 });
             }
