@@ -6,16 +6,20 @@ use errors::*;
 use ring::error::Unspecified;
 use ring::rand::SecureRandom;
 
-/// TODO: Doc.
-pub(crate) fn random_len(k: usize, m: usize) -> usize {
-    assert!(k >= 1);
-    assert!(m >= 1);
+/// Returns the number of random bytes to read from the secure random number generator.
+/// As defined in section 3.1 of the 'New Directions in Secret Sharing' paper.
+pub(crate) fn random_bytes_count(threshold: usize, message_size: usize) -> usize {
+    assert!(threshold >= 1);
+    assert!(message_size >= 1);
 
-    (k - 1) * m
+    // TODO: How about overflow?
+    (threshold - 1) * message_size
 }
 
-/// TODO: Doc.
-pub(crate) fn get_random_bytes(random: &SecureRandom, len: usize) -> Result<Vec<u8>> {
+/// Attempts to read a prefix of length `len` from the given secure random generator.
+pub(crate) fn random_bytes(random: &SecureRandom, len: usize) -> Result<Vec<u8>> {
+    assert!(len > 0);
+
     let mut rl = vec![0; len];
 
     random.fill(&mut rl).chain_err(|| {
@@ -25,12 +29,15 @@ pub(crate) fn get_random_bytes(random: &SecureRandom, len: usize) -> Result<Vec<
     Ok(rl)
 }
 
-/// TODO: Doc.
+/// An implementation of SecureRandom that fills the output slice with the slice in `src`.
+/// The length of `src` must be larger than any slice that we attempt to fill.
 pub(crate) struct FixedRandom {
     src: Vec<u8>,
 }
 
 impl FixedRandom {
+    /// Create a new fixed random generator.
+    /// The length of `src` must be larger than any slice that we attempt to fill.
     pub(crate) fn new(src: Vec<u8>) -> Self {
         if src.is_empty() {
             panic!("The source slice of FixedRandom cannot be empty!");

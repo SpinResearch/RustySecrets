@@ -8,7 +8,7 @@ use ring::rand::{SystemRandom, SecureRandom};
 use errors::*;
 use dss::thss;
 use dss::thss::{ThSS, MetaData};
-use dss::random::{get_random_bytes, random_len, FixedRandom};
+use dss::random::{random_bytes, random_bytes_count, FixedRandom};
 use share::validation::validate_shares;
 use super::share::*;
 
@@ -16,15 +16,19 @@ use super::share::*;
 pub(crate) struct SS1 {
     /// How many random bytes to read from the underlying entropy source
     pub r: usize,
-    ///
+    /// TODO
     pub s: usize,
     /// The entropy source to use to generate random bytes
     random: Box<SecureRandom>,
 }
 
+// TODO: Are those good parameters?
+static DEFAULT_R: usize = 256;
+static DEFAULT_S: usize = 256;
+
 impl Default for SS1 {
     fn default() -> Self {
-        Self::new(256, 256, Box::new(SystemRandom::new())).unwrap()
+        Self::new(DEFAULT_R, DEFAULT_S, Box::new(SystemRandom::new())).unwrap()
     }
 }
 
@@ -39,32 +43,35 @@ impl SS1 {
     }
 
     /// Split a secret following a given sharing `scheme`,
-    /// with `k` being the number of shares necessary to recover the secret,
-    /// and `n` the total number of shares to be dealt.
+    /// with `threshold` being the number of shares necessary to recover the secret,
+    /// and `total_shares_count` the total number of shares to be dealt.
     pub fn split_secret(
         &self,
-        k: u8,
-        n: u8,
+        threshold: u8,
+        total_shares_count: u8,
         secret: &[u8],
         metadata: &Option<MetaData>,
     ) -> Result<Vec<Share>> {
-        if k < 1 || n < 1 {
-            bail!(ErrorKind::InvalidSplitParametersZero(k, n));
+        if threshold < 1 || total_shares_count < 1 {
+            bail!(ErrorKind::InvalidSplitParametersZero(
+                threshold,
+                total_shares_count,
+            ));
         }
 
-        if k > n {
-            bail!(ErrorKind::InvalidThreshold(k, n));
+        if threshold > total_shares_count {
+            bail!(ErrorKind::InvalidThreshold(threshold, total_shares_count));
         }
 
-        let rand = get_random_bytes(self.random.as_ref(), self.r)?;
+        let rand = random_bytes(self.random.as_ref(), self.r)?;
 
         let mut shake = Shake256::default();
         shake.process(&[0]);
-        shake.process(&[k, n]);
+        shake.process(&[threshold, total_shares_count]);
         shake.process(secret);
         shake.process(&rand);
 
-        let seed_len = random_len(k as usize, secret.len() + self.r);
+        let seed_len = random_bytes_count(threshold as usize, secret.len() + self.r);
 
         let mut hash = vec![0; self.s];
         let mut seed = vec![0; seed_len];
@@ -77,7 +84,12 @@ impl SS1 {
         let underlying = ThSS::new(Box::new(underlying_random));
 
         let message = [secret, &rand].concat();
-        let shares = underlying.split_secret(k, n, &message, metadata)?;
+        let shares = underlying.split_secret(
+            threshold,
+            total_shares_count,
+            &message,
+            metadata,
+        )?;
 
         let res = shares
             .into_iter()

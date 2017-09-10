@@ -4,7 +4,7 @@
 use ring::rand::{SecureRandom, SystemRandom};
 
 use errors::*;
-use dss::random::{get_random_bytes, random_len};
+use dss::random::{random_bytes, random_bytes_count};
 use lagrange::lagrange_interpolate;
 use share::validation::validate_shares;
 
@@ -51,8 +51,8 @@ impl ThSS {
             bail!(ErrorKind::InvalidThreshold(threshold, total_shares_count));
         }
 
-        let rands_len = random_len(threshold as usize, secret.len());
-        let rands = get_random_bytes(self.random.as_ref(), rands_len)?;
+        let rands_len = random_bytes_count(threshold as usize, secret.len());
+        let rands = random_bytes(self.random.as_ref(), rands_len)?;
 
         let shares = (0..total_shares_count)
             .map(|id| {
