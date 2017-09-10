@@ -1,4 +1,5 @@
 
+use std::fmt;
 use std::collections::HashSet;
 
 use sha3::Shake256;
@@ -12,34 +13,61 @@ use dss::random::{random_bytes, random_bytes_count, FixedRandom};
 use share::validation::validate_shares;
 use super::share::*;
 
-#[allow(missing_debug_implementations)]
 pub(crate) struct SS1 {
-    /// How many random bytes to read from the underlying entropy source
-    pub r: usize,
-    /// TODO
-    pub s: usize,
-    /// The entropy source to use to generate random bytes
+    /// How many random bytes to read from `random` to use as
+    /// padding to the hash function (param `r` from the paper)
+    /// and to the message in the underlying ThSS scheme.
+    pub random_padding_len: usize,
+    /// The length of the hash used for all shares (param `s` from the paper)
+    pub hash_len: usize,
+    /// The secure random number generator
     random: Box<SecureRandom>,
 }
 
+impl fmt::Debug for SS1 {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "SS1 {{ random_padding_len: {}, hash_len: {} }}",
+            self.random_padding_len,
+            self.hash_len
+        )
+    }
+}
+
 // TODO: Are those good parameters?
-static DEFAULT_R: usize = 256;
-static DEFAULT_S: usize = 256;
+static DEFAULT_RANDOM_PADDING_LEN: usize = 512; // r
+static DEFAULT_HASH_LEN: usize = 256; // s
 
 impl Default for SS1 {
     fn default() -> Self {
-        Self::new(DEFAULT_R, DEFAULT_S, Box::new(SystemRandom::new())).unwrap()
+        Self::new(
+            DEFAULT_RANDOM_PADDING_LEN,
+            DEFAULT_HASH_LEN,
+            Box::new(SystemRandom::new()),
+        ).unwrap()
     }
 }
 
 impl SS1 {
     /// Constructs a new sharing scheme
-    pub fn new(r: usize, s: usize, random: Box<SecureRandom>) -> Result<Self> {
-        if r < 128 || s < 128 {
-            bail!(ErrorKind::InvalidSS1Parameters(r, s));
+    pub fn new(
+        random_padding_len: usize,
+        hash_len: usize,
+        random: Box<SecureRandom>,
+    ) -> Result<Self> {
+        if random_padding_len < 128 || hash_len < 128 {
+            bail!(ErrorKind::InvalidSS1Parameters(
+                random_padding_len,
+                hash_len,
+            ));
         }
 
-        Ok(Self { r, s, random })
+        Ok(Self {
+            random_padding_len,
+            hash_len,
+            random,
+        })
     }
 
     /// Split a secret following a given sharing `scheme`,
@@ -63,27 +91,27 @@ impl SS1 {
             bail!(ErrorKind::InvalidThreshold(threshold, total_shares_count));
         }
 
-        let rand = random_bytes(self.random.as_ref(), self.r)?;
+        let random_padding = random_bytes(self.random.as_ref(), self.random_padding_len)?;
 
         let mut shake = Shake256::default();
         shake.process(&[0]);
         shake.process(&[threshold, total_shares_count]);
         shake.process(secret);
-        shake.process(&rand);
+        shake.process(&random_padding);
 
-        let seed_len = random_bytes_count(threshold as usize, secret.len() + self.r);
+        let seed_len =
+            random_bytes_count(threshold as usize, secret.len() + self.random_padding_len);
 
-        let mut hash = vec![0; self.s];
+        let mut hash = vec![0; self.hash_len];
         let mut seed = vec![0; seed_len];
 
         let mut reader = shake.xof_result();
         reader.read(&mut hash);
         reader.read(&mut seed);
 
-        let underlying_random = FixedRandom::new(seed);
-        let underlying = ThSS::new(Box::new(underlying_random));
+        let underlying = ThSS::new(Box::new(FixedRandom::new(seed)));
 
-        let message = [secret, &rand].concat();
+        let message = [secret, &random_padding].concat();
         let shares = underlying.split_secret(
             threshold,
             total_shares_count,
@@ -110,7 +138,7 @@ impl SS1 {
 
     /// Recover the secret from the given set of shares
     pub fn recover_secret(&self, shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
-        let (_, shares) = validate_shares(shares.to_vec())?;
+        let (_, mut shares) = validate_shares(shares.to_vec())?;
 
         let underlying_shares = shares
             .iter()
@@ -126,13 +154,13 @@ impl SS1 {
             .collect::<Vec<_>>();
 
         let underlying = ThSS::default();
-        let recovered = underlying.recover_secret(&underlying_shares)?;
-        let (mut secret, metadata) = recovered;
-        let secret_len = secret.len() - self.r;
-        let rand = secret.split_off(secret_len);
+        let (mut secret, metadata) = underlying.recover_secret(&underlying_shares)?;
+        let secret_len = secret.len() - self.random_padding_len;
+        let random_padding = secret.split_off(secret_len);
+        // `secret` nows holds the secret
 
-        let sub_random = FixedRandom::new(rand.to_vec());
-        let sub_scheme = Self::new(self.r, self.s, Box::new(sub_random))?;
+        let sub_random = FixedRandom::new(random_padding.to_vec());
+        let sub_scheme = Self::new(self.random_padding_len, self.hash_len, Box::new(sub_random))?;
         let mut test_shares = sub_scheme.split_secret(
             shares[0].threshold,
             shares[0].total_shares_count,
@@ -142,12 +170,11 @@ impl SS1 {
 
         test_shares.sort_by_key(|share| share.id);
 
-        let mut sorted_shares = shares.to_vec();
-        sorted_shares.sort_by_key(|share| share.id);
+        shares.sort_by_key(|share| share.id);
 
         let ids = shares.iter().map(|share| share.id).collect::<HashSet<_>>();
         let relevant_test_shares = test_shares.iter().filter(|share| ids.contains(&share.id));
-        let matching_shares = sorted_shares.iter().zip(relevant_test_shares);
+        let matching_shares = shares.iter().zip(relevant_test_shares);
 
         for (share, test_share) in matching_shares {
             if share != test_share {
@@ -160,16 +187,4 @@ impl SS1 {
 
         Ok((secret, metadata))
     }
-
-    // FIXME: Is CorruptedShare needed?
-    // fn check_shares(&self, shares: &[Share]) -> Result<()> {
-    //     let k = shares[0].k;
-    //     let n = shares[0].n;
-    //     let m = shares[0].data.len();
-    //     let h = &shares[0].hash;
-
-    //     if &share.hash != h {
-    //         bail!(ErrorKind::CorruptedShare(share.id));
-    //     }
-    // }
 }
