@@ -1,7 +1,7 @@
 
 //! Implements the `SS1` deterministic threshold secret sharing scheme.
 //!
-//! This scheme is implemted as the *T2 transform* over the ThSS threshold sharing scheme.
+//! This scheme is implemented as the *T2 transform* over the ThSS threshold sharing scheme.
 //! found in the `rusty_secrets::dss::thss` module.
 //!
 //! # Security properties

@@ -12,7 +12,7 @@ use sss::format::{format_share_for_signing, share_string_from, share_from_string
 /// A share identified by an `id`, a threshold `k`, a number of total shares `n`,
 /// the `data` held in the share, and the share's `metadata`.
 // #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-// TODO: Write manual instances which ignore the signature
+// TODO: Write manual instances which ignore the signature / fix merkle_sigs+merkle.rs
 #[derive(Clone, Debug)]
 pub(crate) struct Share {
     /// The identifier of the share (varies between 1 and n where n is the total number of generated shares)
@@ -27,12 +27,14 @@ pub(crate) struct Share {
 }
 
 impl Share {
-    /// TODO: Doc
+    /// Attempts to parse the given string into a share which should have the given `id`.
+    /// The string `raw` should follow the format of `Share::into_string`.
     pub(crate) fn from_string(raw: &str, id: u8, is_signed: bool) -> Result<Self> {
         share_from_string(raw, id, is_signed)
     }
 
-    /// TODO: Doc
+    /// Attempts to parse all the given strings into shares.
+    /// Calls out to `Share::from_string`.
     pub(crate) fn parse_all(raws: &[String], is_signed: bool) -> Result<Vec<Share>> {
         raws.into_iter()
             .enumerate()

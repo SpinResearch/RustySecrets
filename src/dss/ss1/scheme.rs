@@ -13,6 +13,10 @@ use dss::random::{random_bytes, random_bytes_count, FixedRandom};
 use share::validation::validate_shares;
 use super::share::*;
 
+/// Defines a `SS1` deterministic threshold secret sharing scheme.
+///
+/// This scheme is implemented as the *T2 transform* over the ThSS threshold sharing scheme.
+/// found in the `rusty_secrets::dss::thss` module.
 pub(crate) struct SS1 {
     /// How many random bytes to read from `random` to use as
     /// padding to the hash function (param `r` from the paper)
