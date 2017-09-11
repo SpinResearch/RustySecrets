@@ -81,6 +81,5 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
         bail!(ErrorKind::MissingShares(threshold as usize, shares_count));
     }
 
-    result.truncate(threshold as usize);
     Ok((threshold, result))
 }

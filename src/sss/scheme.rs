@@ -9,7 +9,7 @@ use errors::*;
 use sss::Share;
 use sss::format::format_share_for_signing;
 use share::validation::validate_signed_shares;
-use lagrange::lagrange_interpolate;
+use lagrange::interpolate_at;
 
 use super::math::encode;
 
@@ -108,7 +108,7 @@ impl SSS {
             for s in shares.iter().take(threshold as usize) {
                 col_in.push((s.id, s.data[byteindex]));
             }
-            secret.push(lagrange_interpolate(&*col_in));
+            secret.push(interpolate_at(&*col_in));
         }
 
         Ok(secret)

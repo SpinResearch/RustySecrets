@@ -4,8 +4,9 @@
 use ring::rand::{SecureRandom, SystemRandom};
 
 use errors::*;
+use gf256::Gf256;
 use dss::random::{random_bytes, random_bytes_count};
-use lagrange::lagrange_interpolate;
+use lagrange;
 use share::validation::validate_shares;
 
 use super::share::*;
@@ -73,23 +74,40 @@ impl ThSS {
 
     /// Recover the secret from the given set of shares
     pub fn recover_secret(&self, shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
-        let (_, shares) = validate_shares(shares.to_vec())?;
+        let (threshold, shares) = validate_shares(shares.to_vec())?;
 
-        // FIXME: Check that the data length is the same for all shares.
-        let m = shares[0].data.len();
+        let cypher_len = shares[0].data.len();
 
-        let secret = (0..m)
+        let polys = (0..cypher_len)
             .map(|i| {
                 let points = shares
                     .iter()
-                    .map(|share| (share.id, share.data[i]))
+                    .take(threshold as usize)
+                    .map(|share| {
+                        (Gf256::from_byte(share.id), Gf256::from_byte(share.data[i]))
+                    })
                     .collect::<Vec<_>>();
 
-                lagrange_interpolate(&points)
+                lagrange::interpolate(&points)
             })
-            .collect();
+            .collect::<Vec<_>>();
+
+        for (i, poly) in polys.iter().enumerate() {
+            // Check shares for consistency.
+            // See Figure 7 of the paper
+            for u in (threshold + 1)..(shares.len() as u8) {
+                let value = lagrange::evaluate_at(&poly, Gf256::from_byte(u)).to_byte();
+                if value != shares[u as usize].data[i] {
+                    bail!(ErrorKind::InconsistentShares);
+                }
+            }
+        }
 
         let metadata = shares[0].metadata.clone();
+        let secret = polys
+            .iter()
+            .map(|p| lagrange::evaluate_at_zero(&p).to_byte())
+            .collect();
 
         Ok((secret, metadata))
     }

@@ -83,9 +83,9 @@ error_chain! {
             display("The data encoded in share #{} is the same as the one found in a previous share.", share_id)
         }
 
-        CorruptedShare(share_id: u8) {
-            description("A share is corrupted")
-            display("Share #{} is corrupted.", share_id)
+        InconsistentShares {
+            description("The shares are inconsistent")
+            display("The shares are inconsistent")
         }
     }
 

@@ -3,7 +3,7 @@
 //!
 //! # Deterministic secret sharing
 //!
-//! TODO
+//! TODO: Doc
 //!
 //! # Schemes
 //!
