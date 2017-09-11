@@ -96,7 +96,7 @@ impl ThSS {
             // Check shares for consistency.
             // See Figure 7 of the paper
             for u in (threshold + 1)..(shares.len() as u8) {
-                let value = lagrange::evaluate_at(&poly, Gf256::from_byte(u)).to_byte();
+                let value = poly.evaluate_at(Gf256::from_byte(u)).to_byte();
                 if value != shares[u as usize].data[i] {
                     bail!(ErrorKind::InconsistentShares);
                 }
@@ -106,7 +106,7 @@ impl ThSS {
         let metadata = shares[0].metadata.clone();
         let secret = polys
             .iter()
-            .map(|p| lagrange::evaluate_at_zero(&p).to_byte())
+            .map(|p| p.evaluate_at_zero().to_byte())
             .collect();
 
         Ok((secret, metadata))

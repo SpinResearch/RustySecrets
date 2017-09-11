@@ -1,4 +1,5 @@
 use gf256::Gf256;
+use poly::Poly;
 
 /// Evaluates an interpolated polynomial at `Gf256::zero()` where
 /// the polynomial is determined using Lagrangian interpolation
@@ -24,7 +25,7 @@ pub(crate) fn interpolate_at(points: &[(u8, u8)]) -> u8 {
 
 /// Computeds the coefficient of the Lagrange polynomial interpolated
 /// from the given `points`, in the G(2^8) Galois field.
-pub(crate) fn interpolate(points: &[(Gf256, Gf256)]) -> Vec<Gf256> {
+pub(crate) fn interpolate(points: &[(Gf256, Gf256)]) -> Poly {
     let len = points.len();
 
     let mut poly = vec![Gf256::zero(); len];
@@ -53,21 +54,5 @@ pub(crate) fn interpolate(points: &[(Gf256, Gf256)]) -> Vec<Gf256> {
             .collect();
     }
 
-    poly
-}
-
-pub(crate) fn evaluate_at_zero(poly: &[Gf256]) -> Gf256 {
-    poly[0]
-}
-
-pub(crate) fn evaluate_at(poly: &[Gf256], x: Gf256) -> Gf256 {
-    assert!(poly.len() < 256);
-
-    let mut result = Gf256::zero();
-
-    for (i, c) in poly.iter().enumerate() {
-        result = result + *c * x.pow(i as u8);
-    }
-
-    result
+    Poly::new(poly)
 }

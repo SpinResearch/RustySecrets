@@ -28,6 +28,7 @@ static digest: &'static Algorithm = &SHA512;
 
 mod share;
 mod gf256;
+mod poly;
 mod lagrange;
 
 pub mod errors;
