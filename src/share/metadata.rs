@@ -2,7 +2,7 @@
 use std::collections::BTreeMap;
 
 /// A share's public metadata.
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, Default)]
 pub struct MetaData {
     /// The tags associated with the share
     pub tags: BTreeMap<String, String>,

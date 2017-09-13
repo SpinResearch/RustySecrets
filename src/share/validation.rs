@@ -37,6 +37,8 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
     for share in shares {
         let (id, threshold) = (share.get_id(), share.get_threshold());
 
+        // TODO: Check that ID < shares_count
+
         k_compatibility_sets.entry(threshold).or_insert_with(
             HashSet::new,
         );

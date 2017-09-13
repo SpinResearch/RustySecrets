@@ -13,7 +13,7 @@ pub(crate) fn interpolate_at(points: &[(u8, u8)]) -> u8 {
         for (j, &(raw_xj, _)) in points.iter().enumerate() {
             if i != j {
                 let xj = Gf256::from_byte(raw_xj);
-                let delta = xi - xj;
+                let delta = xi - xj; // FIXME: Shouldn'it be `xi - xj` ? - @dtsbourg
                 assert_ne!(delta.poly, 0, "Duplicate shares");
                 prod = prod * xj / delta;
             }
@@ -40,7 +40,7 @@ pub(crate) fn interpolate(points: &[(Gf256, Gf256)]) -> Poly {
                 prod = prod * (x - x1);
 
                 let mut prec = Gf256::zero();
-                for mut coeff in coeffs.iter_mut() {
+                for coeff in &mut coeffs {
                     let new_coeff = *coeff * (-x1) + prec;
                     prec = *coeff;
                     *coeff = new_coeff;
