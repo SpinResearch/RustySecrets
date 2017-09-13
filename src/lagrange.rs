@@ -40,11 +40,14 @@ pub(crate) fn interpolate(points: &[(Gf256, Gf256)]) -> Poly {
                 prod = prod * (x - x1);
 
                 let mut prec = Gf256::zero();
-                for coeff in &mut coeffs {
-                    let new_coeff = *coeff * (-x1) + prec;
-                    prec = *coeff;
-                    *coeff = new_coeff;
-                }
+                coeffs = coeffs
+                    .into_iter()
+                    .map(|coeff| {
+                        let new_coeff = coeff * (-x1) + prec;
+                        prec = coeff;
+                        new_coeff
+                    })
+                    .collect();
             }
         }
 
