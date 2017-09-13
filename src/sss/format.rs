@@ -40,7 +40,7 @@ pub(crate) fn share_string_from(
 pub(crate) fn share_from_string(s: &str, id: u8, is_signed: bool) -> Result<Share> {
     let parts: Vec<_> = s.trim().split('-').collect();
 
-    if parts.len() != 3 {
+    if parts.len() != SSS_SHARE_PARTS_COUNT {
         bail! {
             ErrorKind::ShareParsingError(
                 id,

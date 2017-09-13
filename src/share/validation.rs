@@ -58,21 +58,20 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
     }
 
     // Validate threshold
-
     let k_sets = k_compatibility_sets.keys().count();
 
-    if k_sets == 0 {
-        bail!(ErrorKind::EmptyShares);
-    }
-
-    if k_sets > 1 {
-        bail! {
-            ErrorKind::IncompatibleSets(
-                k_compatibility_sets
-                    .values()
-                    .map(|x| x.to_owned())
-                    .collect(),
-            )
+    match k_sets {
+        0 => bail!(ErrorKind::EmptyShares),
+        1 => {} // All shares have the same roothash.
+        _ => {
+            bail! {
+                ErrorKind::IncompatibleSets(
+                    k_compatibility_sets
+                        .values()
+                        .map(|x| x.to_owned())
+                        .collect(),
+                )
+            }
         }
     }
 

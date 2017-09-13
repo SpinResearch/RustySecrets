@@ -7,6 +7,15 @@ use std::collections::HashSet;
 
 use dss::ss1;
 
+/// Minimum allowed number of shares (n)
+pub(crate) static MIN_SHARES: u8 = 2;
+/// Minimum allowed threshold (k)
+pub(crate) static MIN_THRESHOLD: u8 = 2;
+/// Maximum allowed number of shares (k,n)
+pub(crate) static MAX_SHARES: u8 = 255;
+/// SSS Shares should be structured as k-n-data hence 3 parts
+pub(crate) static SSS_SHARE_PARTS_COUNT: usize = 3;
+
 /// Create the Error, ErrorKind, ResultExt, and Result types
 error_chain! {
     errors {
@@ -23,6 +32,16 @@ error_chain! {
         SecretTooBig(len: usize, max: usize) {
             description("The secret is too long")
             display("The secret is too long, maximum allowed size = {} bytes, got {} bytes", max, len)
+        }
+
+        InvalidShareCountMax(nb_shares: u8, max: u8) {
+            description("Number of shares is too big")
+            display("Number of shares must be smaller than or equal {}, got: {} shares.", max, nb_shares)
+        }
+
+        InvalidShareCountMin(nb_shares: u8, min: u8) {
+            description("Number of shares is too small")
+            display("Number of shares must be larger than or equal {}, got: {} shares.", min, nb_shares)
         }
 
         EmptySecret {

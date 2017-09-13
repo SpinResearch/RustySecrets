@@ -47,9 +47,24 @@ impl ThSS {
         secret: &[u8],
         metadata: &Option<MetaData>,
     ) -> Result<Vec<Share>> {
-        if threshold < 2 {
+        if threshold < MIN_THRESHOLD {
             bail!(ErrorKind::ThresholdTooSmall(threshold));
         }
+
+        if total_shares_count > MAX_SHARES {
+            bail!(ErrorKind::InvalidShareCountMax(
+                total_shares_count,
+                MAX_SHARES,
+            ));
+        }
+
+        if total_shares_count < MIN_SHARES {
+            bail!(ErrorKind::InvalidShareCountMin(
+                total_shares_count,
+                MIN_SHARES,
+            ));
+        }
+
         if threshold > total_shares_count {
             bail!(ErrorKind::ThresholdTooBig(threshold, total_shares_count));
         }

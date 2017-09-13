@@ -10,13 +10,16 @@ use ring::rand::SecureRandom;
 /// Moreover, given the current performances, it is almost unpractical to run
 /// the sharing scheme on message larger than that.
 pub(crate) const MAX_MESSAGE_SIZE: usize = std::usize::MAX / (std::u8::MAX - 1) as usize;
+/// Minimum allowed message size in bytes
+pub(crate) static MIN_MESSAGE_SIZE: usize = 1;
 
 /// Returns the number of random bytes to read from the secure random number generator.
 /// As defined in section 3.1 of the 'New Directions in Secret Sharing' paper.
 pub(crate) fn random_bytes_count(threshold: u8, message_size: usize) -> usize {
-    assert!(threshold >= 2);
-    assert!(message_size >= 1);
+    assert!(threshold >= MIN_THRESHOLD);
+    assert!(message_size >= MIN_MESSAGE_SIZE);
     assert!(message_size <= MAX_MESSAGE_SIZE);
+
 
     (threshold as usize - 1) * message_size
 }

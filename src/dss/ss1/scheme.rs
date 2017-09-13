@@ -41,8 +41,12 @@ impl fmt::Debug for SS1 {
 }
 
 // TODO: Are those good parameters?
+// TODO: Add max length ?
 static DEFAULT_RANDOM_PADDING_LEN: usize = 512; // r
+static MIN_RANDOM_PADDING_LEN: usize = 128; // r min
 static DEFAULT_HASH_LEN: usize = 256; // s
+static MIN_HASH_LEN: usize = 128; // s min
+
 
 impl Default for SS1 {
     fn default() -> Self {
@@ -61,7 +65,7 @@ impl SS1 {
         hash_len: usize,
         random: Box<SecureRandom>,
     ) -> Result<Self> {
-        if random_padding_len < 128 || hash_len < 128 {
+        if random_padding_len < MIN_RANDOM_PADDING_LEN || hash_len < MIN_HASH_LEN {
             bail!(ErrorKind::InvalidSS1Parameters(
                 random_padding_len,
                 hash_len,
@@ -85,9 +89,24 @@ impl SS1 {
         secret: &[u8],
         metadata: &Option<MetaData>,
     ) -> Result<Vec<Share>> {
-        if threshold < 2 {
+        if threshold < MIN_THRESHOLD {
             bail!(ErrorKind::ThresholdTooSmall(threshold));
         }
+
+        if total_shares_count > MAX_SHARES {
+            bail!(ErrorKind::InvalidShareCountMax(
+                total_shares_count,
+                MAX_SHARES,
+            ));
+        }
+
+        if total_shares_count < MIN_SHARES {
+            bail!(ErrorKind::InvalidShareCountMin(
+                total_shares_count,
+                MIN_SHARES,
+            ));
+        }
+
         if threshold > total_shares_count {
             bail!(ErrorKind::ThresholdTooBig(threshold, total_shares_count));
         }
