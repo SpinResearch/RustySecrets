@@ -114,6 +114,34 @@ impl Neg for Gf256 {
     }
 }
 
+#[macro_export]
+macro_rules! gf256 {
+    ($e:expr) => (Gf256::from_byte($e))
+}
+
+#[macro_export]
+macro_rules! gf256_vec {
+    ( $( ($x:expr, $y:expr) ),* ) => {
+        {
+            let mut temp_vec = Vec::new();
+            $(
+                temp_vec.push((Gf256::from_byte($x), Gf256::from_byte($y)));
+            )*
+            temp_vec
+        }
+    };
+    ( $( $x:expr ),* ) => {
+        {
+            let mut temp_vec = Vec::new();
+            $(
+                temp_vec.push(Gf256::from_byte($x));
+            )*
+            temp_vec
+        }
+    };
+}
+
+
 #[cfg(test)]
 #[allow(trivial_casts)]
 mod tests {

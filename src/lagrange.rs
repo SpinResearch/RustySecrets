@@ -59,3 +59,66 @@ pub(crate) fn interpolate(points: &[(Gf256, Gf256)]) -> Poly {
 
     Poly::new(poly)
 }
+
+#[cfg(test)]
+#[allow(trivial_casts)]
+mod tests {
+
+    use std;
+    use super::*;
+    use gf256::*;
+    use quickcheck::*;
+
+    quickcheck! {
+
+        fn evaluate_at_works(ys: Vec<u8>) -> TestResult {
+            if ys.is_empty() || ys.len() > std::u8::MAX as usize {
+                return TestResult::discard();
+            }
+
+            let points = ys.iter().enumerate().map(|(x, y)| (x as u8, *y)).collect::<Vec<_>>();
+            let equals = interpolate_at(points.as_slice()) == ys[0];
+
+            TestResult::from_bool(equals)
+        }
+
+
+        fn interpolate_evaluate_at_works(ys: Vec<Gf256>) -> TestResult {
+            if ys.is_empty() || ys.len() > std::u8::MAX as usize {
+                return TestResult::discard();
+            }
+
+            let points = ys.into_iter().enumerate().map(|(x, y)| (gf256!(x as u8), y)).collect::<Vec<_>>();
+            let poly = interpolate(&points);
+
+            for (x, y) in points {
+                if poly.evaluate_at(x) != y {
+                    return TestResult::failed();
+                }
+            }
+
+            TestResult::passed()
+        }
+
+        fn interpolate_evaluate_at_0_eq_evaluate_at(ys: Vec<u8>) -> TestResult {
+            if ys.len() > std::u8::MAX as usize {
+                return TestResult::discard();
+            }
+
+            let points = ys.into_iter().enumerate().map(|(x, y)| (x as u8, y)).collect::<Vec<_>>();
+
+            let elems = points
+                .iter()
+                .map(|&(x, y)| (gf256!(x), gf256!(y)))
+                .collect::<Vec<_>>();
+
+            let poly = interpolate(&elems);
+
+            let equals = poly.evaluate_at(Gf256::zero()).to_byte() == interpolate_at(points.as_slice());
+
+            TestResult::from_bool(equals)
+        }
+
+    }
+
+}
