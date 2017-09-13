@@ -1,5 +1,6 @@
 
 use gf256::Gf256;
+use poly::Poly;
 
 /// Encode the given `secret` using the `ThSS[N].Share` algorithm described
 /// in the *New directions in Secret Sharing* paper.
@@ -10,10 +11,14 @@ pub(crate) fn encode_secret(secret: &[u8], k: u8, share_id: u8, rands: &[u8]) ->
         .into_iter()
         .enumerate()
         .map(|(i, m)| {
-            let mut poly = Vec::new();
-            for l in 0..(k - 1) as usize {
-                poly.push(rands[i * (k as usize - 1) + l]);
-            }
+            let k_pred = (k - 1) as usize;
+            let coeffs = (0..k_pred)
+                .map(|l| {
+                    let n = rands[i * k_pred + l];
+                    Gf256::from_byte(n)
+                })
+                .collect();
+            let poly = Poly::new(coeffs);
             encode_secret_byte(*m, share_id, &poly)
         })
         .collect()
@@ -23,10 +28,9 @@ pub(crate) fn encode_secret(secret: &[u8], k: u8, share_id: u8, rands: &[u8]) ->
 /// polynomial at x = `j`, and adding the result to `m`.
 ///
 /// Reference: Figure 7 from the *New Directions in Secret Sharing* paper.
-pub(crate) fn encode_secret_byte(m: u8, j: u8, poly: &[u8]) -> u8 {
+pub(crate) fn encode_secret_byte(m: u8, j: u8, poly: &Poly) -> u8 {
     let mut acc = Gf256::from_byte(m);
-    for (l, p) in poly.iter().enumerate() {
-        let r = Gf256::from_byte(*p);
+    for (l, &r) in poly.coeffs.iter().enumerate() {
         let s = Gf256::from_byte(j).pow(l as u8 + 1);
         acc = acc + r * s;
     }

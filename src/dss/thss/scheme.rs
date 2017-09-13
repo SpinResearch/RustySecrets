@@ -11,7 +11,7 @@ use share::validation::validate_shares;
 use lagrange;
 
 use super::share::*;
-use super::math::encode_secret;
+use super::encode::encode_secret;
 
 /// We bound the message size at about 16MB to avoid overflow in `random_bytes_count`.
 /// Moreover, given the current performances, it is almost unpractical to run

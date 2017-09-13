@@ -2,7 +2,7 @@
 use gf256::Gf256;
 
 pub(crate) struct Poly {
-    coeffs: Vec<Gf256>,
+    pub coeffs: Vec<Gf256>,
 }
 
 impl Poly {

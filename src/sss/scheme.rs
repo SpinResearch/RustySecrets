@@ -11,7 +11,7 @@ use sss::format::format_share_for_signing;
 use share::validation::validate_signed_shares;
 use lagrange::interpolate_at;
 
-use super::math::encode;
+use super::encode::encode_secret_byte;
 
 /// SSS provides Shamir's secret sharing with raw data.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
@@ -89,7 +89,7 @@ impl SSS {
             col_in[0] = s;
             osrng.fill_bytes(&mut col_in[1..]);
             col_out.clear();
-            encode(&*col_in, total_shares_count, &mut col_out)?;
+            encode_secret_byte(&*col_in, total_shares_count, &mut col_out)?;
             for (&y, share) in col_out.iter().zip(result.iter_mut()) {
                 share[c] = y;
             }

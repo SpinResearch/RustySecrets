@@ -15,7 +15,7 @@
 
 use errors::*;
 
-mod math;
+mod encode;
 
 mod share;
 pub use self::share::*;
