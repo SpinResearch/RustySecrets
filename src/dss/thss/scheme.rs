@@ -6,11 +6,17 @@ use ring::rand::{SecureRandom, SystemRandom};
 use errors::*;
 use gf256::Gf256;
 use dss::random::{random_bytes, random_bytes_count};
-use lagrange;
+use dss::random;
 use share::validation::validate_shares;
+use lagrange;
 
 use super::share::*;
 use super::math::encode_secret;
+
+/// We bound the message size at about 16MB to avoid overflow in `random_bytes_count`.
+/// Moreover, given the current performances, it is almost unpractical to run
+/// the sharing scheme on message larger than that.
+pub(crate) const MAX_SECRET_SIZE: usize = random::MAX_MESSAGE_SIZE;
 
 /// A simple threshold sharing scheme
 #[allow(missing_debug_implementations)]
@@ -41,18 +47,22 @@ impl ThSS {
         secret: &[u8],
         metadata: &Option<MetaData>,
     ) -> Result<Vec<Share>> {
-        if threshold < 1 || total_shares_count < 1 {
-            bail!(ErrorKind::InvalidSplitParametersZero(
-                threshold,
-                total_shares_count,
-            ));
+        if threshold < 2 {
+            bail!(ErrorKind::ThresholdTooSmall(threshold));
         }
-
         if threshold > total_shares_count {
-            bail!(ErrorKind::InvalidThreshold(threshold, total_shares_count));
+            bail!(ErrorKind::ThresholdTooBig(threshold, total_shares_count));
         }
 
-        let rands_len = random_bytes_count(threshold as usize, secret.len());
+        let secret_len = secret.len();
+        if secret_len <= 0 {
+            bail!(ErrorKind::EmptySecret);
+        }
+        if secret_len > MAX_SECRET_SIZE {
+            bail!(ErrorKind::SecretTooBig(secret_len, MAX_SECRET_SIZE));
+        }
+
+        let rands_len = random_bytes_count(threshold, secret_len);
         let rands = random_bytes(self.random.as_ref(), rands_len)?;
 
         let shares = (0..total_shares_count)

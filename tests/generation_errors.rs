@@ -3,7 +3,7 @@ extern crate rusty_secrets;
 use rusty_secrets::sss;
 
 #[test]
-#[should_panic(expected = "InvalidThreshold")]
+#[should_panic(expected = "ThresholdTooBig")]
 fn test_generate_invalid_k() {
     let share1 = "2-1-1YAYwmOHqZ69jA".to_string().into_bytes();
 

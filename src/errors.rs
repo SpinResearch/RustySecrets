@@ -10,10 +10,24 @@ use dss::ss1;
 /// Create the Error, ErrorKind, ResultExt, and Result types
 error_chain! {
     errors {
-        /// k must be smaller than or equal to n
-        InvalidThreshold(k: u8, n: u8) {
+        ThresholdTooBig(k: u8, n: u8) {
             description("Threshold k must be smaller than or equal to n")
             display("Threshold k must be smaller than or equal to n, got: k = {}, n = {}.", k, n)
+        }
+
+        ThresholdTooSmall(k: u8) {
+            description("Threshold k must be bigger than or equal to 2")
+            display("Threshold k must be bigger than or equal to 2, got: k = {}", k)
+        }
+
+        SecretTooBig(len: usize, max: usize) {
+            description("The secret is too long")
+            display("The secret is too long, maximum allowed size = {} bytes, got {} bytes", max, len)
+        }
+
+        EmptySecret {
+            description("The secret cannot be empty")
+            display("The secret cannot be empty")
         }
 
         EmptyShares {

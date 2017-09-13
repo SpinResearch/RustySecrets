@@ -1,4 +1,5 @@
 
+use std;
 use std::fmt;
 use std::collections::HashSet;
 
@@ -84,15 +85,19 @@ impl SS1 {
         secret: &[u8],
         metadata: &Option<MetaData>,
     ) -> Result<Vec<Share>> {
-        if threshold < 1 || total_shares_count < 1 {
-            bail!(ErrorKind::InvalidSplitParametersZero(
-                threshold,
-                total_shares_count,
-            ));
+        if threshold < 2 {
+            bail!(ErrorKind::ThresholdTooSmall(threshold));
+        }
+        if threshold > total_shares_count {
+            bail!(ErrorKind::ThresholdTooBig(threshold, total_shares_count));
         }
 
-        if threshold > total_shares_count {
-            bail!(ErrorKind::InvalidThreshold(threshold, total_shares_count));
+        let secret_len = secret.len();
+        if secret_len <= 0 {
+            bail!(ErrorKind::EmptySecret);
+        }
+        if secret_len > self.max_secret_size() {
+            bail!(ErrorKind::SecretTooBig(secret_len, self.max_secret_size()));
         }
 
         let random_padding = random_bytes(self.random.as_ref(), self.random_padding_len)?;
@@ -103,8 +108,7 @@ impl SS1 {
         shake.process(secret);
         shake.process(&random_padding);
 
-        let seed_len =
-            random_bytes_count(threshold as usize, secret.len() + self.random_padding_len);
+        let seed_len = random_bytes_count(threshold, secret.len() + self.random_padding_len);
 
         let mut hash = vec![0; self.hash_len];
         let mut seed = vec![0; seed_len];
@@ -138,6 +142,10 @@ impl SS1 {
             .collect();
 
         Ok(res)
+    }
+
+    fn max_secret_size(&self) -> usize {
+        (std::usize::MAX - self.random_padding_len) / (std::u8::MAX - 1) as usize
     }
 
     /// Recover the secret from the given set of shares

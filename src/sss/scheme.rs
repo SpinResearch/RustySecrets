@@ -26,8 +26,11 @@ impl SSS {
         secret: &[u8],
         sign_shares: bool,
     ) -> Result<Vec<Share>> {
+        if threshold < 2 {
+            bail!(ErrorKind::ThresholdTooSmall(threshold));
+        }
         if threshold > total_shares_count {
-            bail!(ErrorKind::InvalidThreshold(threshold, total_shares_count));
+            bail!(ErrorKind::ThresholdTooBig(threshold, total_shares_count));
         }
 
         let shares = Self::secret_share(secret, threshold, total_shares_count)?;
