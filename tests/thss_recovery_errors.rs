@@ -130,13 +130,25 @@ fn test_recover_duplicate_shares_data() {
     recover_secret(&shares).unwrap();
 }
 
-// #[test]
-// #[should_panic(expected = "MissingShares")]
-// fn test_recover_too_few_shares() {
-//     let share1 = "3-1-ChbcCdSZOaMn6DM1jFca2P6/0WRlP7AK".to_string();
-//     let share2 = "3-2-ChbG46L1zRszs0PPn63XnnupmZTcgYJ3".to_string();
-//
-//     let shares = vec![share1, share2];
-//
-//     recover_secret(&shares).unwrap();
-// }
+#[test]
+#[should_panic(expected = "MissingShares")]
+fn test_recover_too_few_shares() {
+    let share1 = Share {
+        id: 1,
+        threshold: 3,
+        total_shares_count: 3,
+        data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
+        metadata: None
+    };
+    let share2 = Share {
+        id: 2,
+        threshold: 3,
+        total_shares_count: 3,
+        data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
+        metadata: None
+    };
+
+    let shares = vec![share1, share2];
+
+    recover_secret(&shares).unwrap();
+}
