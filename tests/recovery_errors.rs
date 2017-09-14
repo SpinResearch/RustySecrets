@@ -5,15 +5,10 @@ use rusty_secrets::sss::recover_secret;
 #[test]
 #[should_panic(expected = "EmptyShares")]
 fn test_recover_no_shares() {
-    let shares = vec![];
-    recover_secret(&shares, false).unwrap();
-}
-
-#[test]
-#[should_panic(expected = "EmptyShares")]
-fn test_recover_no_shares_signed() {
-    let shares = vec![];
-    recover_secret(&shares, true).unwrap();
+    for signed in &[true, false] {
+        let shares = vec![];
+        recover_secret(&shares, *signed).unwrap();
+    }
 }
 
 #[test]
