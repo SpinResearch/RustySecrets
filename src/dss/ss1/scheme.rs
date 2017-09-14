@@ -112,7 +112,7 @@ impl SS1 {
         }
 
         let secret_len = secret.len();
-        if secret_len <= 0 {
+        if secret_len == 0 {
             bail!(ErrorKind::EmptySecret);
         }
         if secret_len > self.max_secret_size() {

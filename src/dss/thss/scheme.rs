@@ -70,7 +70,7 @@ impl ThSS {
         }
 
         let secret_len = secret.len();
-        if secret_len <= 0 {
+        if secret_len == 0 {
             bail!(ErrorKind::EmptySecret);
         }
         if secret_len > MAX_SECRET_SIZE {
@@ -120,9 +120,9 @@ impl ThSS {
         for (i, poly) in polys.iter().enumerate() {
             // Check shares for consistency.
             // See Figure 7 of the paper
-            for u in (threshold + 1)..(shares.len() as u8) {
-                let value = poly.evaluate_at(Gf256::from_byte(u)).to_byte();
-                if value != shares[u as usize].data[i] {
+            for (u, share) in shares.iter().enumerate().take(shares.len()).skip(threshold as usize + 1) {
+                let value = poly.evaluate_at(Gf256::from_byte(u as u8)).to_byte();
+                if value != share.data[i] {
                     bail!(ErrorKind::InconsistentShares);
                 }
             }
