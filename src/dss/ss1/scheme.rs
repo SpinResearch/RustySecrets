@@ -1,5 +1,3 @@
-
-use std;
 use std::fmt;
 use std::collections::HashSet;
 
@@ -10,9 +8,14 @@ use ring::rand::{SystemRandom, SecureRandom};
 use errors::*;
 use dss::thss;
 use dss::thss::{ThSS, MetaData};
-use dss::random::{random_bytes, random_bytes_count, FixedRandom};
+use dss::random::{random_bytes, random_bytes_count, FixedRandom, MAX_MESSAGE_SIZE};
 use share::validation::validate_shares;
 use super::share::*;
+
+/// We bound the message size at about 16MB to avoid overflow in `random_bytes_count`.
+/// Moreover, given the current performances, it is almost unpractical to run
+/// the sharing scheme on message larger than that.
+const MAX_SECRET_SIZE: usize = MAX_MESSAGE_SIZE;
 
 /// Defines a `SS1` deterministic threshold secret sharing scheme.
 ///
@@ -115,8 +118,8 @@ impl SS1 {
         if secret_len == 0 {
             bail!(ErrorKind::EmptySecret);
         }
-        if secret_len > self.max_secret_size() {
-            bail!(ErrorKind::SecretTooBig(secret_len, self.max_secret_size()));
+        if secret_len > MAX_SECRET_SIZE {
+            bail!(ErrorKind::SecretTooBig(secret_len, MAX_SECRET_SIZE));
         }
 
         let random_padding = random_bytes(self.random.as_ref(), self.random_padding_len)?;
@@ -161,10 +164,6 @@ impl SS1 {
             .collect();
 
         Ok(res)
-    }
-
-    fn max_secret_size(&self) -> usize {
-        (std::usize::MAX - self.random_padding_len) / (std::u8::MAX - 1) as usize
     }
 
     /// Recover the secret from the given set of shares

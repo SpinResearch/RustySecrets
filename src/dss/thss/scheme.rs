@@ -5,8 +5,7 @@ use ring::rand::{SecureRandom, SystemRandom};
 
 use errors::*;
 use gf256::Gf256;
-use dss::random::{random_bytes, random_bytes_count};
-use dss::random;
+use dss::random::{random_bytes, random_bytes_count, MAX_MESSAGE_SIZE};
 use share::validation::validate_shares;
 use lagrange;
 
@@ -16,7 +15,7 @@ use super::encode::encode_secret;
 /// We bound the message size at about 16MB to avoid overflow in `random_bytes_count`.
 /// Moreover, given the current performances, it is almost unpractical to run
 /// the sharing scheme on message larger than that.
-pub(crate) const MAX_SECRET_SIZE: usize = random::MAX_MESSAGE_SIZE;
+const MAX_SECRET_SIZE: usize = MAX_MESSAGE_SIZE;
 
 /// A simple threshold sharing scheme
 #[allow(missing_debug_implementations)]
