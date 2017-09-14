@@ -79,7 +79,7 @@ impl ThSS {
         let rands_len = random_bytes_count(threshold, secret_len);
         let rands = random_bytes(self.random.as_ref(), rands_len)?;
 
-        let shares = (0..total_shares_count)
+        let shares = (1..total_shares_count+1)
             .map(|id| {
                 let data = encode_secret(secret, threshold, id, &rands);
 
@@ -119,8 +119,12 @@ impl ThSS {
         for (i, poly) in polys.iter().enumerate() {
             // Check shares for consistency.
             // See Figure 7 of the paper
-            for (u, share) in shares.iter().enumerate().take(shares.len()).skip(threshold as usize + 1) {
-                let value = poly.evaluate_at(Gf256::from_byte(u as u8)).to_byte();
+            for (u, share) in shares.iter()
+                                    .enumerate()
+                                    .take(shares.len())
+                                    .skip(threshold as usize + 1)
+            {
+                let value = poly.evaluate_at(Gf256::from_byte(u as u8 + 1)).to_byte();
                 if value != share.data[i] {
                     bail!(ErrorKind::InconsistentShares);
                 }

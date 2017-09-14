@@ -48,7 +48,7 @@ fn test_recover_0_share_num() {
 #[should_panic(expected = "ShareParsingError")]
 fn test_recover_invalid_b64() {
     let share1 = "2-1-CgnlCxRNtnkzENE".to_string();
-    let share2 = "2-1-YJZQDG((((m22Y)))77Gw".to_string();
+    let share2 = "2-2-YJZQDG((((m22Y)))77Gw".to_string();
 
     let shares = vec![share1, share2];
 

@@ -57,18 +57,33 @@ fn test_recover_0_share_num() {
 
     recover_secret(&shares).unwrap();
 }
-//
+
+// ---
+// TODO: will be implemented when serialization is done for thss shares
+// ---
 // #[test]
 // #[should_panic(expected = "ShareParsingError")]
 // fn test_recover_invalid_b64() {
-//     let share1 = "2-1-CgnlCxRNtnkzENE".to_string();
-//     let share2 = "2-1-YJZQDG((((m22Y)))77Gw".to_string();
+//     let share1 = Share {
+//         id: 1,
+//         threshold: 2,
+//         total_shares_count: 2,
+//         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
+//         metadata: None
+//     };
+//     let share2 = Share {
+//         id: 2,
+//         threshold: 2,
+//         total_shares_count: 2,
+//         data: "YJZQDG((((m22Y)))77Gw".to_string().into_bytes(),
+//         metadata: None
+//     };
 //
 //     let shares = vec![share1, share2];
 //
 //     recover_secret(&shares).unwrap();
 // }
-//
+
 // #[test]
 // #[should_panic(expected = "DuplicateShareId")]
 // fn test_recover_duplicate_shares_number() {
