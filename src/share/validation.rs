@@ -37,7 +37,9 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
     for share in shares {
         let (id, threshold) = (share.get_id(), share.get_threshold());
 
-        // TODO: Check that ID < shares_count
+        if id > MAX_SHARES {
+            bail!(ErrorKind::ShareIdentifierTooBig(id, MAX_SHARES,))
+        }
 
         k_compatibility_sets.entry(threshold).or_insert_with(
             HashSet::new,
@@ -47,6 +49,10 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
 
         if result.iter().any(|s| s.get_id() == id) {
             bail!(ErrorKind::DuplicateShareId(id));
+        }
+
+        if share.get_data().len() == 0 {
+            bail!(ErrorKind::ShareParsingErrorEmptyShare(id,))
         }
 
         if result.iter().any(|s| s.get_data() == share.get_data()) && share.get_threshold() != 1 {

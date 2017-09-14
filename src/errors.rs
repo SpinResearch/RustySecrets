@@ -86,6 +86,10 @@ error_chain! {
             description("This share is incorrectly formatted.")
         }
 
+        ShareParsingErrorEmptyShare(share_id: u8) {
+            description("This share is empty.")
+        }
+
         InvalidSS1Parameters(r: usize, s: usize) {
             description("Invalid parameters for the SS1 sharing scheme")
             display("Invalid parameters for the SS1 sharing scheme: r = {}, s = {}.", r, s)
