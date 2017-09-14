@@ -41,6 +41,10 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
             bail!(ErrorKind::ShareIdentifierTooBig(id, MAX_SHARES,))
         }
 
+        if id < 1 {
+            bail!(ErrorKind::ShareParsingInvalidShareId(id,))
+        }
+
         k_compatibility_sets.entry(threshold).or_insert_with(
             HashSet::new,
         );

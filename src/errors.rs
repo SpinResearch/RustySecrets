@@ -88,6 +88,12 @@ error_chain! {
 
         ShareParsingErrorEmptyShare(share_id: u8) {
             description("This share is empty.")
+            display("Found empty share for share identifier ({})", share_id)
+        }
+
+        ShareParsingInvalidShareId(share_id: u8) {
+            description("Invalid share identifier.")
+            display("Found invalid share identifier ({})", share_id)
         }
 
         InvalidSS1Parameters(r: usize, s: usize) {

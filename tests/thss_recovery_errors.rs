@@ -11,7 +11,7 @@ fn test_recover_no_shares() {
 }
 
 #[test]
-#[should_panic(expected = "ShareParsingError")]
+#[should_panic(expected = "ShareParsingErrorEmptyShare")]
 fn test_recover_2_parts_share() {
 
     let share1 = Share {
@@ -34,27 +34,29 @@ fn test_recover_2_parts_share() {
     recover_secret(&shares).unwrap();
 }
 
-// #[test]
-// #[should_panic(expected = "IntegerParsingError")]
-// fn test_recover_incorrect_share_num() {
-//     let share1 = "2-1-CgnlCxRNtnkzENE".to_string();
-//     let share2 = "2-DEFINITLY_NAN-CgkAnUgP3lfwjyM".to_string();
-//
-//     let shares = vec![share1, share2];
-//
-//     recover_secret(&shares).unwrap();
-// }
-//
-// #[test]
-// #[should_panic(expected = "ShareParsingError")]
-// fn test_recover_0_share_num() {
-//     let share1 = "2-0-1YAYwmOHqZ69jA".to_string();
-//     let share2 = "2-1-YJZQDGm22Y77Gw".to_string();
-//
-//     let shares = vec![share1, share2];
-//
-//     recover_secret(&shares).unwrap();
-// }
+#[test]
+#[should_panic(expected = "ShareParsingInvalidShareId")]
+fn test_recover_0_share_num() {
+
+    let share1 = Share {
+        id: 0,
+        threshold: 2,
+        total_shares_count: 2,
+        data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
+        metadata: None
+    };
+    let share2 = Share {
+        id: 1,
+        threshold: 2,
+        total_shares_count: 2,
+        data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
+        metadata: None
+    };
+
+    let shares = vec![share1, share2];
+
+    recover_secret(&shares).unwrap();
+}
 //
 // #[test]
 // #[should_panic(expected = "ShareParsingError")]
