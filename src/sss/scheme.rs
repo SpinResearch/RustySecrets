@@ -8,7 +8,7 @@ use merkle_sigs::sign_data_vec;
 use errors::*;
 use sss::Share;
 use sss::format::format_share_for_signing;
-use share::validation::validate_signed_shares;
+use share::validation::{validate_signed_shares, validate_share_count};
 use lagrange::interpolate_at;
 
 use super::encode::encode_secret_byte;
@@ -26,13 +26,7 @@ impl SSS {
         secret: &[u8],
         sign_shares: bool,
     ) -> Result<Vec<Share>> {
-        if threshold < 2 {
-            bail!(ErrorKind::ThresholdTooSmall(threshold));
-        }
-        if threshold > total_shares_count {
-            bail!(ErrorKind::ThresholdTooBig(threshold, total_shares_count));
-        }
-
+        let (threshold, total_shares_count) = validate_share_count(threshold, total_shares_count)?;
         let shares = Self::secret_share(secret, threshold, total_shares_count)?;
 
         let signatures = if sign_shares {

@@ -94,3 +94,31 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
 
     Ok((threshold, result))
 }
+
+pub(crate) fn validate_share_count(threshold: u8, total_shares_count: u8) -> Result<(u8,u8)> {
+    if threshold < MIN_SHARES {
+        bail!(ErrorKind::ThresholdTooSmall(
+            threshold
+        ));
+    }
+    if total_shares_count > MAX_SHARES {
+        bail!(ErrorKind::InvalidShareCountMax(
+            total_shares_count,
+            MAX_SHARES,
+        ));
+    }
+    if total_shares_count < MIN_SHARES {
+        bail!(ErrorKind::InvalidShareCountMin(
+            total_shares_count,
+            MIN_SHARES,
+        ));
+    }
+    if threshold > total_shares_count {
+        bail!(ErrorKind::ThresholdTooBig(
+            threshold,
+            total_shares_count
+        ));
+    }
+
+    Ok((threshold, total_shares_count))
+}

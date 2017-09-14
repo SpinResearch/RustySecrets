@@ -6,7 +6,7 @@ use ring::rand::{SecureRandom, SystemRandom};
 use errors::*;
 use gf256::Gf256;
 use dss::random::{random_bytes, random_bytes_count, MAX_MESSAGE_SIZE};
-use share::validation::validate_shares;
+use share::validation::{validate_shares, validate_share_count};
 use lagrange;
 
 use super::share::*;
@@ -46,29 +46,9 @@ impl ThSS {
         secret: &[u8],
         metadata: &Option<MetaData>,
     ) -> Result<Vec<Share>> {
-        if threshold < MIN_THRESHOLD {
-            bail!(ErrorKind::ThresholdTooSmall(threshold));
-        }
-
-        if total_shares_count > MAX_SHARES {
-            bail!(ErrorKind::InvalidShareCountMax(
-                total_shares_count,
-                MAX_SHARES,
-            ));
-        }
-
-        if total_shares_count < MIN_SHARES {
-            bail!(ErrorKind::InvalidShareCountMin(
-                total_shares_count,
-                MIN_SHARES,
-            ));
-        }
-
-        if threshold > total_shares_count {
-            bail!(ErrorKind::ThresholdTooBig(threshold, total_shares_count));
-        }
-
+        let (threshold, total_shares_count) = validate_share_count(threshold, total_shares_count)?;
         let secret_len = secret.len();
+
         if secret_len == 0 {
             bail!(ErrorKind::EmptySecret);
         }
