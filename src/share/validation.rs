@@ -55,7 +55,7 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
             bail!(ErrorKind::DuplicateShareId(id));
         }
 
-        if share.get_data().len() == 0 {
+        if share.get_data().is_empty() {
             bail!(ErrorKind::ShareParsingErrorEmptyShare(id,))
         }
 
