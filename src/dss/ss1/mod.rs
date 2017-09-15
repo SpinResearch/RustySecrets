@@ -16,35 +16,35 @@
 //! **Auth1**    | Yes | A share obtained from an honest dealer commits it to a single underlying secret: that and only that value can be recovered.
 //! **Auth2**    | Yes | A share obtained even from a dishonest dealer commits it to a single underlying secret: that and only that value might be recovered. Implies Auth1.
 //! **ErrDet**   | Yes | An inauthentic set of shares produced by an adversary will be flagged as such when fed to the recovery algorithm.
-//! **Repro**    | Yes | Share reproducible: TODO
+//! **Repro**    | Yes | Share reproducible: The scheme can produce shares in a deterministic way.
 //!
 //! # References
 //!
 //! - *New Directions in Secret Sharing* (TODO: Full reference)
 
 use errors::*;
-pub use dss::thss::MetaData;
 
 mod share;
 pub use self::share::*;
 
 mod scheme;
 use self::scheme::SS1;
+pub use self::scheme::Reproducibility;
 
 /// Performs threshold k-out-of-n deterministic secret sharing.
 ///
 /// # Examples
 ///
 /// ```
-/// use rusty_secrets::dss::ss1;
+/// use rusty_secrets::dss::ss1::{self, Reproducibility, MetaData};
 ///
 /// let secret = "These programs were never about terrorism: they’re about economic spying, \
 ///               social control, and diplomatic manipulation. They’re about power.";
 ///
-/// let mut metadata = ss1::MetaData::new();
+/// let mut metadata = MetaData::new();
 /// metadata.tags.insert("mime_type".to_string(), "text/plain".to_string());
 ///
-/// match ss1::split_secret(7, 10, &secret.as_bytes(), &Some(metadata)) {
+/// match ss1::split_secret(7, 10, &secret.as_bytes(), Reproducibility::Reproducible, &Some(metadata)) {
 ///     Ok(shares) => {
 ///         // Do something with the shares
 ///     },
@@ -57,9 +57,10 @@ pub fn split_secret(
     k: u8,
     n: u8,
     secret: &[u8],
+    reproducibility: Reproducibility,
     metadata: &Option<MetaData>,
 ) -> Result<Vec<Share>> {
-    SS1::default().split_secret(k, n, secret, metadata)
+    SS1::default().split_secret(k, n, secret, reproducibility, metadata)
 }
 
 /// Recovers the secret from a k-out-of-n deterministic secret sharing scheme (`SS1`).
@@ -69,18 +70,19 @@ pub fn split_secret(
 /// # Examples
 ///
 /// ```rust
-/// use rusty_secrets::dss::ss1;
+/// use rusty_secrets::dss::ss1::{self, Reproducibility, MetaData};
 ///
 /// let secret = "These programs were never about terrorism: they’re about economic spying, \
 ///               social control, and diplomatic manipulation. They’re about power.";
 ///
-/// let mut metadata = ss1::MetaData::new();
+/// let mut metadata = MetaData::new();
 /// metadata.tags.insert("mime_type".to_string(), "text/plain".to_string());
 ///
 /// let shares = ss1::split_secret(
 ///     7,
 ///     10,
 ///     &secret.as_bytes(),
+///     Reproducibility::Reproducible,
 ///     &Some(metadata)
 /// ).unwrap();
 ///
@@ -106,7 +108,7 @@ mod tests {
     fn split_then_recover_yields_original_secret() {
         let secret = "Hello, World!".to_string().into_bytes();
 
-        let shares = split_secret(7, 10, &secret, &None).unwrap();
+        let shares = split_secret(7, 10, &secret, Reproducibility::Reproducible, &None).unwrap();
 
         assert_eq!(shares.len(), 10);
 

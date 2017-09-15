@@ -4,11 +4,12 @@ use std::collections::HashSet;
 use sha3::Shake256;
 use digest::{Input, XofReader, ExtendableOutput};
 use ring::rand::{SystemRandom, SecureRandom};
+use rand::{ChaChaRng, Rng, SeedableRng};
 
 use errors::*;
 use dss::thss;
 use dss::thss::{ThSS, MetaData};
-use dss::random::{random_bytes, random_bytes_count, FixedRandom, MAX_MESSAGE_SIZE};
+use dss::random::{random_bytes_count, FixedRandom, MAX_MESSAGE_SIZE};
 use share::validation::{validate_shares, validate_share_count};
 use super::share::*;
 
@@ -16,6 +17,44 @@ use super::share::*;
 /// Moreover, given the current performances, it is almost unpractical to run
 /// the sharing scheme on message larger than that.
 const MAX_SECRET_SIZE: usize = MAX_MESSAGE_SIZE;
+
+const DEFAULT_SEED: &[u32] = &[
+    3511778590,
+    3807770496,
+    2197649734,
+    902598765,
+    3563921930,
+    2247357714,
+    1323319269,
+    2810365404,
+];
+
+/// There are situations where it's useful to generate shares in a reproducible manner.
+/// In particular, this allows a secret that’s in someone’s head, a passphrase,
+/// to be shared out in a manner in which different shares can be given to
+/// different people at different points in time.
+///
+/// On the other hand, there is some privacy cost.
+/// For example, if you know the secret is one of two possibilities,
+/// M0 or M1, in a share-reproducible scheme, acquiring a single share
+/// will probably let you decide which of the two possibilities it was.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Reproducibility {
+    /// Shares will be produced in a deterministic way, using
+    /// a default, fixed seed for the internal random number generator
+    /// used to generate entropy.
+    Reproducible,
+    /// Shares will be produced in a deterministic way, using
+    /// the given seed for the internal random number generator used to
+    /// generate entropy.
+    Seeded(Vec<u32>),
+    /// Shares will be produced in a deterministic way, using
+    /// the given byte vector as the entropy source.
+    WithEntropy(Vec<u8>),
+    /// Shares will be produced in non-deterministic way, using
+    /// the system's random number generator to produce entropy.
+    None,
+}
 
 /// Defines a `SS1` deterministic threshold secret sharing scheme.
 ///
@@ -28,8 +67,6 @@ pub(crate) struct SS1 {
     pub random_padding_len: usize,
     /// The length of the hash used for all shares (param `s` from the paper)
     pub hash_len: usize,
-    /// The secure random number generator
-    random: Box<SecureRandom>,
 }
 
 impl fmt::Debug for SS1 {
@@ -50,24 +87,15 @@ static MIN_RANDOM_PADDING_LEN: usize = 128; // r min
 static DEFAULT_HASH_LEN: usize = 256; // s
 static MIN_HASH_LEN: usize = 128; // s min
 
-
 impl Default for SS1 {
     fn default() -> Self {
-        Self::new(
-            DEFAULT_RANDOM_PADDING_LEN,
-            DEFAULT_HASH_LEN,
-            Box::new(SystemRandom::new()),
-        ).unwrap()
+        Self::new(DEFAULT_RANDOM_PADDING_LEN, DEFAULT_HASH_LEN).unwrap()
     }
 }
 
 impl SS1 {
     /// Constructs a new sharing scheme
-    pub fn new(
-        random_padding_len: usize,
-        hash_len: usize,
-        random: Box<SecureRandom>,
-    ) -> Result<Self> {
+    pub fn new(random_padding_len: usize, hash_len: usize) -> Result<Self> {
         if random_padding_len < MIN_RANDOM_PADDING_LEN || hash_len < MIN_HASH_LEN {
             bail!(ErrorKind::InvalidSS1Parameters(
                 random_padding_len,
@@ -78,7 +106,6 @@ impl SS1 {
         Ok(Self {
             random_padding_len,
             hash_len,
-            random,
         })
     }
 
@@ -90,6 +117,7 @@ impl SS1 {
         threshold: u8,
         shares_count: u8,
         secret: &[u8],
+        reproducibility: Reproducibility,
         metadata: &Option<MetaData>,
     ) -> Result<Vec<Share>> {
         let (threshold, shares_count) = validate_share_count(threshold, shares_count)?;
@@ -102,7 +130,29 @@ impl SS1 {
             bail!(ErrorKind::SecretTooBig(secret_len, MAX_SECRET_SIZE));
         }
 
-        let random_padding = random_bytes(self.random.as_ref(), self.random_padding_len)?;
+        let random_padding = match reproducibility {
+            Reproducibility::None => {
+                let rng = SystemRandom::new();
+                let mut result = vec![0u8; self.random_padding_len];
+                rng.fill(&mut result).chain_err(|| {
+                    ErrorKind::CannotGenerateRandomNumbers
+                })?;
+                result
+            }
+            Reproducibility::Reproducible => {
+                let mut rng = ChaChaRng::from_seed(DEFAULT_SEED);
+                let mut result = vec![0u8; self.random_padding_len];
+                rng.fill_bytes(result.as_mut_slice());
+                result
+            }
+            Reproducibility::Seeded(seed) => {
+                let mut rng = ChaChaRng::from_seed(&seed);
+                let mut result = vec![0u8; self.random_padding_len];
+                rng.fill_bytes(result.as_mut_slice());
+                result
+            }
+            Reproducibility::WithEntropy(entropy) => entropy,
+        };
 
         let mut shake = Shake256::default();
         shake.process(&[0]);
@@ -110,16 +160,17 @@ impl SS1 {
         shake.process(secret);
         shake.process(&random_padding);
 
-        let seed_len = random_bytes_count(threshold, secret.len() + self.random_padding_len);
-
         let mut hash = vec![0; self.hash_len];
-        let mut seed = vec![0; seed_len];
+
+        let randomness_len = random_bytes_count(threshold, secret.len() + self.random_padding_len);
+
+        let mut randomness = vec![0; randomness_len];
 
         let mut reader = shake.xof_result();
         reader.read(&mut hash);
-        reader.read(&mut seed);
+        reader.read(&mut randomness);
 
-        let underlying = ThSS::new(Box::new(FixedRandom::new(seed)));
+        let underlying = ThSS::new(Box::new(FixedRandom::new(randomness)));
 
         let message = [secret, &random_padding].concat();
         let shares = underlying.split_secret(
@@ -169,12 +220,15 @@ impl SS1 {
         let random_padding = secret.split_off(secret_len);
         // `secret` nows holds the secret
 
-        let sub_random = FixedRandom::new(random_padding.to_vec());
-        let sub_scheme = Self::new(self.random_padding_len, self.hash_len, Box::new(sub_random))?;
+        let sub_scheme = Self::new(self.random_padding_len, self.hash_len)?;
+
         let mut test_shares = sub_scheme.split_secret(
             shares[0].threshold,
             shares[0].shares_count,
             &secret,
+            Reproducibility::WithEntropy(
+                random_padding.to_vec(),
+            ),
             &metadata,
         )?;
 

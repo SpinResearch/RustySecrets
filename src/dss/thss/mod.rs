@@ -1,5 +1,5 @@
 
-//! Implements the `ThSS` deterministic threshold secret sharing scheme.
+//! Implements the `ThSS` threshold secret sharing scheme.
 //!
 //! This scheme satisfies the following security properties:
 //!
@@ -11,7 +11,7 @@
 //! **Auth1**    | No | A share obtained from an honest dealer commits it to a single underlying secret: that and only that value can be recovered.
 //! **Auth2**    | No | A share obtained even from a dishonest dealer commits it to a single underlying secret: that and only that value might be recovered. Implies Auth1.
 //! **ErrDet**   | Yes | An inauthentic set of shares produced by an adversary will be flagged as such when fed to the recovery algorithm.
-//! **Repro**    | No | Share reproducible: TODO
+//! **Repro**    | No | Share reproducible: The scheme can produce shares in a deterministic way.
 
 use errors::*;
 
@@ -23,8 +23,7 @@ pub use self::share::*;
 mod scheme;
 pub(crate) use self::scheme::ThSS;
 
-/// Performs threshold k-out-of-n deterministic secret sharing using
-/// the `ThSS` scheme.
+/// Performs threshold k-out-of-n secret sharing using the `ThSS` scheme.
 ///
 /// # Examples
 ///
@@ -63,7 +62,7 @@ pub fn split_secret(
     ThSS::default().split_secret(k, n, secret, metadata)
 }
 
-/// Recovers the secret from a k-out-of-n deterministic secret sharing scheme (`ThSS`).
+/// Recovers the secret from a k-out-of-n secret sharing scheme (`ThSS`).
 ///
 /// At least `k` distinct shares need to be provided to recover the secret.
 ///

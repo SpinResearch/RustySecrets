@@ -1,14 +1,21 @@
 extern crate rusty_secrets;
-use rusty_secrets::dss::ss1::{recover_secret, split_secret, Share};
+use rusty_secrets::dss::ss1::{recover_secret, split_secret, Share, Reproducibility};
 
 const TEST_THRESHOLD: u8 = 2;
 const TEST_SHARES_COUNT: u8 = 2;
+const TEST_REPRODUCIBILITY: Reproducibility = Reproducibility::Reproducible;
 const TEST_SECRET: &[u8] =
     b"These programs were never about terrorism: they're about economic spying, \
                              social control, and diplomatic manipulation. They're about power.";
 
 fn get_test_hash() -> Vec<u8> {
-    let good_shares = split_secret(TEST_THRESHOLD, TEST_SHARES_COUNT, TEST_SECRET, &None).unwrap();
+    let good_shares = split_secret(
+        TEST_THRESHOLD,
+        TEST_SHARES_COUNT,
+        TEST_SECRET,
+        TEST_REPRODUCIBILITY,
+        &None,
+    ).unwrap();
 
     good_shares[0].hash.clone()
 }
