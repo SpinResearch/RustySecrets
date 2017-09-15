@@ -14,6 +14,9 @@ pub(crate) use self::scheme::*;
 
 mod encode;
 
+use ring::digest::{Algorithm, SHA512};
+static HASH_ALGO: &'static Algorithm = &SHA512;
+
 /// Performs threshold k-out-of-n Shamir's secret sharing.
 ///
 /// # Examples

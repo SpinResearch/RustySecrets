@@ -1,11 +1,9 @@
 use errors::*;
-use digest;
 use merkle_sigs::{MerklePublicKey, Proof, PublicKey};
-use protobuf;
-use protobuf::{Message, RepeatedField};
+use protobuf::{self, Message, RepeatedField};
 use serialize;
 use serialize::base64::{self, FromBase64, ToBase64};
-use sss::Share;
+use sss::{Share, HASH_ALGO};
 use proto::ShareData;
 use std::error::Error;
 
@@ -86,16 +84,16 @@ pub(crate) fn share_from_string(s: &str, id: u8, is_signed: bool) -> Result<Shar
     let data = Vec::from(protobuf_data.get_shamir_data());
 
     let signature_pair = if is_signed {
-        let p_result = Proof::parse_from_bytes(protobuf_data.get_proof(), digest);
+        let p_result = Proof::parse_from_bytes(protobuf_data.get_proof(), HASH_ALGO);
 
         let p_opt = p_result.unwrap();
         let p = p_opt.unwrap();
 
         let proof = Proof {
-            algorithm: digest,
+            algorithm: HASH_ALGO,
             lemma: p.lemma,
             root_hash: p.root_hash,
-            value: MerklePublicKey::new(PublicKey::from_vec(p.value, digest).unwrap()),
+            value: MerklePublicKey::new(PublicKey::from_vec(p.value, HASH_ALGO).unwrap()),
         };
 
         let signature = protobuf_data.get_signature();

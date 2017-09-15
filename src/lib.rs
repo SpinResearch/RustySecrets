@@ -22,10 +22,6 @@ extern crate ring;
 extern crate sha3;
 extern crate digest;
 
-use ring::digest::{Algorithm, SHA512};
-#[allow(non_upper_case_globals)]
-static digest: &'static Algorithm = &SHA512;
-
 #[macro_use]
 mod gf256;
 mod share;
