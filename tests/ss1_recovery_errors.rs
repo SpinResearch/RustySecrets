@@ -3,24 +3,22 @@ use rusty_secrets::dss::ss1::{recover_secret, split_secret, Share};
 
 const TEST_THRESHOLD: u8 = 2;
 const TEST_SHARES_COUNT: u8 = 2;
-const TEST_SECRET: &[u8] = b"These programs were never about terrorism: they're about economic spying, \
+const TEST_SECRET: &[u8] =
+    b"These programs were never about terrorism: they're about economic spying, \
                              social control, and diplomatic manipulation. They're about power.";
 
 fn get_test_hash() -> Vec<u8> {
-    let good_shares = split_secret( TEST_THRESHOLD,
-                                    TEST_SHARES_COUNT,
-                                    TEST_SECRET,
-                                    &None ).unwrap();
+    let good_shares = split_secret(TEST_THRESHOLD, TEST_SHARES_COUNT, TEST_SECRET, &None).unwrap();
 
     good_shares[0].hash.clone()
 }
 
- #[test]
- #[should_panic(expected = "EmptyShares")]
- fn test_recover_no_shares() {
-     let shares = vec![];
-     recover_secret(&shares).unwrap();
- }
+#[test]
+#[should_panic(expected = "EmptyShares")]
+fn test_recover_no_shares() {
+    let shares = vec![];
+    recover_secret(&shares).unwrap();
+}
 
 #[test]
 #[should_panic(expected = "ShareParsingErrorEmptyShare")]
@@ -33,7 +31,7 @@ fn test_recover_2_parts_share() {
         total_shares_count: TEST_SHARES_COUNT,
         data: "CgmKQZHMO+5n5pU".to_string().into_bytes(),
         hash: hash.clone(),
-        metadata: None
+        metadata: None,
     };
     let share2 = Share {
         id: 2,
@@ -41,7 +39,7 @@ fn test_recover_2_parts_share() {
         total_shares_count: TEST_SHARES_COUNT,
         data: "".to_string().into_bytes(),
         hash: hash.clone(),
-        metadata: None
+        metadata: None,
     };
 
     let shares = vec![share1, share2];
@@ -60,7 +58,7 @@ fn test_recover_0_share_num() {
         total_shares_count: TEST_SHARES_COUNT,
         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
         hash: hash.clone(),
-        metadata: None
+        metadata: None,
     };
     let share2 = Share {
         id: 1,
@@ -68,7 +66,7 @@ fn test_recover_0_share_num() {
         total_shares_count: TEST_SHARES_COUNT,
         data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
         hash: hash.clone(),
-        metadata: None
+        metadata: None,
     };
 
     let shares = vec![share1, share2];
@@ -112,7 +110,7 @@ fn test_recover_duplicate_shares_number() {
         total_shares_count: TEST_SHARES_COUNT,
         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
         hash: hash.clone(),
-        metadata: None
+        metadata: None,
     };
     let share2 = Share {
         id: 1,
@@ -120,7 +118,7 @@ fn test_recover_duplicate_shares_number() {
         total_shares_count: TEST_SHARES_COUNT,
         data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
         hash: hash.clone(),
-        metadata: None
+        metadata: None,
     };
 
     let shares = vec![share1, share2];
@@ -138,7 +136,7 @@ fn test_recover_duplicate_shares_data() {
         total_shares_count: TEST_SHARES_COUNT,
         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
         hash: hash.clone(),
-        metadata: None
+        metadata: None,
     };
     let share2 = Share {
         id: 2,
@@ -146,7 +144,7 @@ fn test_recover_duplicate_shares_data() {
         total_shares_count: TEST_SHARES_COUNT,
         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
         hash: hash.clone(),
-        metadata: None
+        metadata: None,
     };
 
     let shares = vec![share1, share2];
@@ -160,19 +158,19 @@ fn test_recover_too_few_shares() {
     let hash = get_test_hash();
     let share1 = Share {
         id: 1,
-        threshold: TEST_THRESHOLD+1,
-        total_shares_count: TEST_SHARES_COUNT+1,
+        threshold: TEST_THRESHOLD + 1,
+        total_shares_count: TEST_SHARES_COUNT + 1,
         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
         hash: hash.clone(),
-        metadata: None
+        metadata: None,
     };
     let share2 = Share {
         id: 2,
-        threshold: TEST_THRESHOLD+1,
-        total_shares_count: TEST_SHARES_COUNT+1,
+        threshold: TEST_THRESHOLD + 1,
+        total_shares_count: TEST_SHARES_COUNT + 1,
         data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
         hash: hash.clone(),
-        metadata: None
+        metadata: None,
     };
 
     let shares = vec![share1, share2];

@@ -19,14 +19,14 @@ fn test_recover_2_parts_share() {
         threshold: 2,
         total_shares_count: 2,
         data: "CgmKQZHMO+5n5pU".to_string().into_bytes(),
-        metadata: None
+        metadata: None,
     };
     let share2 = Share {
         id: 2,
         threshold: 2,
         total_shares_count: 2,
         data: "".to_string().into_bytes(),
-        metadata: None
+        metadata: None,
     };
 
     let shares = vec![share1, share2];
@@ -43,14 +43,14 @@ fn test_recover_0_share_num() {
         threshold: 2,
         total_shares_count: 2,
         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
-        metadata: None
+        metadata: None,
     };
     let share2 = Share {
         id: 1,
         threshold: 2,
         total_shares_count: 2,
         data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
-        metadata: None
+        metadata: None,
     };
 
     let shares = vec![share1, share2];
@@ -92,14 +92,14 @@ fn test_recover_duplicate_shares_number() {
         threshold: 2,
         total_shares_count: 2,
         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
-        metadata: None
+        metadata: None,
     };
     let share2 = Share {
         id: 1,
         threshold: 2,
         total_shares_count: 2,
         data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
-        metadata: None
+        metadata: None,
     };
 
     let shares = vec![share1, share2];
@@ -115,14 +115,14 @@ fn test_recover_duplicate_shares_data() {
         threshold: 2,
         total_shares_count: 2,
         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
-        metadata: None
+        metadata: None,
     };
     let share2 = Share {
         id: 2,
         threshold: 2,
         total_shares_count: 2,
         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
-        metadata: None
+        metadata: None,
     };
 
     let shares = vec![share1, share2];
@@ -138,14 +138,14 @@ fn test_recover_too_few_shares() {
         threshold: 3,
         total_shares_count: 3,
         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
-        metadata: None
+        metadata: None,
     };
     let share2 = Share {
         id: 2,
         threshold: 3,
         total_shares_count: 3,
         data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
-        metadata: None
+        metadata: None,
     };
 
     let shares = vec![share1, share2];

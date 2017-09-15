@@ -38,11 +38,11 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
         let (id, threshold) = (share.get_id(), share.get_threshold());
 
         if id > MAX_SHARES {
-            bail!(ErrorKind::ShareIdentifierTooBig(id, MAX_SHARES,))
+            bail!(ErrorKind::ShareIdentifierTooBig(id, MAX_SHARES))
         }
 
         if id < 1 {
-            bail!(ErrorKind::ShareParsingInvalidShareId(id,))
+            bail!(ErrorKind::ShareParsingInvalidShareId(id))
         }
 
         k_compatibility_sets.entry(threshold).or_insert_with(
@@ -56,7 +56,7 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
         }
 
         if share.get_data().is_empty() {
-            bail!(ErrorKind::ShareParsingErrorEmptyShare(id,))
+            bail!(ErrorKind::ShareParsingErrorEmptyShare(id))
         }
 
         if result.iter().any(|s| s.get_data() == share.get_data()) && share.get_threshold() != 1 {
@@ -95,11 +95,9 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
     Ok((threshold, result))
 }
 
-pub(crate) fn validate_share_count(threshold: u8, total_shares_count: u8) -> Result<(u8,u8)> {
+pub(crate) fn validate_share_count(threshold: u8, total_shares_count: u8) -> Result<(u8, u8)> {
     if threshold < MIN_SHARES {
-        bail!(ErrorKind::ThresholdTooSmall(
-            threshold
-        ));
+        bail!(ErrorKind::ThresholdTooSmall(threshold));
     }
     if total_shares_count > MAX_SHARES {
         bail!(ErrorKind::InvalidShareCountMax(
@@ -114,10 +112,7 @@ pub(crate) fn validate_share_count(threshold: u8, total_shares_count: u8) -> Res
         ));
     }
     if threshold > total_shares_count {
-        bail!(ErrorKind::ThresholdTooBig(
-            threshold,
-            total_shares_count
-        ));
+        bail!(ErrorKind::ThresholdTooBig(threshold, total_shares_count));
     }
 
     Ok((threshold, total_shares_count))
