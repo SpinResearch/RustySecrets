@@ -49,30 +49,33 @@ fn test_recover_2_parts_share() {
     recover_secret(&shares).unwrap();
 }
 
-// #[test]
-// #[should_panic(expected = "ShareParsingInvalidShareId")]
-// fn test_recover_0_share_num() {
-//
-//     let share1 = Share {
-//         id: 0,
-//         threshold: 2,
-//         total_shares_count: 2,
-//         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
-//         metadata: None
-//     };
-//     let share2 = Share {
-//         id: 1,
-//         threshold: 2,
-//         total_shares_count: 2,
-//         data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
-//         metadata: None
-//     };
-//
-//     let shares = vec![share1, share2];
-//
-//     recover_secret(&shares).unwrap();
-// }
-//
+#[test]
+#[should_panic(expected = "ShareParsingInvalidShareId")]
+fn test_recover_0_share_num() {
+    let hash = get_test_hash();
+
+    let share1 = Share {
+        id: 0,
+        threshold: TEST_THRESHOLD,
+        total_shares_count: TEST_SHARES_COUNT,
+        data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
+        hash: hash.clone(),
+        metadata: None
+    };
+    let share2 = Share {
+        id: 1,
+        threshold: TEST_THRESHOLD,
+        total_shares_count: TEST_SHARES_COUNT,
+        data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
+        hash: hash.clone(),
+        metadata: None
+    };
+
+    let shares = vec![share1, share2];
+
+    recover_secret(&shares).unwrap();
+}
+
 // // ---
 // // TODO: will be implemented when serialization is done for ss1 shares
 // // ---
