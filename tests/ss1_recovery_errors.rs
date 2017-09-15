@@ -128,29 +128,32 @@ fn test_recover_duplicate_shares_number() {
     recover_secret(&shares).unwrap();
 }
 
-// #[test]
-// #[should_panic(expected = "DuplicateShareData")]
-// fn test_recover_duplicate_shares_data() {
-//     let share1 = Share {
-//         id: 1,
-//         threshold: 2,
-//         total_shares_count: 2,
-//         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
-//         metadata: None
-//     };
-//     let share2 = Share {
-//         id: 2,
-//         threshold: 2,
-//         total_shares_count: 2,
-//         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
-//         metadata: None
-//     };
-//
-//     let shares = vec![share1, share2];
-//
-//     recover_secret(&shares).unwrap();
-// }
-//
+#[test]
+#[should_panic(expected = "DuplicateShareData")]
+fn test_recover_duplicate_shares_data() {
+    let hash = get_test_hash();
+    let share1 = Share {
+        id: 1,
+        threshold: TEST_THRESHOLD,
+        total_shares_count: TEST_SHARES_COUNT,
+        data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
+        hash: hash.clone(),
+        metadata: None
+    };
+    let share2 = Share {
+        id: 2,
+        threshold: TEST_THRESHOLD,
+        total_shares_count: TEST_SHARES_COUNT,
+        data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
+        hash: hash.clone(),
+        metadata: None
+    };
+
+    let shares = vec![share1, share2];
+
+    recover_secret(&shares).unwrap();
+}
+
 // #[test]
 // #[should_panic(expected = "MissingShares")]
 // fn test_recover_too_few_shares() {
