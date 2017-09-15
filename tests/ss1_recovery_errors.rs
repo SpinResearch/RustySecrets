@@ -6,6 +6,14 @@ const TEST_SHARES_COUNT: u8 = 2;
 const TEST_SECRET: &[u8] = b"These programs were never about terrorism: they're about economic spying, \
                              social control, and diplomatic manipulation. They're about power.";
 
+fn get_test_hash() -> Vec<u8> {
+    let good_shares = split_secret( TEST_THRESHOLD,
+                                    TEST_SHARES_COUNT,
+                                    TEST_SECRET,
+                                    &None ).unwrap();
+
+    good_shares[0].hash.clone()
+}
 
  #[test]
  #[should_panic(expected = "EmptyShares")]
@@ -17,13 +25,7 @@ const TEST_SECRET: &[u8] = b"These programs were never about terrorism: they're 
 #[test]
 #[should_panic(expected = "ShareParsingErrorEmptyShare")]
 fn test_recover_2_parts_share() {
-
-    let good_shares = split_secret( TEST_THRESHOLD,
-                                    TEST_SHARES_COUNT,
-                                    TEST_SECRET,
-                                    &None ).unwrap();
-
-    let hash = good_shares[0].hash.clone();
+    let hash = get_test_hash();
 
     let share1 = Share {
         id: 1,
