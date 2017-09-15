@@ -14,7 +14,7 @@ pub struct Share {
     /// The total number of shares that have been dealt
     pub total_shares_count: u8,
     /// The share data itself
-    pub data: Vec<u8>, // TODO: Consistency. SSS uses bytes slices, not owned Vecs
+    pub data: Vec<u8>,
     /// The metadata associated with this share
     pub metadata: Option<MetaData>,
 }
