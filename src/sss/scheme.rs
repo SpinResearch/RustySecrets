@@ -22,12 +22,12 @@ impl SSS {
     pub fn generate_shares(
         &self,
         threshold: u8,
-        total_shares_count: u8,
+        shares_count: u8,
         secret: &[u8],
         sign_shares: bool,
     ) -> Result<Vec<Share>> {
-        let (threshold, total_shares_count) = validate_share_count(threshold, total_shares_count)?;
-        let shares = Self::secret_share(secret, threshold, total_shares_count)?;
+        let (threshold, shares_count) = validate_share_count(threshold, shares_count)?;
+        let shares = Self::secret_share(secret, threshold, shares_count)?;
 
         let signatures = if sign_shares {
             let shares_to_sign = shares
@@ -50,7 +50,7 @@ impl SSS {
         };
 
         let sig_pairs = signatures
-            .unwrap_or_else(|| vec![None; total_shares_count as usize])
+            .unwrap_or_else(|| vec![None; shares_count as usize])
             .into_iter()
             .map(|sig_pair| sig_pair.map(From::from));
 
@@ -71,19 +71,19 @@ impl SSS {
         Ok(result.collect())
     }
 
-    fn secret_share(src: &[u8], threshold: u8, total_shares_count: u8) -> Result<Vec<Vec<u8>>> {
-        let mut result = Vec::with_capacity(total_shares_count as usize);
-        for _ in 0..(total_shares_count as usize) {
+    fn secret_share(src: &[u8], threshold: u8, shares_count: u8) -> Result<Vec<Vec<u8>>> {
+        let mut result = Vec::with_capacity(shares_count as usize);
+        for _ in 0..(shares_count as usize) {
             result.push(vec![0u8; src.len()]);
         }
         let mut col_in = vec![0u8, threshold];
-        let mut col_out = Vec::with_capacity(total_shares_count as usize);
+        let mut col_out = Vec::with_capacity(shares_count as usize);
         let mut osrng = OsRng::new()?;
         for (c, &s) in src.iter().enumerate() {
             col_in[0] = s;
             osrng.fill_bytes(&mut col_in[1..]);
             col_out.clear();
-            encode_secret_byte(&*col_in, total_shares_count, &mut col_out)?;
+            encode_secret_byte(&*col_in, shares_count, &mut col_out)?;
             for (&y, share) in col_out.iter().zip(result.iter_mut()) {
                 share[c] = y;
             }

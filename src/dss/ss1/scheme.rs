@@ -84,15 +84,15 @@ impl SS1 {
 
     /// Split a secret following a given sharing `scheme`,
     /// with `threshold` being the number of shares necessary to recover the secret,
-    /// and `total_shares_count` the total number of shares to be dealt.
+    /// and `shares_count` the total number of shares to be dealt.
     pub fn split_secret(
         &self,
         threshold: u8,
-        total_shares_count: u8,
+        shares_count: u8,
         secret: &[u8],
         metadata: &Option<MetaData>,
     ) -> Result<Vec<Share>> {
-        let (threshold, total_shares_count) = validate_share_count(threshold, total_shares_count)?;
+        let (threshold, shares_count) = validate_share_count(threshold, shares_count)?;
         let secret_len = secret.len();
 
         if secret_len == 0 {
@@ -106,7 +106,7 @@ impl SS1 {
 
         let mut shake = Shake256::default();
         shake.process(&[0]);
-        shake.process(&[threshold, total_shares_count]);
+        shake.process(&[threshold, shares_count]);
         shake.process(secret);
         shake.process(&random_padding);
 
@@ -124,7 +124,7 @@ impl SS1 {
         let message = [secret, &random_padding].concat();
         let shares = underlying.split_secret(
             threshold,
-            total_shares_count,
+            shares_count,
             &message,
             metadata,
         )?;
@@ -135,7 +135,7 @@ impl SS1 {
                 Share {
                     id: share.id,
                     threshold: share.threshold,
-                    total_shares_count: share.total_shares_count,
+                    shares_count: share.shares_count,
                     data: share.data,
                     hash: hash.clone(),
                     metadata: share.metadata.clone(),
@@ -156,7 +156,7 @@ impl SS1 {
                 thss::Share {
                     id: share.id,
                     threshold: share.threshold,
-                    total_shares_count: share.total_shares_count,
+                    shares_count: share.shares_count,
                     data: share.data.clone(),
                     metadata: share.metadata.clone(),
                 }
@@ -173,7 +173,7 @@ impl SS1 {
         let sub_scheme = Self::new(self.random_padding_len, self.hash_len, Box::new(sub_random))?;
         let mut test_shares = sub_scheme.split_secret(
             shares[0].threshold,
-            shares[0].total_shares_count,
+            shares[0].shares_count,
             &secret,
             &metadata,
         )?;

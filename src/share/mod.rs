@@ -24,7 +24,7 @@ pub(crate) trait IsShare: Sized {
     fn get_threshold(&self) -> u8;
 
     /// Returns the total number of shares that have been dealt
-    fn get_total_shares_count(&self) -> Option<u8>;
+    fn get_shares_count(&self) -> Option<u8>;
 }
 
 /// This trait must be implemented by shares' types wich can be signed.

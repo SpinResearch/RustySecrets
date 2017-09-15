@@ -38,15 +38,15 @@ impl ThSS {
 
     /// Split a secret following a given sharing `scheme`,
     /// with `threshold` being the number of shares necessary to recover the secret,
-    /// and `total_shares_count` the total number of shares to be dealt.
+    /// and `shares_count` the total number of shares to be dealt.
     pub fn split_secret(
         &self,
         threshold: u8,
-        total_shares_count: u8,
+        shares_count: u8,
         secret: &[u8],
         metadata: &Option<MetaData>,
     ) -> Result<Vec<Share>> {
-        let (threshold, total_shares_count) = validate_share_count(threshold, total_shares_count)?;
+        let (threshold, shares_count) = validate_share_count(threshold, shares_count)?;
         let secret_len = secret.len();
 
         if secret_len == 0 {
@@ -59,14 +59,14 @@ impl ThSS {
         let rands_len = random_bytes_count(threshold, secret_len);
         let rands = random_bytes(self.random.as_ref(), rands_len)?;
 
-        let shares = (1..total_shares_count + 1)
+        let shares = (1..shares_count + 1)
             .map(|id| {
                 let data = encode_secret(secret, threshold, id, &rands);
 
                 Share {
                     id,
                     threshold,
-                    total_shares_count,
+                    shares_count,
                     data,
                     metadata: metadata.clone(),
                 }

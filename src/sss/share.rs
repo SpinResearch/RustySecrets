@@ -81,7 +81,7 @@ impl IsShare for Share {
         self.threshold
     }
 
-    fn get_total_shares_count(&self) -> Option<u8> {
+    fn get_shares_count(&self) -> Option<u8> {
         None
     }
 }

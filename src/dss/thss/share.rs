@@ -12,7 +12,7 @@ pub struct Share {
     /// The number of shares necessary to recover the secret, aka a threshold
     pub threshold: u8,
     /// The total number of shares that have been dealt
-    pub total_shares_count: u8,
+    pub shares_count: u8,
     /// The share data itself
     pub data: Vec<u8>,
     /// The metadata associated with this share
@@ -32,8 +32,8 @@ impl IsShare for Share {
         self.threshold
     }
 
-    fn get_total_shares_count(&self) -> Option<u8> {
-        Some(self.total_shares_count)
+    fn get_shares_count(&self) -> Option<u8> {
+        Some(self.shares_count)
     }
 }
 
