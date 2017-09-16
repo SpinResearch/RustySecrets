@@ -26,7 +26,7 @@
 //! **Auth1**    | A share obtained from an honest dealer commits it to a single underlying secret: that and only that value can be recovered.
 //! **Auth2**    | A share obtained even from a dishonest dealer commits it to a single underlying secret: that and only that value might be recovered. Implies Auth1.
 //! **ErrDet**   | An inauthentic set of shares produced by an adversary will be flagged as such when fed to the recovery algorithm.
-//! **Repro**    | Share reproducible: TODO
+//! **Repro**    | Share reproducible: The scheme can produce shares in a deterministic way.
 
 pub mod thss;
 pub mod ss1;
