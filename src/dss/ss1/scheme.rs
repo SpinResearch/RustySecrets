@@ -4,6 +4,7 @@ use std::collections::HashSet;
 use sha3::Shake256;
 use digest::{Input, XofReader, ExtendableOutput};
 use ring::rand::{SystemRandom, SecureRandom};
+use ring::digest::{Context, SHA256};
 use rand::{ChaChaRng, Rng, SeedableRng};
 
 use errors::*;
@@ -12,22 +13,14 @@ use dss::thss::{ThSS, MetaData};
 use dss::random::{random_bytes_count, FixedRandom, MAX_MESSAGE_SIZE};
 use share::validation::{validate_shares, validate_share_count};
 use super::share::*;
+use super::utils;
 
 /// We bound the message size at about 16MB to avoid overflow in `random_bytes_count`.
 /// Moreover, given the current performances, it is almost unpractical to run
 /// the sharing scheme on message larger than that.
 const MAX_SECRET_SIZE: usize = MAX_MESSAGE_SIZE;
 
-const DEFAULT_SEED: &[u32] = &[
-    3511778590,
-    3807770496,
-    2197649734,
-    902598765,
-    3563921930,
-    2247357714,
-    1323319269,
-    2810365404,
-];
+const DEFAULT_PRESEED: &[u8] = b"rusty_secrets::dss::ss1";
 
 /// There are situations where it's useful to generate shares in a reproducible manner.
 /// In particular, this allows a secret that’s in someone’s head, a passphrase,
@@ -47,13 +40,46 @@ pub enum Reproducibility {
     /// Shares will be produced in a deterministic way, using
     /// the given seed for the internal random number generator used to
     /// generate entropy.
-    Seeded(Vec<u32>),
+    Seeded(Vec<u8>),
     /// Shares will be produced in a deterministic way, using
     /// the given byte vector as the entropy source.
     WithEntropy(Vec<u8>),
     /// Shares will be produced in non-deterministic way, using
     /// the system's random number generator to produce entropy.
     None,
+}
+
+impl Reproducibility {
+    /// Shares will be produced in a deterministic way, using
+    /// a default, fixed seed for the internal random number generator
+    /// used to generate entropy.
+    pub fn reproducible() -> Self {
+        Reproducibility::Reproducible
+    }
+
+    /// Shares will be produced in a deterministic way, using
+    /// the given seed for the internal random number generator used to
+    /// generate entropy.
+    pub fn seeded(seed: Vec<u8>) -> Self {
+        assert!(!seed.is_empty(), "Reproducibility: seed cannot be empty");
+        Reproducibility::Seeded(seed)
+    }
+
+    /// Shares will be produced in a deterministic way, using
+    /// the given byte vector as the entropy source.
+    pub fn with_entropy(entropy: Vec<u8>) -> Self {
+        assert!(
+            !entropy.is_empty(),
+            "Reproducibility: entropy cannot be empty"
+        );
+        Reproducibility::WithEntropy(entropy)
+    }
+
+    /// Shares will be produced in non-deterministic way, using
+    /// the system's random number generator to produce entropy.
+    pub fn none() -> Self {
+        Reproducibility::None
+    }
 }
 
 /// Defines a `SS1` deterministic threshold secret sharing scheme.
@@ -130,29 +156,11 @@ impl SS1 {
             bail!(ErrorKind::SecretTooBig(secret_len, MAX_SECRET_SIZE));
         }
 
-        let random_padding = match reproducibility {
-            Reproducibility::None => {
-                let rng = SystemRandom::new();
-                let mut result = vec![0u8; self.random_padding_len];
-                rng.fill(&mut result).chain_err(|| {
-                    ErrorKind::CannotGenerateRandomNumbers
-                })?;
-                result
-            }
-            Reproducibility::Reproducible => {
-                let mut rng = ChaChaRng::from_seed(DEFAULT_SEED);
-                let mut result = vec![0u8; self.random_padding_len];
-                rng.fill_bytes(result.as_mut_slice());
-                result
-            }
-            Reproducibility::Seeded(seed) => {
-                let mut rng = ChaChaRng::from_seed(&seed);
-                let mut result = vec![0u8; self.random_padding_len];
-                rng.fill_bytes(result.as_mut_slice());
-                result
-            }
-            Reproducibility::WithEntropy(entropy) => entropy,
-        };
+        let random_padding = self.generate_random_padding(
+            reproducibility,
+            secret,
+            metadata,
+        )?;
 
         let mut shake = Shake256::default();
         shake.process(&[0]);
@@ -195,6 +203,65 @@ impl SS1 {
             .collect();
 
         Ok(res)
+    }
+
+    fn generate_random_padding(
+        &self,
+        reproducibility: Reproducibility,
+        secret: &[u8],
+        metadata: &Option<MetaData>,
+    ) -> Result<Vec<u8>> {
+        match reproducibility {
+            Reproducibility::None => {
+                let rng = SystemRandom::new();
+                let mut result = vec![0u8; self.random_padding_len];
+                rng.fill(&mut result).chain_err(|| {
+                    ErrorKind::CannotGenerateRandomNumbers
+                })?;
+                Ok(result)
+            }
+            Reproducibility::Reproducible => {
+                let mut ctx = Context::new(&SHA256);
+                ctx.update(DEFAULT_PRESEED);
+                ctx.update(secret);
+                for md in metadata {
+                    md.hash_into(&mut ctx);
+                }
+
+                // We can safely call `utils::slice_u8_to_slice_u32` because
+                // the `digest` produced with `SHA256` is 256 bits long and
+                // can thus be represented both a slice of 32 bytes or as
+                // a slice of 8 32-bit words.
+                let digest = ctx.finish();
+                let seed = utils::slice_u8_to_slice_u32(digest.as_ref());
+
+                let mut rng = ChaChaRng::from_seed(seed);
+                let mut result = vec![0u8; self.random_padding_len];
+                rng.fill_bytes(result.as_mut_slice());
+                Ok(result)
+            }
+            Reproducibility::Seeded(preseed) => {
+                let mut ctx = Context::new(&SHA256);
+                ctx.update(preseed.as_slice());
+                ctx.update(secret);
+                for md in metadata {
+                    md.hash_into(&mut ctx);
+                }
+
+                // We can safely call `utils::slice_u8_to_slice_u32` because
+                // the `digest` produced with `SHA256` is 256 bits long and
+                // can thus be represented both a slice of 32 bytes or as
+                // a slice of 8 32-bit words.
+                let digest = ctx.finish();
+                let seed = utils::slice_u8_to_slice_u32(digest.as_ref());
+
+                let mut rng = ChaChaRng::from_seed(&seed);
+                let mut result = vec![0u8; self.random_padding_len];
+                rng.fill_bytes(result.as_mut_slice());
+                Ok(result)
+            }
+            Reproducibility::WithEntropy(entropy) => Ok(entropy),
+        }
     }
 
     /// Recover the secret from the given set of shares

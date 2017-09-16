@@ -24,6 +24,8 @@
 
 use errors::*;
 
+mod utils;
+
 mod share;
 pub use self::share::*;
 
@@ -44,7 +46,7 @@ pub use self::scheme::Reproducibility;
 /// let mut metadata = MetaData::new();
 /// metadata.tags.insert("mime_type".to_string(), "text/plain".to_string());
 ///
-/// match ss1::split_secret(7, 10, &secret.as_bytes(), Reproducibility::Reproducible, &Some(metadata)) {
+/// match ss1::split_secret(7, 10, &secret.as_bytes(), Reproducibility::reproducible(), &Some(metadata)) {
 ///     Ok(shares) => {
 ///         // Do something with the shares
 ///     },
@@ -82,7 +84,7 @@ pub fn split_secret(
 ///     7,
 ///     10,
 ///     &secret.as_bytes(),
-///     Reproducibility::Reproducible,
+///     Reproducibility::reproducible(),
 ///     &Some(metadata)
 /// ).unwrap();
 ///
