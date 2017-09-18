@@ -38,16 +38,17 @@ pub enum Reproducibility {
     /// a default, fixed seed for the internal random number generator
     /// used to generate entropy.
     Reproducible,
+    /// Shares will be produced in non-deterministic way, using
+    /// the system's random number generator to produce entropy.
+    None,
     /// Shares will be produced in a deterministic way, using
     /// the given seed for the internal random number generator used to
     /// generate entropy.
     Seeded(Vec<u8>),
     /// Shares will be produced in a deterministic way, using
     /// the given byte vector as the entropy source.
+    /// *Warning: Never use this variant unless you are sure of what you are doing*
     WithEntropy(Vec<u8>),
-    /// Shares will be produced in non-deterministic way, using
-    /// the system's random number generator to produce entropy.
-    None,
 }
 
 impl Reproducibility {
@@ -68,6 +69,7 @@ impl Reproducibility {
 
     /// Shares will be produced in a deterministic way, using
     /// the given byte vector as the entropy source.
+    /// *Warning: Never use this variant unless you are sure of what you are doing*
     pub fn with_entropy(entropy: Vec<u8>) -> Self {
         assert!(
             !entropy.is_empty(),
