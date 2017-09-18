@@ -109,10 +109,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn split_then_recover_yields_original_secret() {
+    fn nonreproducible_split_then_recover_yields_original_secret() {
         let secret = "Hello, World!".to_string().into_bytes();
 
-        let shares = split_secret(7, 10, &secret, Reproducibility::Reproducible, &None).unwrap();
+        let shares = split_secret(7, 10, &secret, Reproducibility::none(), &None).unwrap();
 
         assert_eq!(shares.len(), 10);
 
@@ -122,6 +122,74 @@ mod tests {
         assert_eq!(access_structure.threshold, 7);
         assert_eq!(access_structure.shares_count, 10);
         assert_eq!(None, metadata);
+    }
+
+    #[test]
+    fn reproducible_split_then_recover_yields_original_secret() {
+        let secret = "Hello, World!".to_string().into_bytes();
+
+        let shares = split_secret(7, 10, &secret, Reproducibility::reproducible(), &None).unwrap();
+
+        assert_eq!(shares.len(), 10);
+
+        let (recovered, access_structure, metadata) = recover_secret(&shares[2..9]).unwrap();
+
+        assert_eq!(secret, recovered);
+        assert_eq!(access_structure.threshold, 7);
+        assert_eq!(access_structure.shares_count, 10);
+        assert_eq!(None, metadata);
+    }
+
+    #[test]
+    fn seeded_reproducible_split_then_recover_yields_original_secret() {
+        let secret = "Hello, World!".to_string().into_bytes();
+
+        let seed = vec![1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16u8];
+        let shares = split_secret(7, 10, &secret, Reproducibility::seeded(seed), &None).unwrap();
+
+        assert_eq!(shares.len(), 10);
+
+        let (recovered, access_structure, metadata) = recover_secret(&shares[2..9]).unwrap();
+
+        assert_eq!(secret, recovered);
+        assert_eq!(access_structure.threshold, 7);
+        assert_eq!(access_structure.shares_count, 10);
+        assert_eq!(None, metadata);
+    }
+
+    #[test]
+    fn reproducible_split() {
+        let secret = "Hello, World!".to_string().into_bytes();
+
+        let shares_1 = split_secret(7, 10, &secret, Reproducibility::reproducible(), &None)
+            .unwrap();
+        let shares_2 = split_secret(7, 10, &secret, Reproducibility::reproducible(), &None)
+            .unwrap();
+
+        assert_eq!(shares_1, shares_2);
+    }
+
+    #[test]
+    fn nonreproducible_split() {
+        let secret = "Hello, World!".to_string().into_bytes();
+
+        let shares_1 = split_secret(7, 10, &secret, Reproducibility::none(), &None).unwrap();
+        let shares_2 = split_secret(7, 10, &secret, Reproducibility::none(), &None).unwrap();
+
+        assert!(shares_1 != shares_2);
+    }
+
+    #[test]
+    fn seeded_split() {
+        let secret = "Hello, World!".to_string().into_bytes();
+
+        let seed = vec![1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16u8];
+        let shares_1 = split_secret(7, 10, &secret, Reproducibility::seeded(seed.clone()), &None)
+            .unwrap();
+        let shares_2 = split_secret(7, 10, &secret, Reproducibility::seeded(seed.clone()), &None)
+            .unwrap();
+
+        assert_eq!(shares_1, shares_2);
     }
 
 }
