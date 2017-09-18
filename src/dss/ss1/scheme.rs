@@ -302,12 +302,13 @@ impl SS1 {
             &metadata,
         )?;
 
+        shares.sort_by_key(|share| share.id);
         test_shares.sort_by_key(|share| share.id);
 
-        shares.sort_by_key(|share| share.id);
-
-        let ids = shares.iter().map(|share| share.id).collect::<HashSet<_>>();
-        let relevant_test_shares = test_shares.iter().filter(|share| ids.contains(&share.id));
+        let relevant_ids = shares.iter().map(|share| share.id).collect::<HashSet<_>>();
+        let relevant_test_shares = test_shares.iter().filter(
+            |share| relevant_ids.contains(&share.id),
+        );
         let matching_shares = shares.iter().zip(relevant_test_shares);
 
         for (share, test_share) in matching_shares {

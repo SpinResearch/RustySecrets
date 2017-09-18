@@ -101,13 +101,11 @@ impl ThSS {
             .collect::<Vec<_>>();
 
         for (i, poly) in polys.iter().enumerate() {
-            // Check shares for consistency.
+            // Check remaining shares for consistency.
             // See Figure 7 of the paper
-            for (u, share) in shares.iter().enumerate().take(shares.len()).skip(
-                threshold as usize +
-                    1,
-            )
-            {
+            let remaining_shares = shares.iter().enumerate().skip(threshold as usize);
+
+            for (u, share) in remaining_shares {
                 let value = poly.evaluate_at(Gf256::from_byte(u as u8 + 1)).to_byte();
                 if value != share.data[i] {
                     bail!(ErrorKind::InconsistentShares);
