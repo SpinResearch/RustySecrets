@@ -3,6 +3,7 @@ use std::collections::HashSet;
 
 use sha3::Shake256;
 use digest::{Input, XofReader, ExtendableOutput};
+use ring::{hkdf, hmac};
 use ring::rand::{SystemRandom, SecureRandom};
 use ring::digest::{Context, SHA256};
 use rand::{ChaChaRng, Rng, SeedableRng};
@@ -221,40 +222,14 @@ impl SS1 {
                 Ok(result)
             }
             Reproducibility::Reproducible => {
-                let mut ctx = Context::new(&SHA256);
-                ctx.update(DEFAULT_PRESEED);
-                ctx.update(secret);
-                for md in metadata {
-                    md.hash_into(&mut ctx);
-                }
-
-                // We can safely call `utils::slice_u8_to_slice_u32` because
-                // the `digest` produced with `SHA256` is 256 bits long and
-                // can thus be represented both a slice of 32 bytes or as
-                // a slice of 8 32-bit words.
-                let digest = ctx.finish();
-                let seed = utils::slice_u8_to_slice_u32(digest.as_ref());
-
-                let mut rng = ChaChaRng::from_seed(seed);
+                let seed = self.generate_seed(DEFAULT_PRESEED, &secret, &metadata);
+                let mut rng = ChaChaRng::from_seed(&seed);
                 let mut result = vec![0u8; self.random_padding_len];
                 rng.fill_bytes(result.as_mut_slice());
                 Ok(result)
             }
             Reproducibility::Seeded(preseed) => {
-                let mut ctx = Context::new(&SHA256);
-                ctx.update(preseed.as_slice());
-                ctx.update(secret);
-                for md in metadata {
-                    md.hash_into(&mut ctx);
-                }
-
-                // We can safely call `utils::slice_u8_to_slice_u32` because
-                // the `digest` produced with `SHA256` is 256 bits long and
-                // can thus be represented both a slice of 32 bytes or as
-                // a slice of 8 32-bit words.
-                let digest = ctx.finish();
-                let seed = utils::slice_u8_to_slice_u32(digest.as_ref());
-
+                let seed = self.generate_seed(&preseed, &secret, &metadata);
                 let mut rng = ChaChaRng::from_seed(&seed);
                 let mut result = vec![0u8; self.random_padding_len];
                 rng.fill_bytes(result.as_mut_slice());
@@ -262,6 +237,34 @@ impl SS1 {
             }
             Reproducibility::WithEntropy(entropy) => Ok(entropy),
         }
+    }
+
+    /// Generate a seed of 8 32-bits word for the ChaCha20 PRNG by hashing
+    /// together the preseed, secret, and metadata, in order to obtain a salt
+    /// for performing HKDF over the preseed.
+    fn generate_seed(
+        &self,
+        preseed: &[u8],
+        secret: &[u8],
+        metadata: &Option<MetaData>,
+    ) -> Vec<u32> {
+        let mut ctx = Context::new(&SHA256);
+        ctx.update(preseed);
+        ctx.update(secret);
+        for md in metadata {
+            md.hash_into(&mut ctx);
+        }
+
+        let key_value = ctx.finish();
+        let salt = hmac::SigningKey::new(&SHA256, key_value.as_ref());
+        let mut seed_bytes = vec![0u8; 32];
+        hkdf::extract_and_expand(&salt, preseed, &[], &mut seed_bytes);
+
+        // We can safely call `utils::slice_u8_to_slice_u32` because
+        // the `digest` produced with `SHA256` is 256 bits long and
+        // can thus be represented both a slice of 32 bytes or as
+        // a slice of 8 32-bit words.
+        utils::slice_u8_to_slice_u32(&seed_bytes).to_vec()
     }
 
     /// Recover the secret from the given set of shares
