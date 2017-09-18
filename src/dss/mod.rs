@@ -39,10 +39,11 @@ mod random;
 /// recover the secret, one would express it as:
 ///
 /// ```rust
+/// # use rusty_secrets::dss::AccessStructure;
 /// AccessStructure {
 ///     threshold: 7,
 ///     shares_count: 10,
-/// }
+/// };
 /// ```
 #[derive(Copy, Clone, Debug)]
 pub struct AccessStructure {
