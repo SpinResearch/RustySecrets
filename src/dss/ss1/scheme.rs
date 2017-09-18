@@ -224,14 +224,14 @@ impl SS1 {
                 Ok(result)
             }
             Reproducibility::Reproducible => {
-                let seed = self.generate_seed(DEFAULT_PRESEED, &secret, &metadata);
+                let seed = self.generate_seed(DEFAULT_PRESEED, secret, metadata);
                 let mut rng = ChaChaRng::from_seed(&seed);
                 let mut result = vec![0u8; self.random_padding_len];
                 rng.fill_bytes(result.as_mut_slice());
                 Ok(result)
             }
             Reproducibility::Seeded(preseed) => {
-                let seed = self.generate_seed(&preseed, &secret, &metadata);
+                let seed = self.generate_seed(&preseed, secret, metadata);
                 let mut rng = ChaChaRng::from_seed(&seed);
                 let mut result = vec![0u8; self.random_padding_len];
                 rng.fill_bytes(result.as_mut_slice());
