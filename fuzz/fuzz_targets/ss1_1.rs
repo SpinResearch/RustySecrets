@@ -16,7 +16,7 @@ fuzz_target!(|data: &[u8]| {
         let k = kn[0];
         let n = kn[1];
 
-        split_secret(k, n, &data, &None)
+        split_secret(k, n, &data, Reproducibility::reproducible(), &None)
             .and_then(|ss| recover_secret(&ss))
             .map(|_| ())
             .unwrap_or(())

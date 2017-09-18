@@ -20,7 +20,7 @@ mod ss1 {
                 let secret = shared::$secret();
 
                 b.iter(move || {
-                    let shares = ss1::split_secret($k, $n, &secret, &None).unwrap();
+                    let shares = ss1::split_secret($k, $n, &secret, ss1::Reproducibility::reproducible(), &None).unwrap();
                     black_box(shares);
                 });
             }
@@ -32,7 +32,7 @@ mod ss1 {
             #[bench]
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
-                let all_shares = ss1::split_secret($k, $n, &secret, &None).unwrap();
+                let all_shares = ss1::split_secret($k, $n, &secret, ss1::Reproducibility::reproducible(), &None).unwrap();
                 let shares = &all_shares.into_iter().take($k).collect::<Vec<_>>().clone();
 
                 b.iter(|| {
