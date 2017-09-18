@@ -9,7 +9,7 @@ use rand::{ChaChaRng, Rng, SeedableRng};
 
 use errors::*;
 use dss::thss;
-use dss::thss::{ThSS, MetaData};
+use dss::thss::{ThSS, MetaData, AccessStructure};
 use dss::random::{random_bytes_count, FixedRandom, MAX_MESSAGE_SIZE};
 use share::validation::{validate_shares, validate_share_count};
 use super::share::*;
@@ -265,7 +265,7 @@ impl SS1 {
     }
 
     /// Recover the secret from the given set of shares
-    pub fn recover_secret(&self, shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
+    pub fn recover_secret(&self, shares: &[Share]) -> Result<(Vec<u8>, AccessStructure, Option<MetaData>)> {
         let (_, mut shares) = validate_shares(shares.to_vec())?;
 
         let underlying_shares = shares
@@ -282,7 +282,7 @@ impl SS1 {
             .collect::<Vec<_>>();
 
         let underlying = ThSS::default();
-        let (mut secret, metadata) = underlying.recover_secret(&underlying_shares)?;
+        let (mut secret, _, metadata) = underlying.recover_secret(&underlying_shares)?;
         let secret_len = secret.len() - self.random_padding_len;
         let random_padding = secret.split_off(secret_len);
         // `secret` nows holds the secret
@@ -315,7 +315,7 @@ impl SS1 {
                 ));
             }
         }
-
-        Ok((secret, metadata))
+        let access_structure = AccessStructure { threshold: shares.last().unwrap().threshold, total_shares_count: shares.len() as u8 };
+        Ok((secret, access_structure, metadata))
     }
 }

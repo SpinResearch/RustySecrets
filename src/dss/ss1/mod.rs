@@ -33,6 +33,8 @@ mod scheme;
 use self::scheme::SS1;
 pub use self::scheme::Reproducibility;
 
+use dss::thss::AccessStructure;
+
 /// Performs threshold k-out-of-n deterministic secret sharing.
 ///
 /// # Examples
@@ -89,7 +91,7 @@ pub fn split_secret(
 /// ).unwrap();
 ///
 /// match ss1::recover_secret(&shares) {
-///     Ok((secret, metadata)) => {
+///     Ok((secret, access_structure, metadata)) => {
 ///         // Do something with the secret and the metadata
 ///     },
 ///     Err(e) => {
@@ -97,7 +99,7 @@ pub fn split_secret(
 ///     }
 /// }
 /// ```
-pub fn recover_secret(shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
+pub fn recover_secret(shares: &[Share]) -> Result<(Vec<u8>, AccessStructure, Option<MetaData>)> {
     SS1::default().recover_secret(shares)
 }
 
@@ -114,9 +116,11 @@ mod tests {
 
         assert_eq!(shares.len(), 10);
 
-        let (recovered, metadata) = recover_secret(&shares[2..9]).unwrap();
+        let (recovered, access_structure, metadata) = recover_secret(&shares[2..9]).unwrap();
 
         assert_eq!(secret, recovered);
+        assert_eq!(access_structure.threshold, 7);
+        assert_eq!(access_structure.total_shares_count, 7);
         assert_eq!(None, metadata);
     }
 

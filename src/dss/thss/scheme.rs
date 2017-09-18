@@ -17,6 +17,12 @@ use super::encode::encode_secret;
 /// the sharing scheme on message larger than that.
 const MAX_SECRET_SIZE: usize = MAX_MESSAGE_SIZE;
 
+#[derive(Copy, Clone, Debug)]
+pub struct AccessStructure {
+  pub threshold: u8,
+  pub total_shares_count: u8
+}
+
 /// A simple threshold sharing scheme
 #[allow(missing_debug_implementations)]
 pub(crate) struct ThSS {
@@ -77,7 +83,7 @@ impl ThSS {
     }
 
     /// Recover the secret from the given set of shares
-    pub fn recover_secret(&self, shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
+    pub fn recover_secret(&self, shares: &[Share]) -> Result<(Vec<u8>, AccessStructure, Option<MetaData>)> {
         let (threshold, shares) = validate_shares(shares.to_vec())?;
 
         let cypher_len = shares[0].data.len();
@@ -117,6 +123,8 @@ impl ThSS {
             .map(|p| p.evaluate_at_zero().to_byte())
             .collect();
 
-        Ok((secret, metadata))
+        let access_structure = AccessStructure { threshold: threshold, total_shares_count: shares.len() as u8 };
+
+        Ok((secret, access_structure, metadata))
     }
 }
