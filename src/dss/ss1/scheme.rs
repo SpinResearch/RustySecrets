@@ -8,8 +8,8 @@ use ring::digest::{Context, SHA256};
 use rand::{ChaChaRng, Rng, SeedableRng};
 
 use errors::*;
-use dss::thss;
-use dss::thss::{ThSS, MetaData, AccessStructure};
+use dss::{thss, AccessStructure};
+use dss::thss::{ThSS, MetaData};
 use dss::random::{random_bytes_count, FixedRandom, MAX_MESSAGE_SIZE};
 use share::validation::{validate_shares, validate_share_count};
 use super::share::*;
@@ -265,7 +265,10 @@ impl SS1 {
     }
 
     /// Recover the secret from the given set of shares
-    pub fn recover_secret(&self, shares: &[Share]) -> Result<(Vec<u8>, AccessStructure, Option<MetaData>)> {
+    pub fn recover_secret(
+        &self,
+        shares: &[Share],
+    ) -> Result<(Vec<u8>, AccessStructure, Option<MetaData>)> {
         let (_, mut shares) = validate_shares(shares.to_vec())?;
 
         let underlying_shares = shares
@@ -315,7 +318,12 @@ impl SS1 {
                 ));
             }
         }
-        let access_structure = AccessStructure { threshold: shares.last().unwrap().threshold, total_shares_count: shares.len() as u8 };
+
+        let access_structure = AccessStructure {
+            threshold: shares.first().unwrap().threshold,
+            shares_count: shares.first().unwrap().shares_count,
+        };
+
         Ok((secret, access_structure, metadata))
     }
 }

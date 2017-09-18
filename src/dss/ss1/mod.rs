@@ -33,7 +33,7 @@ mod scheme;
 use self::scheme::SS1;
 pub use self::scheme::Reproducibility;
 
-use dss::thss::AccessStructure;
+use dss::AccessStructure;
 
 /// Performs threshold k-out-of-n deterministic secret sharing.
 ///
@@ -120,7 +120,7 @@ mod tests {
 
         assert_eq!(secret, recovered);
         assert_eq!(access_structure.threshold, 7);
-        assert_eq!(access_structure.total_shares_count, 7);
+        assert_eq!(access_structure.shares_count, 10);
         assert_eq!(None, metadata);
     }
 
