@@ -274,7 +274,7 @@ impl SS1 {
         &self,
         shares: &[Share],
     ) -> Result<(Vec<u8>, AccessStructure, Option<MetaData>)> {
-        let (_, mut shares) = validate_shares(shares.to_vec())?;
+        let (_, shares) = validate_shares(shares.to_vec())?;
 
         let underlying_shares = shares
             .iter()
@@ -297,7 +297,7 @@ impl SS1 {
 
         let sub_scheme = Self::new(self.random_padding_len, self.hash_len)?;
 
-        let mut test_shares = sub_scheme.split_secret(
+        let test_shares = sub_scheme.split_secret(
             shares[0].threshold,
             shares[0].shares_count,
             &secret,
@@ -307,6 +307,24 @@ impl SS1 {
             &metadata,
         )?;
 
+        let access_structure = {
+            let first_share = shares.first().unwrap();
+            AccessStructure {
+                threshold: first_share.threshold,
+                shares_count: first_share.shares_count,
+            }
+        };
+
+        self.verify_test_shares(shares, test_shares)?;
+
+        Ok((secret, access_structure, metadata))
+    }
+
+    fn verify_test_shares(
+        &self,
+        mut shares: Vec<Share>,
+        mut test_shares: Vec<Share>,
+    ) -> Result<()> {
         shares.sort_by_key(|share| share.id);
         test_shares.sort_by_key(|share| share.id);
 
@@ -325,11 +343,6 @@ impl SS1 {
             }
         }
 
-        let access_structure = AccessStructure {
-            threshold: shares.first().unwrap().threshold,
-            shares_count: shares.first().unwrap().shares_count,
-        };
-
-        Ok((secret, access_structure, metadata))
+        Ok(())
     }
 }
