@@ -256,16 +256,16 @@ impl SS1 {
         for md in metadata {
             md.hash_into(&mut ctx);
         }
+        let preseed_hash = ctx.finish();
 
-        let key_value = ctx.finish();
-        let salt = hmac::SigningKey::new(&SHA256, key_value.as_ref());
+        let salt = hmac::SigningKey::new(&SHA256, &[]);
         let mut seed_bytes = vec![0u8; 32];
-        hkdf::extract_and_expand(&salt, preseed, &[], &mut seed_bytes);
+        hkdf::extract_and_expand(&salt, preseed_hash.as_ref(), &[], &mut seed_bytes);
 
         // We can safely call `utils::slice_u8_to_slice_u32` because
-        // the `digest` produced with `SHA256` is 256 bits long and
-        // can thus be represented both a slice of 32 bytes or as
-        // a slice of 8 32-bit words.
+        // the `digest` produced with `SHA256` is 256 bits long, as is
+        // `seed_bytes`, and the latter can thus be represented both as a
+        // slice of 32 bytes or as a slice of 8 32-bit words.
         utils::slice_u8_to_slice_u32(&seed_bytes).to_vec()
     }
 
