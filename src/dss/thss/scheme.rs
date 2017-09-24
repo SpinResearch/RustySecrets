@@ -1,6 +1,8 @@
 
 //! Simple threshold secret sharing scheme
 
+use std::fmt;
+
 use ring::rand::{SecureRandom, SystemRandom};
 
 use errors::*;
@@ -22,7 +24,13 @@ const MAX_SECRET_SIZE: usize = MAX_MESSAGE_SIZE;
 #[allow(missing_debug_implementations)]
 pub(crate) struct ThSS {
     /// The randomness source
-    pub random: Box<SecureRandom>,
+    random: Box<SecureRandom>,
+}
+
+impl fmt::Debug for ThSS {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "ThSS")
+    }
 }
 
 impl Default for ThSS {

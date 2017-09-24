@@ -5,7 +5,7 @@ pub use share::MetaData;
 
 /// A share identified by an `id`, a threshold `k`, a number of total shares `n`,
 /// the `data` held in the share, and the share's `metadata`.
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Share {
     /// The identifier of the share (varies between 1 and n where n is the total number of generated shares)
     pub id: u8,

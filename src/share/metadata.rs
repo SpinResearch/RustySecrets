@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use ring::digest;
 
 /// A share's public metadata.
-#[derive(Clone, Debug, Hash, PartialEq, Eq, Default)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub struct MetaData {
     /// The tags associated with the share
     pub tags: BTreeMap<String, String>,

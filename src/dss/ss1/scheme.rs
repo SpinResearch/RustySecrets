@@ -1,4 +1,3 @@
-use std::fmt;
 use std::collections::HashSet;
 
 use sha3::Shake256;
@@ -32,7 +31,7 @@ const DEFAULT_PRESEED: &[u8] = b"rusty_secrets::dss::ss1";
 /// For example, if you know the secret is one of two possibilities,
 /// M0 or M1, in a share-reproducible scheme, acquiring a single share
 /// will probably let you decide which of the two possibilities it was.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Reproducibility {
     /// Shares will be produced in a deterministic way, using
     /// a default, fixed seed for the internal random number generator
@@ -89,6 +88,7 @@ impl Reproducibility {
 ///
 /// This scheme is implemented as the *T2 transform* over the ThSS threshold sharing scheme.
 /// found in the `rusty_secrets::dss::thss` module.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) struct SS1 {
     /// How many random bytes to read from `random` to use as
     /// padding to the hash function (param `r` from the paper)
@@ -96,17 +96,6 @@ pub(crate) struct SS1 {
     pub random_padding_len: usize,
     /// The length of the hash used for all shares (param `s` from the paper)
     pub hash_len: usize,
-}
-
-impl fmt::Debug for SS1 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "SS1 {{ random_padding_len: {}, hash_len: {} }}",
-            self.random_padding_len,
-            self.hash_len
-        )
-    }
 }
 
 // TODO: Are those good parameters?
