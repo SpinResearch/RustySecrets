@@ -115,11 +115,13 @@ impl Neg for Gf256 {
 }
 
 #[macro_export]
+#[doc(hidden)]
 macro_rules! gf256 {
     ($e:expr) => (Gf256::from_byte($e))
 }
 
 #[macro_export]
+#[doc(hidden)]
 macro_rules! gf256_vec {
     ( $( ($x:expr, $y:expr) ),* ) => {
         {
