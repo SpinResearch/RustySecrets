@@ -9,9 +9,9 @@ readme = "README.md"
 build = "build.rs"
 
 [dependencies]
-rustc-serialize = "^0.3.18"
-rand = "^0.3.14"
-ring = "^0.11.0"
-merkle_sigs = "^1.2.1"
-protobuf = "^1.2.0"
+rustc-serialize = "^0.3.24"
+rand = "^0.3.16"
+ring = "^0.12.1"
+merkle_sigs = "^1.4.0"
+protobuf = "^1.4.1"
 
