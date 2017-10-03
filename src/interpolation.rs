@@ -30,7 +30,7 @@ pub fn lagrange_interpolate(src: &[(u8, u8)]) -> u8 {
             if i != j {
                 let xj = Gf256::from_byte(raw_xj);
                 let delta = xi - xj;
-                assert!(delta.poly != 0, "Duplicate shares");
+                assert_ne!(delta.poly, 0, "Duplicate shares");
                 prod = prod * xj / delta;
             }
         }
