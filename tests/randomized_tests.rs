@@ -22,7 +22,7 @@ fn test_reasonable_splits() {
                 let shares = wrapped_secrets::generate_shares(k, n, &secret, Some(mime_type.clone()), *is_signing).unwrap();
                 println!("Testing {} out-of- {}", k, n);
 
-                let s = wrapped_secrets::recover_secret(shares, *is_signing).unwrap();
+                let s = wrapped_secrets::recover_secret(&shares, *is_signing).unwrap();
                 assert_eq!(s.get_secret().to_owned(), secret);
                 assert!(s.has_mime_type());
                 assert_eq!(mime_type, s.get_mime_type());

@@ -141,7 +141,7 @@ pub fn other_io_err(descr: &'static str, detail: Option<String>,
 }
 
 /// maps a `ParseIntError` to an `Error`
-pub fn pie2error(p: num::ParseIntError) -> RustyError {
+pub fn pie2error(p: &num::ParseIntError) -> RustyError {
     RustyError::new("Integer parsing error", Some(p.to_string()), None, None)
 }
 
@@ -175,7 +175,7 @@ mod tests_std_err {
     #[test]
     fn test_parse_errors() {
         let nan = "2a".to_string();
-        match nan.parse::<u8>().map_err(pie2error) {
+        match nan.parse::<u8>().map_err(|err| pie2error(&err)) {
             Ok(_) => assert!(false),
             Err(x) => assert_eq!("Integer parsing error", x.description()),
         }

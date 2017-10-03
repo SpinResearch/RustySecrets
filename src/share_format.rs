@@ -43,8 +43,8 @@ pub fn share_from_string
     }
     let (k, n, p3) = {
         let mut iter = parts.into_iter();
-        let k = try!(iter.next().unwrap().parse::<u8>().map_err(pie2error));
-        let n = try!(iter.next().unwrap().parse::<u8>().map_err(pie2error));
+        let k = try!(iter.next().unwrap().parse::<u8>().map_err(|err| pie2error(&err)));
+        let n = try!(iter.next().unwrap().parse::<u8>().map_err(|err| pie2error(&err)));
         let p3 = iter.next().unwrap();
         (k, n, p3)
     };
