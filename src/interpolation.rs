@@ -12,7 +12,7 @@ pub fn encode<W: Write>(src: &[u8], n: u8, w: &mut W) -> io::Result<()> {
             acc = acc + fac * Gf256::from_byte(coeff);
             fac = fac * x;
         }
-        try!(w.write(&[acc.to_byte()]));
+        try!(w.write_all(&[acc.to_byte()]));
     }
     Ok(())
 }
