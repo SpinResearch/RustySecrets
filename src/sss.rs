@@ -101,7 +101,7 @@ fn secret_share(src: &[u8], k: u8, n: u8) -> Result<Vec<Vec<u8>>, RustyError> {
 /// let share2 = "2-4-ChaydsUJDypD9ZWxwvIICh/cmZvzusOF".to_string();
 /// let shares = vec![share1, share2];
 ///
-/// match recover_secret(shares, false) {
+/// match recover_secret(&shares, false) {
 /// 	Ok(secret) => {
 /// 		// Do something with the secret
 /// 	},
@@ -110,7 +110,7 @@ fn secret_share(src: &[u8], k: u8, n: u8) -> Result<Vec<Vec<u8>>, RustyError> {
 /// 	}
 /// }
 /// ```
-pub fn recover_secret(shares: Vec<String>, verify_signatures: bool) -> Result<Vec<u8>, RustyError> {
+pub fn recover_secret(shares: &[String], verify_signatures: bool) -> Result<Vec<u8>, RustyError> {
     let (k, shares) = try!(process_and_validate_shares(shares, verify_signatures));
 
     let slen = shares[0].1.len();

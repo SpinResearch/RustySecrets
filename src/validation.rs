@@ -13,7 +13,7 @@ type ProcessedShares = Result<(u8, Vec<(u8, Vec<u8>)>), RustyError>;
 // 2) Validate group consistency
 // 3) Validate other properties, in no specific order
 
-pub fn process_and_validate_shares(shares_strings: Vec<String>,
+pub fn process_and_validate_shares(shares_strings: &[String],
                                    verify_signatures: bool)
                                    -> ProcessedShares {
     let mut shares: Vec<(u8, Vec<u8>)> = Vec::new();
@@ -36,7 +36,7 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
 
             try!(verify_data_vec_signature(format_share_for_signing(k,
                                                                     n,
-                                                                    &share_data.as_slice()),
+                                                                    &share_data),
                                                                     &(signature.to_vec(), p),
                                                                     &root_hash)
 		    .map_err(|e| RustyError::with_type(RustyErrorTypes::InvalidSignature(share_index, String::from(e.description())))));

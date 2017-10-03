@@ -29,7 +29,7 @@ fn test_recover_sellibitze() {
 
     let mut secret = "My secret".to_string().into_bytes();
     secret.push(10);
-    assert_eq!(recover_secret(shares, false).unwrap(), secret);
+    assert_eq!(recover_secret(&shares, false).unwrap(), secret);
 }
 
 // Generated with code on master branch on the 6th of April.
@@ -58,7 +58,7 @@ fn test_recover_es_test_vectors() {
 
     let secret =
         "The immoral cannot be made moral through the use of secret law.".to_string().into_bytes();
-    assert_eq!(recover_secret(shares, false).unwrap(), secret);
+    assert_eq!(recover_secret(&shares, false).unwrap(), secret);
 }
 
 #[test]
@@ -75,5 +75,5 @@ fn test_recover_sellibitze_more_than_threshold_shars() {
 
     let mut secret = "My secret".to_string().into_bytes();
     secret.push(10);
-    assert_eq!(recover_secret(shares, false).unwrap(), secret);
+    assert_eq!(recover_secret(&shares, false).unwrap(), secret);
 }
