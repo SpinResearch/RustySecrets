@@ -1,11 +1,10 @@
-use custom_error::{RustyError, RustyErrorTypes};
+use error::{Error, ErrorKind};
 use merkle_sigs::verify_data_vec_signature;
 use share_format;
 use share_format::format_share_for_signing;
 use std::collections::HashMap;
-use std::error::Error;
 
-type ProcessedShares = Result<(u8, Vec<(u8, Vec<u8>)>), RustyError>;
+type ProcessedShares = Result<(u8, Vec<(u8, Vec<u8>)>), Error>;
 
 // The order of validation that we think makes the most sense is the following:
 // 1) Validate shares individually
@@ -23,23 +22,23 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
 
     for (counter, line) in shares_strings.iter().enumerate() {
         let share_index = counter as u8;
-        let (share_data, k, n, sig_pair) = try!(share_format::share_from_string(line,
-                                                                                counter as u8,
-                                                                                verify_signatures));
+        let (share_data, k, n, sig_pair) = share_format::share_from_string(line,
+                                                                           counter as u8,
+                                                                           verify_signatures)?;
         if verify_signatures {
             if sig_pair.is_none() {
-                return Err(RustyError::with_type(RustyErrorTypes::MissingSignature(share_index)));
+                return Err(ErrorKind::MissingSignature(share_index).into());
             }
 
             let (signature, p) = sig_pair.unwrap();
             let root_hash = p.root_hash.clone();
 
-            try!(verify_data_vec_signature(format_share_for_signing(k,
-                                                                    n,
-                                                                    &share_data.as_slice()),
-                                                                    &(signature.to_vec(), p),
-                                                                    &root_hash)
-		    .map_err(|e| RustyError::with_type(RustyErrorTypes::InvalidSignature(share_index, String::from(e.description())))));
+            verify_data_vec_signature(format_share_for_signing(k,
+                                                               n,
+                                                               &share_data.as_slice()),
+                                                               &(signature.to_vec(), p),
+                                                               &root_hash)
+                .map_err(|e| ErrorKind::InvalidSignature(share_index, format!("{}", e)))?;
             rh_compatibility_sets.entry(root_hash.clone()).or_insert_with(Vec::new);
             let vec = rh_compatibility_sets.get_mut(&root_hash).unwrap();
             vec.push(share_index);
@@ -50,11 +49,11 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
         vec.push(share_index);
 
         if shares.iter().any(|s| s.0 == n) {
-            return Err(RustyError::with_type(RustyErrorTypes::DuplicateShareNum(share_index)));
+            return Err(ErrorKind::DuplicateShareNum(share_index).into());
         };
 
         if shares.iter().any(|s| s.1 == share_data) && k != 1 { // When k = 1, shares data can be the same
-            return Err(RustyError::with_type(RustyErrorTypes::DuplicateShareData(share_index)));
+            return Err(ErrorKind::DuplicateShareData(share_index).into());
         };
 
         shares.push((n, share_data));
@@ -68,24 +67,24 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
     if verify_signatures {
         match rh_sets {
             0 => {
-                return Err(RustyError::with_type(RustyErrorTypes::EmptyShares))
+                return Err(ErrorKind::EmptyShares.into())
             }
             1 => { } // All shares have the same roothash.
             _ => {
-                return Err(RustyError::with_type(RustyErrorTypes::IncompatibleSets(rh_compatibility_sets.values()
-                                                                                   .map(|x| x.to_owned()).collect())))
+                return Err(ErrorKind::IncompatibleSets(rh_compatibility_sets.values()
+                                                       .map(|x| x.to_owned()).collect()).into())
             }
         }
     }
 
     match k_sets {
         0 => {
-            return Err(RustyError::with_type(RustyErrorTypes::EmptyShares))
+            return Err(ErrorKind::EmptyShares.into())
         }
         1 => { } // All shares have the same roothash.
         _ => {
-            return Err(RustyError::with_type(RustyErrorTypes::IncompatibleSets(k_compatibility_sets.values()
-                                                                               .map(|x| x.to_owned()).collect())))
+            return Err(ErrorKind::IncompatibleSets(k_compatibility_sets.values()
+                                                  .map(|x| x.to_owned()).collect()).into())
         }
     }
 
@@ -97,6 +96,6 @@ pub fn process_and_validate_shares(shares_strings: Vec<String>,
         shares.truncate(k as usize);
         Ok((k, shares))
     } else {
-        Err(RustyError::with_type(RustyErrorTypes::MissingShares(k, shares_num)))
+        Err(ErrorKind::MissingShares(k, shares_num).into())
     }
 }

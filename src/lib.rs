@@ -13,12 +13,14 @@ extern crate rustc_serialize as serialize;
 extern crate rand;
 extern crate merkle_sigs;
 extern crate ring;
+#[macro_use]
+extern crate error_chain;
 
 use ring::digest::{Algorithm, SHA512};
 #[allow(non_upper_case_globals)]
 static digest: &'static Algorithm = &SHA512;
 
-mod custom_error;
+mod error;
 mod gf256;
 mod interpolation;
 #[allow(unused_qualifications)]
@@ -27,8 +29,6 @@ mod secret;
 mod share_data;
 mod share_format;
 mod validation;
-
-pub use custom_error::RustyError;
 
 pub mod sss;
 pub mod wrapped_secrets;

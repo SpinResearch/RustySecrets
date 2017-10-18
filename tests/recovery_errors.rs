@@ -28,7 +28,7 @@ fn test_recover_2_parts_share() {
 }
 
 #[test]
-#[should_panic(expected = "Integer parsing error")]
+#[should_panic(expected = "invalid digit found in string")]
 fn test_recover_incorrect_share_num() {
     let share1 = "2-1-CgnlCxRNtnkzENE".to_string();
     let share2 = "2-DEFINITLY_NAN-CgkAnUgP3lfwjyM".to_string();

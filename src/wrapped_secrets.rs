@@ -1,11 +1,10 @@
 //! (Beta) `wrapped_secrets` provides Shamir's secret sharing with a wrapped secret. It currently offers versioning and MIME information about the data.
 
-use custom_error::{RustyError, RustyErrorTypes};
+use error::Error;
 use protobuf;
 use protobuf::Message;
 use secret::{RustySecret, RustySecretsVersions};
 use sss;
-use std::io;
 
 /// Performs threshold k-out-of-n Shamir's secret sharing.
 ///
@@ -23,7 +22,7 @@ use std::io;
 /// 	Err(_) => {}// Deal with error}
 /// }
 /// ```
-pub fn generate_shares(k: u8, n: u8, secret: &[u8], mime_type: Option<String>, sign_shares: bool) -> io::Result<Vec<String>> {
+pub fn generate_shares(k: u8, n: u8, secret: &[u8], mime_type: Option<String>, sign_shares: bool) -> Result<Vec<String>, Error> {
     let mut rusty_secret = RustySecret::new();
     rusty_secret.set_version(RustySecretsVersions::INITIAL_RELEASE);
     rusty_secret.set_secret(secret.to_owned());
@@ -33,6 +32,7 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8], mime_type: Option<String>, s
     }
 
     sss::generate_shares(k, n, rusty_secret.write_to_bytes().unwrap().as_slice(), sign_shares)
+        .map_err(|e| e.into())
 }
 
 /// Recovers the secret from a k-out-of-n Shamir's secret sharing.
@@ -56,9 +56,9 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8], mime_type: Option<String>, s
 /// 	}
 /// }
 /// ```
-pub fn recover_secret(shares: Vec<String>, verify_signatures: bool) -> Result<RustySecret, RustyError> {
-    let secret = try!(sss::recover_secret(shares, verify_signatures));
+pub fn recover_secret(shares: Vec<String>, verify_signatures: bool) -> Result<RustySecret, Error> {
+    let secret = sss::recover_secret(shares, verify_signatures)?;
 
     protobuf::parse_from_bytes::<RustySecret>(secret.as_slice())
-    .map_err(|_| RustyError::with_type(RustyErrorTypes::SecretDeserializationIssue))
+        .map_err(|e| e.into())
 }
