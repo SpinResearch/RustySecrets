@@ -7,7 +7,7 @@
 
 ## Warning: Please do not send pull requests for the moment
 
-> This library is currently being heavily refactored in a private branch, and as such, we are currently unable to merge pull requests against the master branch. We will release the changes in this private branch publicly as soon as we get them audited. Until then, we definitely welcome bug reports, constructive feedback, or features ideas. Feel free to send a PR though, if you don't mind seeing it closed, or indefinitely delayed.
+> This library is currently being heavily refactored in a private branch, and as such, we are currently unable to merge pull requests against the master branch. We will release the changes in this private branch publicly as soon as we get them audited. Until then, we definitely welcome bug reports, constructive feedback, or feature ideas.
 
 > Thank you for checking out RustySecrets, we hope to be able to accept your contributions very soon!
 
