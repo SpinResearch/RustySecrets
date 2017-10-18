@@ -5,6 +5,12 @@
 [**Documentation (latest)**](https://docs.rs/rusty_secrets/)  
 [**Documentation (master)**](http://spinresearch.github.io/RustySecrets/rusty_secrets/index.html)
 
+## Warning: Please do not send pull requests for the moment
+
+> This library is currently being heavily refactored in a private branch, and as such, we are currently unable to merge pull requests against the master branch. We will release the changes in this private branch publicly as soon as we get them audited. Until then, we definitely welcome bug reports, constructive feedback, or features ideas. Feel free to send a PR though, if you don't mind seeing it closed, or indefinitely delayed.
+
+> Thank you for checking out RustySecrets, we hope to be able to accept your contributions very soon!
+
 ## Design goals
 
 The main use for this library is to split a secret of an arbitrary length in *n* different shares and *t*-out-of-*n* shares are required to recover it. The dealer is assumed to be honest (and competent). We further assume that our adversary will only be able to compromise at most *t-1* shares. Shares are kept offline.
