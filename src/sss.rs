@@ -1,6 +1,5 @@
 //! SSS provides Shamir's secret sharing with raw data.
 
-use custom_error::{RustyError, other_io_err};
 use digest;
 use interpolation::{encode, lagrange_interpolate};
 use merkle_sigs::sign_data_vec;
@@ -9,6 +8,7 @@ use share_format::format_share_for_signing;
 use share_format::share_string_from;
 use std::io;
 use std::iter::repeat;
+use std::io::{Error, ErrorKind};
 use validation::process_and_validate_shares;
 
 fn new_vec<T: Clone>(n: usize, x: T) -> Vec<T> {
@@ -33,10 +33,10 @@ fn new_vec<T: Clone>(n: usize, x: T) -> Vec<T> {
 /// ```
 pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> io::Result<Vec<String>> {
     if k > n {
-        return Err(other_io_err("Threshold K can not be larger than N", None, None, None));
+        return Err(Error::new(ErrorKind::Other, "Threshold K can not be larger than N"));
     }
 
-    let shares = try!(secret_share(secret, k, n));
+    let shares = secret_share(secret, k, n)?;
 
     let signatures = if sign_shares {
         let shares_to_sign = shares.iter()
@@ -68,19 +68,19 @@ pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> io::Re
     Ok(result)
 }
 
-fn secret_share(src: &[u8], k: u8, n: u8) -> Result<Vec<Vec<u8>>, RustyError> {
+fn secret_share(src: &[u8], k: u8, n: u8) -> io::Result<Vec<Vec<u8>>> {
     let mut result = Vec::with_capacity(n as usize);
     for _ in 0..(n as usize) {
         result.push(new_vec(src.len(), 0u8));
     }
     let mut col_in = new_vec(k as usize, 0u8);
     let mut col_out = Vec::with_capacity(n as usize);
-    let mut osrng = try!(OsRng::new());
+    let mut osrng = OsRng::new()?;
     for (c, &s) in src.iter().enumerate() {
         col_in[0] = s;
         osrng.fill_bytes(&mut col_in[1..]);
         col_out.clear();
-        try!(encode(&*col_in, n, &mut col_out));
+        encode(&*col_in, n, &mut col_out)?;
         for (&y, share) in col_out.iter().zip(result.iter_mut()) {
             share[c] = y;
         }
@@ -110,8 +110,9 @@ fn secret_share(src: &[u8], k: u8, n: u8) -> Result<Vec<Vec<u8>>, RustyError> {
 /// 	}
 /// }
 /// ```
-pub fn recover_secret(shares: Vec<String>, verify_signatures: bool) -> Result<Vec<u8>, RustyError> {
-    let (k, shares) = try!(process_and_validate_shares(shares, verify_signatures));
+pub fn recover_secret(shares: Vec<String>, verify_signatures: bool) -> io::Result<Vec<u8>> {
+    let (k, shares) = process_and_validate_shares(shares, verify_signatures)
+        .map_err(|e| Error::new(ErrorKind::Other, format!("{}", e)))?;
 
     let slen = shares[0].1.len();
     let mut col_in = Vec::with_capacity(k as usize);
