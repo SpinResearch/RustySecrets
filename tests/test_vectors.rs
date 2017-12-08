@@ -6,7 +6,7 @@ extern crate rustc_serialize as serialize;
 use protobuf::Message;
 use serialize::base64::{self, FromBase64, ToBase64};
 
-use rusty_secrets::proto::ShareData;
+use rusty_secrets::proto::sss::ShareProto;
 use rusty_secrets::sss::recover_secret;
 
 pub fn wrap_from_sellibitze(share: &str) -> String {
@@ -18,7 +18,7 @@ pub fn wrap_from_sellibitze(share: &str) -> String {
         ..base64::STANDARD
     };
 
-    let mut share_protobuf = ShareData::new();
+    let mut share_protobuf = ShareProto::new();
     share_protobuf.set_shamir_data(share_data);
 
     let b64_share = share_protobuf.write_to_bytes().unwrap().to_base64(config);

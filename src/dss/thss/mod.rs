@@ -16,6 +16,7 @@
 use errors::*;
 
 mod encode;
+mod serialize;
 
 mod share;
 pub use self::share::*;

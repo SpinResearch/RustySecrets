@@ -30,7 +30,6 @@ fn test_reasonable_splits() {
 
                 let s = wrapped_secrets::recover_secret(&shares, *is_signing).unwrap();
                 assert_eq!(s.get_secret().to_owned(), secret);
-                assert!(s.has_mime_type());
                 assert_eq!(mime_type, s.get_mime_type());
             }
         }

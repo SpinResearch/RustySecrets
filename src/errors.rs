@@ -82,8 +82,9 @@ error_chain! {
                          Updating to the latest version of RustySecrets might help fix this.")
         }
 
-        ShareParsingError(share_id: u8, data: String) {
+        ShareParsingError(reason: String) {
             description("This share is incorrectly formatted.")
+            display("This share is incorrectly formatted. Reason: {}", reason)
         }
 
         ShareParsingErrorEmptyShare(share_id: u8) {

@@ -31,7 +31,9 @@
 pub mod thss;
 pub mod ss1;
 
+mod format;
 mod random;
+mod utils;
 
 /// Define the access structure used to deal and recover the shares.
 ///

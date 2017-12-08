@@ -1,7 +1,7 @@
 //! (Beta) `wrapped_secrets` provides Shamir's secret sharing with a wrapped secret. It currently offers versioning and MIME information about the data.
 
 use errors::*;
-use proto::RustySecret;
+use proto::sss::SecretProto;
 
 mod scheme;
 pub(crate) use self::scheme::*;
@@ -69,7 +69,7 @@ pub fn generate_shares(
 ///     }
 /// }
 /// ```
-pub fn recover_secret(shares: &[String], verify_signatures: bool) -> Result<RustySecret> {
+pub fn recover_secret(shares: &[String], verify_signatures: bool) -> Result<SecretProto> {
     let shares = Share::parse_all(shares, verify_signatures)?;
     WrappedSecrets::recover_secret(shares, verify_signatures)
 }

@@ -9,22 +9,22 @@ readme = "README.md"
 build = "build.rs"
 
 [dependencies]
-rustc-serialize = "^0.3.18"
-rand = "^0.3.14"
-ring = "^0.12.0"
-merkle_sigs = "^1.4.0"
-protobuf = "^1.4.0"
-sha3 = "^0.6"
-digest = "^0.6"
+rustc-serialize = "^0.3"
+rand = "^0.3"
+ring = "^0.12"
+merkle_sigs = "^1.4"
+protobuf = "^1.4"
+sha3 = "^0.7"
+digest = "^0.7"
 
 [dependencies.error-chain]
 version = "0.11.0"
 default-features = false
 
 [dev-dependencies]
-itertools = "0.6.2"
-quickcheck = "0.4.1"
-flate2 = "0.2"
+itertools = "^0.7"
+quickcheck = "^0.4"
+flate2 = "^0.2"
 
 [profile.bench]
 opt-level = 3

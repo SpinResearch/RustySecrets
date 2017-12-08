@@ -1,13 +1,14 @@
 
-//! Protocol buffer definitions
+#[allow(unused_qualifications, deprecated, missing_docs)]
+mod secret;
+pub use self::secret::SecretProto;
 
 #[allow(unused_qualifications, deprecated, missing_docs)]
-pub mod sss;
+mod share;
+pub use self::share::ShareProto;
 
 #[allow(unused_qualifications, deprecated, missing_docs)]
-pub mod dss;
+mod metadata;
+pub use self::metadata::MetaDataProto;
 
-#[doc(hidden)]
-#[allow(unused_qualifications, deprecated, missing_docs)]
-pub mod version;
-pub use self::version::VersionProto;
+pub use super::version;

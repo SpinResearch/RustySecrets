@@ -13,7 +13,7 @@ use dss::thss::{ThSS, MetaData};
 use dss::random::{random_bytes_count, FixedRandom, MAX_MESSAGE_SIZE};
 use share::validation::{validate_shares, validate_share_count};
 use super::share::*;
-use super::utils;
+use dss::utils;
 
 /// We bound the message size at about 16MB to avoid overflow in `random_bytes_count`.
 /// Moreover, given the current performances, it is almost unpractical to run

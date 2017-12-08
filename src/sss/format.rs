@@ -4,7 +4,7 @@ use protobuf::{self, Message, RepeatedField};
 use serialize;
 use serialize::base64::{self, FromBase64, ToBase64};
 use sss::{Share, HASH_ALGO};
-use proto::ShareData;
+use proto::sss::ShareProto;
 use std::error::Error;
 
 fn base64_config() -> serialize::base64::Config {
@@ -20,7 +20,7 @@ pub(crate) fn share_string_from(
     share_num: u8,
     signature_pair: Option<(Vec<Vec<u8>>, Proof<MerklePublicKey>)>,
 ) -> String {
-    let mut share_protobuf = ShareData::new();
+    let mut share_protobuf = ShareProto::new();
     share_protobuf.set_shamir_data(share);
 
     if signature_pair.is_some() {
@@ -41,7 +41,6 @@ pub(crate) fn share_from_string(s: &str, id: u8, is_signed: bool) -> Result<Shar
     if parts.len() != SSS_SHARE_PARTS_COUNT {
         bail! {
             ErrorKind::ShareParsingError(
-                id,
                 format!(
                     "Expected 3 parts separated by a minus sign. Found {}.",
                     s
@@ -60,25 +59,21 @@ pub(crate) fn share_from_string(s: &str, id: u8, is_signed: bool) -> Result<Shar
     if k < 1 || i < 1 {
         bail! {
             ErrorKind::ShareParsingError(
-                id,
                 format!("Found illegal share info: threshold = {}, identifier = {}.", k, i),
             )
         }
     }
 
     let raw_data = p3.from_base64().chain_err(|| {
-        ErrorKind::ShareParsingError(id, "Base64 decoding of data block failed".to_owned())
+        ErrorKind::ShareParsingError("Base64 decoding of data block failed".to_owned())
     })?;
 
-    let protobuf_data = protobuf::parse_from_bytes::<ShareData>(raw_data.as_slice())
+    let protobuf_data = protobuf::parse_from_bytes::<ShareProto>(raw_data.as_slice())
         .map_err(|e| {
-            ErrorKind::ShareParsingError(
-                id,
-                format!(
-                    "Protobuf decoding of data block failed with error: {} .",
-                    e.description()
-                ),
-            )
+            ErrorKind::ShareParsingError(format!(
+                "Protobuf decoding of data block failed with error: {} .",
+                e.description()
+            ))
         })?;
 
     let data = Vec::from(protobuf_data.get_shamir_data());

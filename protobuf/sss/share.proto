@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-message ShareData {
+package sss;
+
+message ShareProto {
 	bytes shamir_data = 1;
 	repeated bytes signature = 2;
 	bytes proof = 3;

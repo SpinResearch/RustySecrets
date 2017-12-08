@@ -24,7 +24,7 @@
 
 use errors::*;
 
-mod utils;
+mod serialize;
 
 mod share;
 pub use self::share::*;
