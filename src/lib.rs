@@ -21,14 +21,13 @@ extern crate rustc_serialize as serialize;
 extern crate rand;
 extern crate merkle_sigs;
 extern crate ring;
-extern crate sha3;
-extern crate digest;
 
 #[macro_use]
 mod gf256;
 mod share;
 mod poly;
 mod lagrange;
+mod vol_hash;
 
 pub mod errors;
 pub mod sss;

@@ -1,19 +1,18 @@
 use std::collections::HashSet;
 
-use sha3::Shake256;
-use digest::{Input, XofReader, ExtendableOutput};
 use ring::{hkdf, hmac};
-use ring::rand::{SystemRandom, SecureRandom};
+use ring::rand::{SecureRandom, SystemRandom};
 use ring::digest::{Context, SHA256};
 use rand::{ChaChaRng, Rng, SeedableRng};
 
 use errors::*;
 use dss::{thss, AccessStructure};
-use dss::thss::{ThSS, MetaData};
+use dss::thss::{MetaData, ThSS};
 use dss::random::{random_bytes_count, FixedRandom, MAX_MESSAGE_SIZE};
-use share::validation::{validate_shares, validate_share_count};
+use share::validation::{validate_share_count, validate_shares};
 use super::share::*;
 use dss::utils;
+use vol_hash::VOLHash;
 
 /// We bound the message size at about 16MB to avoid overflow in `random_bytes_count`.
 /// Moreover, given the current performances, it is almost unpractical to run
@@ -148,49 +147,35 @@ impl SS1 {
             bail!(ErrorKind::SecretTooBig(secret_len, MAX_SECRET_SIZE));
         }
 
-        let random_padding = self.generate_random_padding(
-            reproducibility,
-            secret,
-            metadata,
-        )?;
+        let random_padding = self.generate_random_padding(reproducibility, secret, metadata)?;
 
-        let mut shake = Shake256::default();
-        shake.process(&[0]);
-        shake.process(&[threshold, shares_count]);
-        shake.process(secret);
-        shake.process(&random_padding);
-
-        let mut hash = vec![0; self.hash_len];
+        let mut vol_hash = VOLHash::new(&SHA256);
+        vol_hash.process(&[0]);
+        vol_hash.process(&[threshold, shares_count]);
+        vol_hash.process(secret);
+        vol_hash.process(&random_padding);
 
         let randomness_len = random_bytes_count(threshold, secret.len() + self.random_padding_len);
+        let total_hash_len = self.hash_len + randomness_len;
+        let mut full_hash = vec![0; total_hash_len];
 
-        let mut randomness = vec![0; randomness_len];
+        vol_hash.finish(&mut full_hash);
+        let (hash, randomness) = full_hash.split_at(self.hash_len);
 
-        let mut reader = shake.xof_result();
-        reader.read(&mut hash);
-        reader.read(&mut randomness);
-
-        let underlying = ThSS::new(Box::new(FixedRandom::new(randomness)));
+        let underlying = ThSS::new(Box::new(FixedRandom::new(randomness.to_vec())));
 
         let message = [secret, &random_padding].concat();
-        let shares = underlying.split_secret(
-            threshold,
-            shares_count,
-            &message,
-            metadata,
-        )?;
+        let shares = underlying.split_secret(threshold, shares_count, &message, metadata)?;
 
         let res = shares
             .into_iter()
-            .map(|share| {
-                Share {
-                    id: share.id,
-                    threshold: share.threshold,
-                    shares_count: share.shares_count,
-                    data: share.data,
-                    hash: hash.clone(),
-                    metadata: share.metadata.clone(),
-                }
+            .map(|share| Share {
+                id: share.id,
+                threshold: share.threshold,
+                shares_count: share.shares_count,
+                data: share.data,
+                hash: hash.to_vec(),
+                metadata: share.metadata.clone(),
             })
             .collect();
 
@@ -207,9 +192,8 @@ impl SS1 {
             Reproducibility::None => {
                 let rng = SystemRandom::new();
                 let mut result = vec![0u8; self.random_padding_len];
-                rng.fill(&mut result).chain_err(|| {
-                    ErrorKind::CannotGenerateRandomNumbers
-                })?;
+                rng.fill(&mut result)
+                    .chain_err(|| ErrorKind::CannotGenerateRandomNumbers)?;
                 Ok(result)
             }
             Reproducibility::Reproducible => {
@@ -267,14 +251,12 @@ impl SS1 {
 
         let underlying_shares = shares
             .iter()
-            .map(|share| {
-                thss::Share {
-                    id: share.id,
-                    threshold: share.threshold,
-                    shares_count: share.shares_count,
-                    data: share.data.clone(),
-                    metadata: share.metadata.clone(),
-                }
+            .map(|share| thss::Share {
+                id: share.id,
+                threshold: share.threshold,
+                shares_count: share.shares_count,
+                data: share.data.clone(),
+                metadata: share.metadata.clone(),
             })
             .collect::<Vec<_>>();
 
@@ -290,9 +272,7 @@ impl SS1 {
             shares[0].threshold,
             shares[0].shares_count,
             &secret,
-            Reproducibility::WithEntropy(
-                random_padding.to_vec(),
-            ),
+            Reproducibility::WithEntropy(random_padding.to_vec()),
             &metadata,
         )?;
 
@@ -318,9 +298,9 @@ impl SS1 {
         test_shares.sort_by_key(|share| share.id);
 
         let relevant_ids = shares.iter().map(|share| share.id).collect::<HashSet<_>>();
-        let relevant_test_shares = test_shares.iter().filter(
-            |share| relevant_ids.contains(&share.id),
-        );
+        let relevant_test_shares = test_shares
+            .iter()
+            .filter(|share| relevant_ids.contains(&share.id));
         let matching_shares = shares.iter().zip(relevant_test_shares);
 
         for (share, test_share) in matching_shares {
