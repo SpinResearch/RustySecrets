@@ -4,7 +4,7 @@ use protobuf::{self, Message};
 use serialize::base64::{self, FromBase64, ToBase64};
 
 use errors::*;
-use proto::dss::{MetaDataProto, SecretProto, ShareProto};
+use proto::dss::ShareProto;
 
 fn base64_config() -> base64::Config {
     base64::Config {
@@ -13,14 +13,14 @@ fn base64_config() -> base64::Config {
     }
 }
 
-pub(crate) fn format_share_protobuf(share: ShareProto) -> String {
+pub(crate) fn format_share_protobuf(share: &ShareProto) -> String {
     let bytes = share.write_to_bytes().unwrap();
     let base64_data = bytes.to_base64(base64_config());
     format!("{}-{}-{}", share.threshold, share.id, base64_data)
 }
 
-pub(crate) fn parse_share_protobuf(raw: String) -> Result<ShareProto> {
-    let (threshold, id, base64_data) = parse_raw_share(raw)?;
+pub(crate) fn parse_share_protobuf(raw: &str) -> Result<ShareProto> {
+    let (threshold, id, base64_data) = parse_raw_share(&raw)?;
 
     let data = base64_data.from_base64().chain_err(|| {
         ErrorKind::ShareParsingError("Base64 decoding of data block failed".to_string())
@@ -56,7 +56,7 @@ pub(crate) fn parse_share_protobuf(raw: String) -> Result<ShareProto> {
     Ok(share_proto)
 }
 
-fn parse_raw_share(raw: String) -> Result<(u32, u32, String)> {
+fn parse_raw_share(raw: &str) -> Result<(u32, u32, String)> {
     let parts: Vec<_> = raw.trim().split('-').collect();
 
     if parts.len() != 3 {

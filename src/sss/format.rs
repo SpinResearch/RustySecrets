@@ -14,7 +14,7 @@ fn base64_config() -> serialize::base64::Config {
     }
 }
 
-pub(crate) fn share_string_from(
+pub(crate) fn share_to_string(
     share: Vec<u8>,
     threshold: u8,
     share_num: u8,
@@ -36,7 +36,7 @@ pub(crate) fn share_string_from(
     format!("{}-{}-{}", threshold, share_num, b64_share)
 }
 
-pub(crate) fn share_from_string(s: &str, id: u8, is_signed: bool) -> Result<Share> {
+pub(crate) fn share_from_string(s: &str, is_signed: bool) -> Result<Share> {
     let parts: Vec<_> = s.trim().split('-').collect();
 
     if parts.len() != SSS_SHARE_PARTS_COUNT {

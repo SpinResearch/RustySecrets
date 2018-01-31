@@ -6,7 +6,7 @@ use merkle_sigs::verify_data_vec_signature;
 
 use errors::*;
 use share::{IsShare, IsSignedShare};
-use sss::format::{format_share_for_signing, share_from_string, share_string_from};
+use sss::format::{format_share_for_signing, share_from_string, share_to_string};
 
 /// A share identified by an `id`, a threshold `k`, a number of total shares `n`,
 /// the `data` held in the share, and the share's `metadata`.
@@ -28,16 +28,15 @@ pub(crate) struct Share {
 impl Share {
     /// Attempts to parse the given string into a share which should have the given `id`.
     /// The string `raw` should follow the format of `Share::into_string`.
-    pub(crate) fn from_string(raw: &str, id: u8, is_signed: bool) -> Result<Self> {
-        share_from_string(raw, id, is_signed)
+    pub(crate) fn from_string(raw: &str, is_signed: bool) -> Result<Self> {
+        share_from_string(raw, is_signed)
     }
 
     /// Attempts to parse all the given strings into shares.
     /// Calls out to `Share::from_string`.
     pub(crate) fn parse_all(raws: &[String], is_signed: bool) -> Result<Vec<Share>> {
         raws.into_iter()
-            .enumerate()
-            .map(|(id, raw)| Self::from_string(raw, id as u8, is_signed))
+            .map(|raw| Self::from_string(raw, is_signed))
             .collect()
     }
 
@@ -58,7 +57,7 @@ impl Share {
     ///   information about the share, and if signed, the signature.
     /// ```
     pub fn into_string(self) -> String {
-        share_string_from(
+        share_to_string(
             self.data,
             self.threshold,
             self.id,

@@ -6,10 +6,10 @@ use dss::utils::{btreemap_to_hashmap, hashmap_to_btreemap};
 
 pub(crate) fn share_to_string(share: Share) -> String {
     let proto = share_to_protobuf(share);
-    format_share_protobuf(proto)
+    format_share_protobuf(&proto)
 }
 
-pub(crate) fn share_from_string(raw: String) -> Result<Share> {
+pub(crate) fn share_from_string(raw: &str) -> Result<Share> {
     let mut proto = parse_share_protobuf(raw)?;
 
     let metadata_proto = if proto.has_meta_data() {
