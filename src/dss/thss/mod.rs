@@ -1,4 +1,3 @@
-
 //! Implements the `ThSS` threshold secret sharing scheme.
 //!
 //! This scheme satisfies the following security properties:

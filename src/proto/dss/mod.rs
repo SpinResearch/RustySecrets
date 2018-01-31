@@ -1,4 +1,3 @@
-
 #[allow(unused_qualifications, deprecated, missing_docs)]
 mod secret;
 pub use self::secret::SecretProto;

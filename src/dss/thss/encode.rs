@@ -1,4 +1,3 @@
-
 use gf256::Gf256;
 use poly::Poly;
 

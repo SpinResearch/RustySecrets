@@ -1,4 +1,3 @@
-
 //! Define the traits used to distinguish the various
 //! kind of shares internally used by the library.
 //! These traits are currently not exposed, but this might

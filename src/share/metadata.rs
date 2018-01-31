@@ -1,4 +1,3 @@
-
 use std::collections::BTreeMap;
 use ring::digest;
 
@@ -12,7 +11,9 @@ pub struct MetaData {
 impl MetaData {
     /// Construct a new MetaData struct.
     pub fn new() -> Self {
-        MetaData { tags: BTreeMap::new() }
+        MetaData {
+            tags: BTreeMap::new(),
+        }
     }
 
     /// Construct a new MetaData struct, holding the given tags

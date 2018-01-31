@@ -1,4 +1,3 @@
-
 use std;
 
 use errors::*;
@@ -20,7 +19,6 @@ pub(crate) fn random_bytes_count(threshold: u8, message_size: usize) -> usize {
     assert!(message_size >= MIN_MESSAGE_SIZE);
     assert!(message_size <= MAX_MESSAGE_SIZE);
 
-
     (threshold as usize - 1) * message_size
 }
 
@@ -31,9 +29,9 @@ pub(crate) fn random_bytes(random: &SecureRandom, count: usize) -> Result<Vec<u8
     }
 
     let mut rl = vec![0; count];
-    random.fill(&mut rl).chain_err(|| {
-        ErrorKind::CannotGenerateRandomNumbers
-    })?;
+    random
+        .fill(&mut rl)
+        .chain_err(|| ErrorKind::CannotGenerateRandomNumbers)?;
 
     Ok(rl)
 }

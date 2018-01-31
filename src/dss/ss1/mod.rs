@@ -1,4 +1,3 @@
-
 //! Implements the `SS1` deterministic threshold secret sharing scheme.
 //!
 //! This scheme is implemented as the *T2 transform* over the ThSS threshold sharing scheme.
@@ -161,10 +160,10 @@ mod tests {
     fn reproducible_split() {
         let secret = "Hello, World!".to_string().into_bytes();
 
-        let shares_1 = split_secret(7, 10, &secret, Reproducibility::reproducible(), &None)
-            .unwrap();
-        let shares_2 = split_secret(7, 10, &secret, Reproducibility::reproducible(), &None)
-            .unwrap();
+        let shares_1 =
+            split_secret(7, 10, &secret, Reproducibility::reproducible(), &None).unwrap();
+        let shares_2 =
+            split_secret(7, 10, &secret, Reproducibility::reproducible(), &None).unwrap();
 
         assert_eq!(shares_1, shares_2);
     }
@@ -184,10 +183,10 @@ mod tests {
         let secret = "Hello, World!".to_string().into_bytes();
 
         let seed = vec![1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16u8];
-        let shares_1 = split_secret(7, 10, &secret, Reproducibility::seeded(seed.clone()), &None)
-            .unwrap();
-        let shares_2 = split_secret(7, 10, &secret, Reproducibility::seeded(seed.clone()), &None)
-            .unwrap();
+        let shares_1 =
+            split_secret(7, 10, &secret, Reproducibility::seeded(seed.clone()), &None).unwrap();
+        let shares_2 =
+            split_secret(7, 10, &secret, Reproducibility::seeded(seed.clone()), &None).unwrap();
 
         assert_eq!(shares_1, shares_2);
     }

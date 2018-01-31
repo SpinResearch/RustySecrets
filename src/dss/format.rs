@@ -1,11 +1,10 @@
-
 use std::error::Error;
 
 use protobuf::{self, Message};
 use serialize::base64::{self, FromBase64, ToBase64};
 
 use errors::*;
-use proto::dss::{SecretProto, MetaDataProto, ShareProto};
+use proto::dss::{MetaDataProto, SecretProto, ShareProto};
 
 fn base64_config() -> base64::Config {
     base64::Config {
@@ -27,13 +26,12 @@ pub(crate) fn parse_share_protobuf(raw: String) -> Result<ShareProto> {
         ErrorKind::ShareParsingError("Base64 decoding of data block failed".to_string())
     })?;
 
-    let share_proto = protobuf::parse_from_bytes::<ShareProto>(data.as_slice())
-        .map_err(|e| {
-            ErrorKind::ShareParsingError(format!(
-                "Protobuf decoding of data block failed with error: {} .",
-                e.description()
-            ))
-        })?;
+    let share_proto = protobuf::parse_from_bytes::<ShareProto>(data.as_slice()).map_err(|e| {
+        ErrorKind::ShareParsingError(format!(
+            "Protobuf decoding of data block failed with error: {} .",
+            e.description()
+        ))
+    })?;
 
     if threshold != share_proto.threshold {
         bail! {

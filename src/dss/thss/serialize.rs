@@ -1,8 +1,7 @@
-
 use errors::*;
-use super::{Share, MetaData};
+use super::{MetaData, Share};
 use dss::format::{format_share_protobuf, parse_share_protobuf};
-use proto::dss::{ShareProto, MetaDataProto};
+use proto::dss::{MetaDataProto, ShareProto};
 use dss::utils::{btreemap_to_hashmap, hashmap_to_btreemap};
 
 pub(crate) fn share_to_string(share: Share) -> String {
@@ -42,8 +41,8 @@ pub(crate) fn share_from_string(raw: String) -> Result<Share> {
     let share = Share {
         id: i,
         threshold: k,
-        shares_count: n, // FIXME
-        data: proto.take_data(), // FIXME
+        shares_count: n,          // FIXME
+        data: proto.take_data(),  // FIXME
         metadata: metadata_proto, // FIXME
     };
 
@@ -73,5 +72,7 @@ fn metadata_to_proto(meta_data: MetaData) -> MetaDataProto {
 }
 
 fn metadata_from_proto(mut proto: MetaDataProto) -> MetaData {
-    MetaData { tags: hashmap_to_btreemap(proto.take_tags()) }
+    MetaData {
+        tags: hashmap_to_btreemap(proto.take_tags()),
+    }
 }

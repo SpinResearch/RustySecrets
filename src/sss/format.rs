@@ -29,9 +29,10 @@ pub(crate) fn share_string_from(
         share_protobuf.set_proof(proof.write_to_bytes().unwrap());
     }
 
-    let b64_share = share_protobuf.write_to_bytes().unwrap().to_base64(
-        base64_config(),
-    );
+    let b64_share = share_protobuf
+        .write_to_bytes()
+        .unwrap()
+        .to_base64(base64_config());
     format!("{}-{}-{}", threshold, share_num, b64_share)
 }
 
@@ -68,8 +69,8 @@ pub(crate) fn share_from_string(s: &str, id: u8, is_signed: bool) -> Result<Shar
         ErrorKind::ShareParsingError("Base64 decoding of data block failed".to_owned())
     })?;
 
-    let protobuf_data = protobuf::parse_from_bytes::<ShareProto>(raw_data.as_slice())
-        .map_err(|e| {
+    let protobuf_data =
+        protobuf::parse_from_bytes::<ShareProto>(raw_data.as_slice()).map_err(|e| {
             ErrorKind::ShareParsingError(format!(
                 "Protobuf decoding of data block failed with error: {} .",
                 e.description()

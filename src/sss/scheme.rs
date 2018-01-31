@@ -1,4 +1,3 @@
-
 //! SSS provides Shamir's secret sharing with raw data.
 
 use rand::{OsRng, Rng};
@@ -7,7 +6,7 @@ use merkle_sigs::sign_data_vec;
 use errors::*;
 use sss::{Share, HASH_ALGO};
 use sss::format::format_share_for_signing;
-use share::validation::{validate_signed_shares, validate_share_count};
+use share::validation::{validate_share_count, validate_signed_shares};
 use lagrange::interpolate_at;
 
 use super::encode::encode_secret_byte;
@@ -32,9 +31,7 @@ impl SSS {
             let shares_to_sign = shares
                 .iter()
                 .enumerate()
-                .map(|(i, x)| {
-                    format_share_for_signing(threshold, (i + 1) as u8, x)
-                })
+                .map(|(i, x)| format_share_for_signing(threshold, (i + 1) as u8, x))
                 .collect::<Vec<_>>();
 
             let sign = sign_data_vec(&shares_to_sign, HASH_ALGO)

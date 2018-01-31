@@ -1,4 +1,3 @@
-
 //! Protocol buffer definitions
 
 #[allow(unused_qualifications, deprecated, missing_docs)]

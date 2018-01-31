@@ -1,4 +1,3 @@
-
 use std::error::Error;
 use std::collections::{HashMap, HashSet};
 
@@ -7,7 +6,7 @@ use merkle_sigs::verify_data_vec_signature;
 
 use errors::*;
 use share::{IsShare, IsSignedShare};
-use sss::format::{format_share_for_signing, share_string_from, share_from_string};
+use sss::format::{format_share_for_signing, share_from_string, share_string_from};
 
 /// A share identified by an `id`, a threshold `k`, a number of total shares `n`,
 /// the `data` held in the share, and the share's `metadata`.
@@ -106,13 +105,11 @@ impl IsSignedShare for Share {
                 format_share_for_signing(share.threshold, share.id, share.data.as_slice()),
                 &(signature.to_vec(), proof.clone()),
                 root_hash,
-            ).map_err(|e| {
-                ErrorKind::InvalidSignature(share.id, String::from(e.description()))
-            })?;
+            ).map_err(|e| ErrorKind::InvalidSignature(share.id, String::from(e.description())))?;
 
-            rh_compatibility_sets.entry(root_hash).or_insert_with(
-                HashSet::new,
-            );
+            rh_compatibility_sets
+                .entry(root_hash)
+                .or_insert_with(HashSet::new);
 
             let rh_set = rh_compatibility_sets.get_mut(&root_hash).unwrap();
             rh_set.insert(share.id);

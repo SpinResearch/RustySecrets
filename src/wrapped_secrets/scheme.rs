@@ -1,4 +1,3 @@
-
 use errors::*;
 use protobuf;
 use protobuf::Message;

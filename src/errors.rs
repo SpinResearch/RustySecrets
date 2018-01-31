@@ -1,4 +1,3 @@
-
 //! Define the various error kinds specific to deterministic secret sharing.
 
 #![allow(unknown_lints, missing_docs)]

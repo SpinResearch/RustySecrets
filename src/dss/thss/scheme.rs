@@ -1,4 +1,3 @@
-
 //! Simple threshold secret sharing scheme
 
 use std::fmt;
@@ -8,7 +7,7 @@ use ring::rand::{SecureRandom, SystemRandom};
 use errors::*;
 use gf256::Gf256;
 use dss::random::{random_bytes, random_bytes_count, MAX_MESSAGE_SIZE};
-use share::validation::{validate_shares, validate_share_count};
+use share::validation::{validate_share_count, validate_shares};
 use lagrange;
 
 use super::AccessStructure;
@@ -99,9 +98,7 @@ impl ThSS {
                 let points = shares
                     .iter()
                     .take(threshold as usize)
-                    .map(|share| {
-                        (Gf256::from_byte(share.id), Gf256::from_byte(share.data[i]))
-                    })
+                    .map(|share| (Gf256::from_byte(share.id), Gf256::from_byte(share.data[i])))
                     .collect::<Vec<_>>();
 
                 lagrange::interpolate(&points)

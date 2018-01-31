@@ -1,4 +1,3 @@
-
 //! SSS provides Shamir's secret sharing with raw data.
 
 use errors::*;
@@ -39,9 +38,7 @@ static HASH_ALGO: &'static Algorithm = &SHA512;
 pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result<Vec<String>> {
     SSS::default()
         .generate_shares(k, n, secret, sign_shares)
-        .map(|shares| {
-            shares.into_iter().map(Share::into_string).collect()
-        })
+        .map(|shares| shares.into_iter().map(Share::into_string).collect())
 }
 
 /// Recovers the secret from a k-out-of-n Shamir's secret sharing scheme.

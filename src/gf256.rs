@@ -1,7 +1,7 @@
 //! This module provides the Gf256 type which is used to represent
 //! elements of a finite field with 256 elements.
 
-use std::ops::{Add, Div, Mul, Sub, Neg};
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 include!(concat!(env!("OUT_DIR"), "/nothinghardcoded.rs"));
 
@@ -142,7 +142,6 @@ macro_rules! gf256_vec {
         }
     };
 }
-
 
 #[cfg(test)]
 #[allow(trivial_casts)]

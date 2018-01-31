@@ -1,4 +1,3 @@
-
 use gf256::Gf256;
 use std::io;
 use std::io::prelude::*;

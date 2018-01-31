@@ -42,9 +42,7 @@ pub fn generate_shares(
 ) -> Result<Vec<String>> {
     WrappedSecrets::default()
         .generate_shares(k, n, secret, mime_type, sign_shares)
-        .map(|shares| {
-            shares.into_iter().map(Share::into_string).collect()
-        })
+        .map(|shares| shares.into_iter().map(Share::into_string).collect())
 }
 
 /// Recovers the secret from a k-out-of-n Shamir's secret sharing.

@@ -1,4 +1,3 @@
-
 use gf256::Gf256;
 
 static MAX_COEFFS: usize = 256;

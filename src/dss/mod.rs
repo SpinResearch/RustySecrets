@@ -1,4 +1,3 @@
-
 //! Defines two different deterministic sharing schemes, ThSS and SS1.
 //!
 //! # Deterministic secret sharing
