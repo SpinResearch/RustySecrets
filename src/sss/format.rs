@@ -1,18 +1,12 @@
 use errors::*;
 use merkle_sigs::{MerklePublicKey, Proof, PublicKey};
 use protobuf::{self, Message, RepeatedField};
-use serialize;
-use serialize::base64::{self, FromBase64, ToBase64};
+use base64;
 use sss::{Share, HASH_ALGO};
 use proto::sss::ShareProto;
 use std::error::Error;
 
-fn base64_config() -> serialize::base64::Config {
-    base64::Config {
-        pad: false,
-        ..base64::STANDARD
-    }
-}
+const BASE64_CONFIG: base64::Config = base64::STANDARD_NO_PAD;
 
 pub(crate) fn share_to_string(
     share: Vec<u8>,
@@ -29,10 +23,8 @@ pub(crate) fn share_to_string(
         share_protobuf.set_proof(proof.write_to_bytes().unwrap());
     }
 
-    let b64_share = share_protobuf
-        .write_to_bytes()
-        .unwrap()
-        .to_base64(base64_config());
+    let proto_buf = share_protobuf.write_to_bytes().unwrap();
+    let b64_share = base64::encode_config(&proto_buf, BASE64_CONFIG);
     format!("{}-{}-{}", threshold, share_num, b64_share)
 }
 
@@ -65,7 +57,7 @@ pub(crate) fn share_from_string(s: &str, is_signed: bool) -> Result<Share> {
         }
     }
 
-    let raw_data = p3.from_base64().chain_err(|| {
+    let raw_data = base64::decode_config(p3, BASE64_CONFIG).chain_err(|| {
         ErrorKind::ShareParsingError("Base64 decoding of data block failed".to_owned())
     })?;
 
@@ -107,5 +99,6 @@ pub(crate) fn share_from_string(s: &str, is_signed: bool) -> Result<Share> {
 }
 
 pub(crate) fn format_share_for_signing(k: u8, i: u8, data: &[u8]) -> Vec<u8> {
-    format!("{}-{}-{}", k, i, data.to_base64(base64_config())).into_bytes()
+    let b64_data = base64::encode_config(data, BASE64_CONFIG);
+    format!("{}-{}-{}", k, i, b64_data).into_bytes()
 }

@@ -1,28 +1,23 @@
 use std::error::Error;
 
 use protobuf::{self, Message};
-use serialize::base64::{self, FromBase64, ToBase64};
+use base64;
 
 use errors::*;
 use proto::dss::ShareProto;
 
-fn base64_config() -> base64::Config {
-    base64::Config {
-        pad: false,
-        ..base64::STANDARD
-    }
-}
+const BASE64_CONFIG: base64::Config = base64::STANDARD_NO_PAD;
 
 pub(crate) fn format_share_protobuf(share: &ShareProto) -> String {
     let bytes = share.write_to_bytes().unwrap();
-    let base64_data = bytes.to_base64(base64_config());
+    let base64_data = base64::encode_config(&bytes, BASE64_CONFIG);
     format!("{}-{}-{}", share.threshold, share.id, base64_data)
 }
 
 pub(crate) fn parse_share_protobuf(raw: &str) -> Result<ShareProto> {
     let (threshold, id, base64_data) = parse_raw_share(&raw)?;
 
-    let data = base64_data.from_base64().chain_err(|| {
+    let data = base64::decode_config(&base64_data, BASE64_CONFIG).chain_err(|| {
         ErrorKind::ShareParsingError("Base64 decoding of data block failed".to_string())
     })?;
 

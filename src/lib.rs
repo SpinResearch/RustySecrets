@@ -10,11 +10,11 @@
 #[macro_use]
 extern crate error_chain;
 
+extern crate base64;
 extern crate merkle_sigs;
 extern crate protobuf;
 extern crate rand;
 extern crate ring;
-extern crate rustc_serialize as serialize;
 
 #[macro_use]
 mod gf256;
