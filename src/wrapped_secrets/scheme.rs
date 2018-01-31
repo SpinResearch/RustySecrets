@@ -12,7 +12,7 @@ pub(crate) struct WrappedSecrets;
 
 impl WrappedSecrets {
     /// Performs threshold k-out-of-n Shamir's secret sharing.
-    pub fn generate_shares(
+    pub fn split_secret(
         &self,
         k: u8,
         n: u8,
@@ -30,7 +30,7 @@ impl WrappedSecrets {
 
         let data = rusty_secret.write_to_bytes().unwrap();
 
-        SSS::default().generate_shares(k, n, data.as_slice(), sign_shares)
+        SSS::default().split_secret(k, n, data.as_slice(), sign_shares)
     }
 
     /// Recovers the secret from a k-out-of-n Shamir's secret sharing.

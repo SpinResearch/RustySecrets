@@ -21,12 +21,12 @@ static HASH_ALGO: &'static Algorithm = &SHA512;
 /// # Examples
 ///
 /// ```
-/// use rusty_secrets::sss::generate_shares;
+/// use rusty_secrets::sss::split_secret;
 ///
 /// let secret = "These programs were never about terrorism: they’re about economic spying, \
 ///               social control, and diplomatic manipulation. They’re about power.";
 ///
-/// match generate_shares(7, 10, &secret.as_bytes(), true) {
+/// match split_secret(7, 10, &secret.as_bytes(), true) {
 ///     Ok(shares) => {
 ///         // Do something with the shares
 ///     },
@@ -35,9 +35,9 @@ static HASH_ALGO: &'static Algorithm = &SHA512;
 ///     }
 /// }
 /// ```
-pub fn generate_shares(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result<Vec<String>> {
+pub fn split_secret(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result<Vec<String>> {
     SSS::default()
-        .generate_shares(k, n, secret, sign_shares)
+        .split_secret(k, n, secret, sign_shares)
         .map(|shares| shares.into_iter().map(Share::into_string).collect())
 }
 

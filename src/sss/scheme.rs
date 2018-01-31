@@ -17,7 +17,7 @@ pub(crate) struct SSS;
 
 impl SSS {
     /// Performs threshold k-out-of-n Shamir's secret sharing.
-    pub fn generate_shares(
+    pub fn split_secret(
         &self,
         threshold: u8,
         shares_count: u8,

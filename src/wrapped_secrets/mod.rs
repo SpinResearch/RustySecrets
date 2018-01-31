@@ -16,7 +16,7 @@ pub(crate) use self::scheme::*;
 /// let secret = "These programs were never about terrorism: they’re about economic spying, \
 ///               social control, and diplomatic manipulation. They’re about power.";
 ///
-/// let result = generate_shares(
+/// let result = split_secret(
 ///     7,
 ///     10,
 ///     &secret.as_bytes(),
@@ -33,7 +33,7 @@ pub(crate) use self::scheme::*;
 ///     }
 /// }
 /// ```
-pub fn generate_shares(
+pub fn split_secret(
     k: u8,
     n: u8,
     secret: &[u8],
@@ -41,7 +41,7 @@ pub fn generate_shares(
     sign_shares: bool,
 ) -> Result<Vec<String>> {
     WrappedSecrets::default()
-        .generate_shares(k, n, secret, mime_type, sign_shares)
+        .split_secret(k, n, secret, mime_type, sign_shares)
         .map(|shares| shares.into_iter().map(Share::into_string).collect())
 }
 
