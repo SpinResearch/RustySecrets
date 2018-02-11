@@ -1,16 +1,15 @@
-
 #![cfg(test)]
 #![feature(test)]
 
-extern crate test;
 extern crate rusty_secrets;
+extern crate test;
 
 mod shared;
 
 mod thss {
 
     use rusty_secrets::dss::thss;
-    use test::{Bencher, black_box};
+    use test::{black_box, Bencher};
     use shared;
 
     macro_rules! bench_generate {
@@ -48,8 +47,5 @@ mod thss {
 
     bench_generate!(generate_1kb_10_25, 10, 25, secret_1kb);
     bench_recover!(recover_1kb_10_25, 10, 25, secret_1kb);
-
-    // bench_generate!(generate_1mb_3_5, 3, 5, secret_1mb);
-    // bench_recover!(recover_1mb_3_5, 3, 5, secret_1mb);
 
 }
