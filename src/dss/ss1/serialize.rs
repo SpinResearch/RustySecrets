@@ -38,8 +38,6 @@ pub(crate) fn share_from_string(raw: &str) -> Result<Share> {
         }
     }
 
-    if proto.get_data().
-
     let share = Share {
         id: i,
         threshold: k,
