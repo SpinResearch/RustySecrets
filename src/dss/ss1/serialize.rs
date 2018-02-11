@@ -38,13 +38,15 @@ pub(crate) fn share_from_string(raw: &str) -> Result<Share> {
         }
     }
 
+    if proto.get_data().
+
     let share = Share {
         id: i,
         threshold: k,
         shares_count: n,
-        data: proto.take_data(),  // FIXME
-        hash: proto.take_hash(),  // FIXME
-        metadata: metadata_proto, // FIXME
+        data: proto.take_data(),
+        hash: proto.take_hash(),
+        metadata: metadata_proto,
     };
 
     Ok(share)

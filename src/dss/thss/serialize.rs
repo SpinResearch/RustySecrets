@@ -41,9 +41,9 @@ pub(crate) fn share_from_string(raw: &str) -> Result<Share> {
     let share = Share {
         id: i,
         threshold: k,
-        shares_count: n,          // FIXME
-        data: proto.take_data(),  // FIXME
-        metadata: metadata_proto, // FIXME
+        shares_count: n,
+        data: proto.take_data(),
+        metadata: metadata_proto,
     };
 
     Ok(share)
