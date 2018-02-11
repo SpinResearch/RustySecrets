@@ -168,6 +168,7 @@ impl From<(Vec<Vec<u8>>, Proof<MerklePublicKey>)> for SignaturePair {
     }
 }
 
+// TODO: Uncomment when re-implementating standard traits for `Share`
 // impl Hash for SignaturePair {
 //     fn hash<H: Hasher>(&self, state: &mut H) {
 //         self.signature.hash(state);
