@@ -5,10 +5,7 @@
 
 use errors::*;
 
-pub(crate) mod metadata;
 pub(crate) mod validation;
-
-pub use self::metadata::MetaData;
 
 /// All types of share should implement this trait.
 pub(crate) trait IsShare: Sized {
@@ -40,10 +37,4 @@ pub(crate) trait IsSignedShare: IsShare {
     /// Verify the signatures of the given batch of shares.
     /// Returns `Ok(())` if validation succeeds, and an `Err` otherwise.
     fn verify_signatures(shares: &[Self]) -> Result<()>;
-}
-
-/// This trait must be implemented by types of share which can hold additional metadata.
-pub(crate) trait HasMetaData: IsShare {
-    /// Return the metadata associated with the share, if any.
-    fn get_metadata(&self) -> &Option<MetaData>;
 }

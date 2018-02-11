@@ -1,8 +1,8 @@
 use errors::*;
-use share::{HasMetaData, IsShare};
+use share::IsShare;
 use super::serialize::{share_from_string, share_to_string};
 
-pub use share::MetaData;
+pub use dss::metadata::MetaData;
 
 /// A share identified by an `id`, a threshold `k`, a number of total shares `n`,
 /// the `data` held in the share, and the share's `metadata`.
@@ -53,11 +53,5 @@ impl IsShare for Share {
 
     fn get_shares_count(&self) -> Option<u8> {
         Some(self.shares_count)
-    }
-}
-
-impl HasMetaData for Share {
-    fn get_metadata(&self) -> &Option<MetaData> {
-        &self.metadata
     }
 }

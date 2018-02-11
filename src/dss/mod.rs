@@ -30,6 +30,8 @@
 pub mod thss;
 pub mod ss1;
 
+mod metadata;
+
 mod format;
 mod random;
 mod utils;
