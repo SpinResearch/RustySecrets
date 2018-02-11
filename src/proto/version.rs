@@ -24,7 +24,6 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 #[derive(Clone,PartialEq,Eq,Debug,Hash)]
 pub enum VersionProto {
     INITIAL_RELEASE = 0,
-    VERSION_1_0_0 = 1,
 }
 
 impl ::protobuf::ProtobufEnum for VersionProto {
@@ -35,7 +34,6 @@ impl ::protobuf::ProtobufEnum for VersionProto {
     fn from_i32(value: i32) -> ::std::option::Option<VersionProto> {
         match value {
             0 => ::std::option::Option::Some(VersionProto::INITIAL_RELEASE),
-            1 => ::std::option::Option::Some(VersionProto::VERSION_1_0_0),
             _ => ::std::option::Option::None
         }
     }
@@ -43,7 +41,6 @@ impl ::protobuf::ProtobufEnum for VersionProto {
     fn values() -> &'static [Self] {
         static values: &'static [VersionProto] = &[
             VersionProto::INITIAL_RELEASE,
-            VersionProto::VERSION_1_0_0,
         ];
         values
     }
@@ -77,14 +74,12 @@ impl ::protobuf::reflect::ProtobufValue for VersionProto {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\rversion.proto*6\n\x0cVersionProto\x12\x13\n\x0fINITIAL_RELEASE\x10\0\
-    \x12\x11\n\rVERSION_1_0_0\x10\x01J|\n\x06\x12\x04\x01\0\x06\x01\n\x08\n\
-    \x01\x0c\x12\x03\x01\0\x12\n\n\n\x02\x05\0\x12\x04\x03\0\x06\x01\n\n\n\
-    \x03\x05\0\x01\x12\x03\x03\x05\x11\n\x0b\n\x04\x05\0\x02\0\x12\x03\x04\
-    \x02\x16\n\x0c\n\x05\x05\0\x02\0\x01\x12\x03\x04\x02\x11\n\x0c\n\x05\x05\
-    \0\x02\0\x02\x12\x03\x04\x14\x15\n\x0b\n\x04\x05\0\x02\x01\x12\x03\x05\
-    \x02\x14\n\x0c\n\x05\x05\0\x02\x01\x01\x12\x03\x05\x02\x0f\n\x0c\n\x05\
-    \x05\0\x02\x01\x02\x12\x03\x05\x12\x13b\x06proto3\
+    \n\rversion.proto*#\n\x0cVersionProto\x12\x13\n\x0fINITIAL_RELEASE\x10\0\
+    JS\n\x06\x12\x04\x01\0\x05\x01\n\x08\n\x01\x0c\x12\x03\x01\0\x12\n\n\n\
+    \x02\x05\0\x12\x04\x03\0\x05\x01\n\n\n\x03\x05\0\x01\x12\x03\x03\x05\x11\
+    \n\x0b\n\x04\x05\0\x02\0\x12\x03\x04\x02\x16\n\x0c\n\x05\x05\0\x02\0\x01\
+    \x12\x03\x04\x02\x11\n\x0c\n\x05\x05\0\x02\0\x02\x12\x03\x04\x14\x15b\
+    \x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {

@@ -3,5 +3,4 @@ syntax = "proto3";
 
 enum VersionProto {
   INITIAL_RELEASE = 0;
-  VERSION_1_0_0 = 1;
 }
