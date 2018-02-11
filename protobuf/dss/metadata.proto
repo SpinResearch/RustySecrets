@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package dss;
+
+message MetaDataProto {
+  map<string, string> tags = 1;
+}

@@ -17,38 +17,38 @@ fn mask(bit: u8) -> u8 {
 /// of the polynomial division with POLY as divisor
 #[inline]
 fn xtimes(poly: u8) -> u8 {
-	(poly << 1) ^ (mask(poly >> 7) & POLY)
+    (poly << 1) ^ (mask(poly >> 7) & POLY)
 }
 
 struct Tables {
-	exp: [u8; 256],
-	log: [u8; 256],
+    exp: [u8; 256],
+    log: [u8; 256],
 }
 
 fn generate_tables(mut file: &File) {
     let mut tabs = Tables {
-    	exp: [0; 256],
-    	log: [0; 256],
+        exp: [0; 256],
+        log: [0; 256],
     };
 
     let mut tmp = 1;
     for power in 0..255usize {
-    	tabs.exp[power] = tmp;
-    	tabs.log[tmp as usize] = power as u8;
-    	tmp = xtimes(tmp);
+        tabs.exp[power] = tmp;
+        tabs.log[tmp as usize] = power as u8;
+        tmp = xtimes(tmp);
     }
     tabs.exp[255] = 1;
 
     match write!(file, "{}", tabs) {
         Ok(()) => {}
-        Err(_) => panic!("Could not format the table. Aborting build.")
+        Err(_) => panic!("Could not format the table. Aborting build."),
     };
 }
 
 fn farray(array: [u8; 256], f: &mut fmt::Formatter) -> fmt::Result {
     for (index, value) in array.into_iter().enumerate() {
         try!(write!(f, "{}", value));
-        if index != array.len()-1 {
+        if index != array.len() - 1 {
             try!(write!(f, ","));
         }
     }
@@ -75,12 +75,15 @@ fn main() {
 
     let mut f = File::create(&dest).unwrap();
 
-    write!(f, "pub struct Tables {{
-    pub exp: [u8; 256],
-    pub log: [u8; 256]
-}}
-
-pub static TABLES: Tables = ");
+    write!(
+        f,
+        "pub struct Tables {{ \
+             pub exp: [u8; 256], \
+             pub log: [u8; 256] \
+         }} \
+         \
+         pub static TABLES: Tables = "
+    );
 
     generate_tables(&f);
 }
