@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package sss;
+package wrapped;
 
 message ShareProto {
 	bytes shamir_data = 1;

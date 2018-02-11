@@ -2,7 +2,7 @@ use errors::*;
 use protobuf;
 use protobuf::Message;
 use proto::VersionProto;
-use proto::sss::SecretProto;
+use proto::wrapped::SecretProto;
 
 use sss::SSS;
 pub(crate) use sss::Share;

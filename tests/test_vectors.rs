@@ -4,7 +4,7 @@ extern crate rusty_secrets;
 
 use protobuf::Message;
 
-use rusty_secrets::proto::sss::ShareProto;
+use rusty_secrets::proto::wrapped::ShareProto;
 use rusty_secrets::sss::recover_secret;
 
 const BASE64_CONFIG: base64::Config = base64::STANDARD_NO_PAD;

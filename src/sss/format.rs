@@ -3,7 +3,7 @@ use merkle_sigs::{MerklePublicKey, Proof, PublicKey};
 use protobuf::{self, Message, RepeatedField};
 use base64;
 use sss::{Share, HASH_ALGO};
-use proto::sss::ShareProto;
+use proto::wrapped::ShareProto;
 use std::error::Error;
 
 const BASE64_CONFIG: base64::Config = base64::STANDARD_NO_PAD;

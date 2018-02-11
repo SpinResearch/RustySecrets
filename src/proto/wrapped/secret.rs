@@ -21,7 +21,7 @@
 use protobuf::Message as Message_imported_for_functions;
 use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 
-#[derive(PartialEq, Clone, Default)]
+#[derive(PartialEq,Clone,Default)]
 pub struct SecretProto {
     // message fields
     pub version: super::version::VersionProto,
@@ -45,7 +45,9 @@ impl SecretProto {
             lock: ::protobuf::lazy::ONCE_INIT,
             ptr: 0 as *const SecretProto,
         };
-        unsafe { instance.get(SecretProto::new) }
+        unsafe {
+            instance.get(SecretProto::new)
+        }
     }
 
     // .VersionProto version = 1;
@@ -145,44 +147,26 @@ impl ::protobuf::Message for SecretProto {
         true
     }
 
-    fn merge_from(
-        &mut self,
-        is: &mut ::protobuf::CodedInputStream,
-    ) -> ::protobuf::ProtobufResult<()> {
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
         while !is.eof()? {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(
-                            ::protobuf::rt::unexpected_wire_type(wire_type),
-                        );
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_enum()?;
                     self.version = tmp;
-                }
+                },
                 2 => {
-                    ::protobuf::rt::read_singular_proto3_bytes_into(
-                        wire_type,
-                        is,
-                        &mut self.secret,
-                    )?;
-                }
+                    ::protobuf::rt::read_singular_proto3_bytes_into(wire_type, is, &mut self.secret)?;
+                },
                 3 => {
-                    ::protobuf::rt::read_singular_proto3_string_into(
-                        wire_type,
-                        is,
-                        &mut self.mime_type,
-                    )?;
-                }
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.mime_type)?;
+                },
                 _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(
-                        field_number,
-                        wire_type,
-                        is,
-                        self.mut_unknown_fields(),
-                    )?;
-                }
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
             };
         }
         ::std::result::Result::Ok(())
@@ -206,10 +190,7 @@ impl ::protobuf::Message for SecretProto {
         my_size
     }
 
-    fn write_to_with_cached_sizes(
-        &self,
-        os: &mut ::protobuf::CodedOutputStream,
-    ) -> ::protobuf::ProtobufResult<()> {
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
         if self.version != super::version::VersionProto::INITIAL_RELEASE {
             os.write_enum(1, self.version.value())?;
         }
@@ -255,14 +236,11 @@ impl ::protobuf::MessageStatic for SecretProto {
         SecretProto::new()
     }
 
-    fn descriptor_static(
-        _: ::std::option::Option<SecretProto>,
-    ) -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> =
-            ::protobuf::lazy::Lazy {
-                lock: ::protobuf::lazy::ONCE_INIT,
-                ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
-            };
+    fn descriptor_static(_: ::std::option::Option<SecretProto>) -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
@@ -313,23 +291,23 @@ impl ::protobuf::reflect::ProtobufValue for SecretProto {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x10sss/secret.proto\x12\x03sss\x1a\rversion.proto\"k\n\x0bSecretProto\
-    \x12'\n\x07version\x18\x01\x20\x01(\x0e2\r.VersionProtoR\x07version\x12\
-    \x16\n\x06secret\x18\x02\x20\x01(\x0cR\x06secret\x12\x1b\n\tmime_type\
-    \x18\x03\x20\x01(\tR\x08mimeTypeJ\x91\x02\n\x06\x12\x04\0\0\n\x01\n\x08\
-    \n\x01\x0c\x12\x03\0\0\x12\n\x08\n\x01\x02\x12\x03\x02\x08\x0b\n\t\n\x02\
-    \x03\0\x12\x03\x04\x07\x16\n\n\n\x02\x04\0\x12\x04\x06\0\n\x01\n\n\n\x03\
-    \x04\0\x01\x12\x03\x06\x08\x13\n\x0b\n\x04\x04\0\x02\0\x12\x03\x07\x08!\
-    \n\r\n\x05\x04\0\x02\0\x04\x12\x04\x07\x08\x06\x15\n\x0c\n\x05\x04\0\x02\
-    \0\x06\x12\x03\x07\x08\x14\n\x0c\n\x05\x04\0\x02\0\x01\x12\x03\x07\x15\
-    \x1c\n\x0c\n\x05\x04\0\x02\0\x03\x12\x03\x07\x1f\x20\n\x0b\n\x04\x04\0\
-    \x02\x01\x12\x03\x08\x08\x19\n\r\n\x05\x04\0\x02\x01\x04\x12\x04\x08\x08\
-    \x07!\n\x0c\n\x05\x04\0\x02\x01\x05\x12\x03\x08\x08\r\n\x0c\n\x05\x04\0\
-    \x02\x01\x01\x12\x03\x08\x0e\x14\n\x0c\n\x05\x04\0\x02\x01\x03\x12\x03\
-    \x08\x17\x18\n\x0b\n\x04\x04\0\x02\x02\x12\x03\t\x08\x1d\n\r\n\x05\x04\0\
-    \x02\x02\x04\x12\x04\t\x08\x08\x19\n\x0c\n\x05\x04\0\x02\x02\x05\x12\x03\
-    \t\x08\x0e\n\x0c\n\x05\x04\0\x02\x02\x01\x12\x03\t\x0f\x18\n\x0c\n\x05\
-    \x04\0\x02\x02\x03\x12\x03\t\x1b\x1cb\x06proto3\
+    \n\x14wrapped/secret.proto\x12\x07wrapped\x1a\rversion.proto\"k\n\x0bSec\
+    retProto\x12'\n\x07version\x18\x01\x20\x01(\x0e2\r.VersionProtoR\x07vers\
+    ion\x12\x16\n\x06secret\x18\x02\x20\x01(\x0cR\x06secret\x12\x1b\n\tmime_\
+    type\x18\x03\x20\x01(\tR\x08mimeTypeJ\x91\x02\n\x06\x12\x04\0\0\n\x01\n\
+    \x08\n\x01\x0c\x12\x03\0\0\x12\n\x08\n\x01\x02\x12\x03\x02\x08\x0f\n\t\n\
+    \x02\x03\0\x12\x03\x04\x07\x16\n\n\n\x02\x04\0\x12\x04\x06\0\n\x01\n\n\n\
+    \x03\x04\0\x01\x12\x03\x06\x08\x13\n\x0b\n\x04\x04\0\x02\0\x12\x03\x07\
+    \x08!\n\r\n\x05\x04\0\x02\0\x04\x12\x04\x07\x08\x06\x15\n\x0c\n\x05\x04\
+    \0\x02\0\x06\x12\x03\x07\x08\x14\n\x0c\n\x05\x04\0\x02\0\x01\x12\x03\x07\
+    \x15\x1c\n\x0c\n\x05\x04\0\x02\0\x03\x12\x03\x07\x1f\x20\n\x0b\n\x04\x04\
+    \0\x02\x01\x12\x03\x08\x08\x19\n\r\n\x05\x04\0\x02\x01\x04\x12\x04\x08\
+    \x08\x07!\n\x0c\n\x05\x04\0\x02\x01\x05\x12\x03\x08\x08\r\n\x0c\n\x05\
+    \x04\0\x02\x01\x01\x12\x03\x08\x0e\x14\n\x0c\n\x05\x04\0\x02\x01\x03\x12\
+    \x03\x08\x17\x18\n\x0b\n\x04\x04\0\x02\x02\x12\x03\t\x08\x1d\n\r\n\x05\
+    \x04\0\x02\x02\x04\x12\x04\t\x08\x08\x19\n\x0c\n\x05\x04\0\x02\x02\x05\
+    \x12\x03\t\x08\x0e\n\x0c\n\x05\x04\0\x02\x02\x01\x12\x03\t\x0f\x18\n\x0c\
+    \n\x05\x04\0\x02\x02\x03\x12\x03\t\x1b\x1cb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {
@@ -342,5 +320,9 @@ fn parse_descriptor_proto() -> ::protobuf::descriptor::FileDescriptorProto {
 }
 
 pub fn file_descriptor_proto() -> &'static ::protobuf::descriptor::FileDescriptorProto {
-    unsafe { file_descriptor_proto_lazy.get(|| parse_descriptor_proto()) }
+    unsafe {
+        file_descriptor_proto_lazy.get(|| {
+            parse_descriptor_proto()
+        })
+    }
 }
