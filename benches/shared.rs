@@ -1,4 +1,3 @@
-
 #![cfg(test)]
 
 pub fn secret_1kb() -> &'static [u8] {

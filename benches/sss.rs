@@ -1,15 +1,14 @@
-
 #![cfg(test)]
 #![feature(test)]
 
-extern crate test;
 extern crate rusty_secrets;
+extern crate test;
 
 mod shared;
 
 mod sss {
 
-    use test::{Bencher, black_box};
+    use test::{black_box, Bencher};
     use rusty_secrets::sss;
     use shared;
 
@@ -20,7 +19,7 @@ mod sss {
                 let secret = shared::$secret();
 
                 b.iter(move || {
-                    let shares = sss::generate_shares($k, $n, secret, $signed).unwrap();
+                    let shares = sss::split_secret($k, $n, secret, $signed).unwrap();
                     black_box(shares);
                 });
             }
@@ -32,7 +31,7 @@ mod sss {
             #[bench]
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
-                let all_shares = sss::generate_shares($k, $n, &secret, $signed).unwrap();
+                let all_shares = sss::split_secret($k, $n, &secret, $signed).unwrap();
                 let shares = all_shares.into_iter().take($k).collect::<Vec<_>>();
 
                 b.iter(|| {

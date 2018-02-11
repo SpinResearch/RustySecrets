@@ -1,8 +1,8 @@
 #![no_main]
+extern crate arbitrary;
 #[macro_use]
 extern crate libfuzzer_sys;
 extern crate rusty_secrets;
-extern crate arbitrary;
 
 use rusty_secrets::wrapped_secrets;
 use arbitrary::{RingBuffer, Unstructured};
@@ -16,7 +16,7 @@ fuzz_target!(|data: &[u8]| {
         let k = kn[0];
         let n = kn[1];
 
-        wrapped_secrets::generate_shares(k, n, &data, false)
+        wrapped_secrets::split_secret(k, n, &data, false)
             .map_err(|err| err.into())
             .and_then(|ss| wrapped_secrets::recover_secret(&ss, false))
             .map(|_| ())

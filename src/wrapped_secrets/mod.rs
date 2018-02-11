@@ -11,7 +11,7 @@ pub(crate) use self::scheme::*;
 /// # Examples
 ///
 /// ```
-/// use rusty_secrets::wrapped_secrets::generate_shares;
+/// use rusty_secrets::wrapped_secrets::split_secret;
 ///
 /// let secret = "These programs were never about terrorism: they’re about economic spying, \
 ///               social control, and diplomatic manipulation. They’re about power.";

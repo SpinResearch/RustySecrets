@@ -15,7 +15,7 @@ pub(crate) fn format_share_protobuf(share: &ShareProto) -> String {
 }
 
 pub(crate) fn parse_share_protobuf(raw: &str) -> Result<ShareProto> {
-    let (threshold, id, base64_data) = parse_raw_share(&raw)?;
+    let (threshold, id, base64_data) = parse_raw_share(raw)?;
 
     let data = base64::decode_config(&base64_data, BASE64_CONFIG).chain_err(|| {
         ErrorKind::ShareParsingError("Base64 decoding of data block failed".to_string())

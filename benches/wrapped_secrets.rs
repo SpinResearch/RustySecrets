@@ -1,15 +1,14 @@
-
 #![cfg(test)]
 #![feature(test)]
 
-extern crate test;
 extern crate rusty_secrets;
+extern crate test;
 
 mod shared;
 
 mod wrapped_secrets {
 
-    use test::{Bencher, black_box};
+    use test::{black_box, Bencher};
     use rusty_secrets::wrapped_secrets;
     use shared;
 
@@ -20,7 +19,7 @@ mod wrapped_secrets {
                 let secret = shared::$secret();
 
                 b.iter(move || {
-                    let shares = wrapped_secrets::generate_shares($k, $n, secret, None, $signed).unwrap();
+                    let shares = wrapped_secrets::split_secret($k, $n, secret, None, $signed).unwrap();
                     black_box(shares);
                 });
             }
@@ -32,7 +31,7 @@ mod wrapped_secrets {
             #[bench]
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
-                let all_shares = wrapped_secrets::generate_shares($k, $n, &secret, None, $signed).unwrap();
+                let all_shares = wrapped_secrets::split_secret($k, $n, &secret, None, $signed).unwrap();
                 let shares = all_shares.into_iter().take($k).collect::<Vec<_>>();
 
                 b.iter(|| {

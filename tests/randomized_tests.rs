@@ -19,7 +19,7 @@ fn test_reasonable_splits() {
     for is_signing in &[true, false] {
         for k in 1..max_shares {
             for n in k..max_shares {
-                let shares = wrapped_secrets::generate_shares(
+                let shares = wrapped_secrets::split_secret(
                     k,
                     n,
                     &secret,
