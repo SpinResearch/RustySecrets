@@ -8,6 +8,10 @@ license = "BSD-3-Clause"
 readme = "README.md"
 build = "build.rs"
 
+[features]
+default = []
+dss = []
+
 [dependencies]
 base64 = "0.9.0"
 rand = "^0.3"

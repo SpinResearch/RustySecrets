@@ -4,6 +4,7 @@
 
 use std::collections::HashSet;
 
+#[cfg(feature = "dss")]
 use dss::ss1;
 
 /// Minimum allowed number of shares (n)
@@ -106,6 +107,7 @@ error_chain! {
             display("Parameters k and n must be greater than zero.")
         }
 
+        #[cfg(feature = "dss")]
         MismatchingShares(got: ss1::Share, expected: ss1::Share) {
             description("Share mismatch during verification of secret recovery")
             display("Share mismatch during verification of secret recovery.")

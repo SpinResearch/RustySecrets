@@ -1,7 +1,8 @@
+#![cfg(feature = "dss")]
+
 extern crate rusty_secrets;
 
 use rusty_secrets::dss::thss::{recover_secret, Share};
-
 
 #[test]
 #[should_panic(expected = "EmptyShares")]
@@ -13,7 +14,6 @@ fn test_recover_no_shares() {
 #[test]
 #[should_panic(expected = "ShareParsingErrorEmptyShare")]
 fn test_recover_2_parts_share() {
-
     let share1 = Share {
         id: 1,
         threshold: 2,
@@ -37,7 +37,6 @@ fn test_recover_2_parts_share() {
 #[test]
 #[should_panic(expected = "ShareParsingInvalidShareId")]
 fn test_recover_0_share_num() {
-
     let share1 = Share {
         id: 0,
         threshold: 2,

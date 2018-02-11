@@ -1,3 +1,5 @@
+#![cfg(feature = "dss")]
+
 extern crate rusty_secrets;
 
 use rusty_secrets::dss::thss;

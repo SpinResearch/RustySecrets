@@ -1,5 +1,7 @@
+#![cfg(feature = "dss")]
+
 extern crate rusty_secrets;
-use rusty_secrets::dss::ss1::{recover_secret, split_secret, Share, Reproducibility};
+use rusty_secrets::dss::ss1::{recover_secret, split_secret, Reproducibility, Share};
 
 const TEST_THRESHOLD: u8 = 2;
 const TEST_SHARES_COUNT: u8 = 2;
