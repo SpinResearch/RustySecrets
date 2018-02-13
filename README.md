@@ -5,15 +5,9 @@
 [**Documentation (latest)**](https://docs.rs/rusty_secrets/)  
 [**Documentation (master)**](http://spinresearch.github.io/RustySecrets/rusty_secrets/index.html)
 
-## Warning: Please do not send pull requests for the moment
-
-> This library is currently being heavily refactored in a private branch, and as such, we are currently unable to merge pull requests against the master branch. We will release the changes in this private branch publicly as soon as we get them audited. Until then, we definitely welcome bug reports, constructive feedback, or feature ideas.
-
-> Thank you for checking out RustySecrets, we hope to be able to accept your contributions very soon!
-
 ## Design goals
 
-The main use for this library is to split a secret of an arbitrary length in *n* different shares and *t*-out-of-*n* shares are required to recover it. The dealer is assumed to be honest (and competent). We further assume that our adversary will only be able to compromise at most *t-1* shares. Shares are kept offline.
+The main use for this library is to split a secret of an arbitrary length in *n* different shares and *k*-out-of-*n* shares are required to recover it. The dealer is assumed to be honest (and competent). We further assume that our adversary will only be able to compromise at most *k-1* shares. Shares are kept offline.
 
 A typical use case for this library would be splitting an encryption key to a TrueCrypt-like volume.
 
@@ -30,7 +24,7 @@ A typical use case for this library would be splitting an encryption key to a Tr
 A share is built out of three parts separated with a dash: K-N-D.
 
 - K specifies the number of shares necessary to recover the secret.
-- N is the identifier of the share and varies between 1 and n where n is the total number of generated shares.
+- N is the identifier of the share and varies between 1 and *n* where *n* is the total number of generated shares.
 - The D part is a Base64 encoding of a `ShareData` protobuf containing information about the share, and if signed, the signature.
 
 ### Signatures
