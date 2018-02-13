@@ -1,11 +1,11 @@
 
 # Changelog
 
-## [Unreleased](https://github.com/SpinResearch/merkle.rs/compare/0.1.0...master)
+## [Unreleased](https://github.com/SpinResearch/RustySecrets/compare/v0.1.0...master)
 
 > Nothing yet.
 
-## [v0.1.0](https://github.com/SpinResearch/merkle.rs/compare/0.0.2...0.1.0) (2018-02-13)
+## [v0.1.0](https://github.com/SpinResearch/RustySecrets/compare/0.0.2...v0.1.0) (2018-02-13)
 
 ### Added
 
