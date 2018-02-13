@@ -6,4 +6,4 @@ pub use self::secret::SecretProto;
 mod share;
 pub use self::share::ShareProto;
 
-pub use super::version;
+use super::version;
