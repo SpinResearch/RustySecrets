@@ -10,4 +10,4 @@ pub use self::share::ShareProto;
 mod metadata;
 pub use self::metadata::MetaDataProto;
 
-pub use super::version;
+use super::version;
