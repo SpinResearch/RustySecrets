@@ -1,1 +1,0 @@
-initSidebarItems({"mod":[["sss","SSS provides Shamir's secret sharing with raw data."],["wrapped_secrets","(Beta) `wrapped_secrets` provides Shamir's secret sharing with a wrapped secret. It currently offers versioning and MIME information about the data."]],"struct":[["RustyError","Error struct used for generating an `io::Error` from a generic description."]]});
