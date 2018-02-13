@@ -43,3 +43,15 @@ rpath = false
 lto = true
 debug-assertions = false
 codegen-units = 1
+
+[package.metadata.release]
+sign-commit = true
+upload-doc = true
+doc-branch = "gh-pages"
+pre-release-commit-message = "Release version {{version}}."
+pro-release-commit-message = "Start next development iteration {{version}}."
+tag-prefix = "v"
+tag-message = "Release version {{version}}."
+doc-commit-message = "Update documentation."
+dev-version-ext = "pre"
+
