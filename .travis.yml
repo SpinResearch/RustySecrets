@@ -1,4 +1,6 @@
 
+sudo: required
+
 language: rust
 
 rust:
@@ -10,6 +12,27 @@ matrix:
   allow_failures:
     - rust: nightly
 
+env:
+  global:
+  - RUSTFLAGS="-C link-dead-code"
+
+addons:
+  apt:
+    packages:
+      - libcurl4-openssl-dev
+      - libdw-dev
+      - cmake
+      - g++
+      - pkg-config
+      - binutils-dev
+      - libiberty-dev
+
 script:
   - cargo build --verbose --all-features
   - cargo test --verbose --all-features
+
+after_success:
+  - cargo install cargo-kcov
+  - cargo kcov --print-install-kcov-sh | sh
+  - cargo kcov --verbose --features dss --coveralls
+
