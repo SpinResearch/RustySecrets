@@ -34,5 +34,5 @@ script:
 after_success:
   - cargo install cargo-kcov
   - cargo kcov --print-install-kcov-sh | sh
-  - cargo kcov --verbose --features dss --coveralls
+  - cargo kcov --verbose --features dss --coveralls -- --verify --exclude-pattern=/.cargo,/usr/lib,src/proto
 
