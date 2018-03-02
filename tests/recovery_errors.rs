@@ -87,3 +87,18 @@ fn test_recover_too_few_shares() {
 
     recover_secret(&shares, false).unwrap();
 }
+
+// See https://github.com/SpinResearch/RustySecrets/issues/43
+#[test]
+fn test_recover_too_few_shares_bug() {
+    let original = b"Test for issue #43\n".to_vec();
+    let share1 = "2-1-ChOCUGsi+CoZEqMpQyk/AAI2vigg".to_string();
+    let share2 = "2-4-ChMrsRMxZ0uq7xZ0swZA7Kh3Jl+i".to_string();
+
+    let shares = vec![share1, share2];
+
+    match recover_secret(&shares, false) {
+        Err(_) => assert!(true),
+        Ok(recovered) => assert_ne!(original, recovered),
+    }
+}
