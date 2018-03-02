@@ -72,7 +72,7 @@ impl SSS {
         for _ in 0..(shares_count as usize) {
             result.push(vec![0u8; src.len()]);
         }
-        let mut col_in = vec![0u8, threshold];
+        let mut col_in = vec![0u8; threshold as usize];
         let mut col_out = Vec::with_capacity(shares_count as usize);
         let mut osrng = OsRng::new()?;
         for (c, &s) in src.iter().enumerate() {
