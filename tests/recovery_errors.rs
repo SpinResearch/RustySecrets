@@ -1,6 +1,6 @@
 extern crate rusty_secrets;
 
-use rusty_secrets::sss::recover_secret;
+use rusty_secrets::sss::{recover_secret, split_secret};
 
 #[test]
 #[should_panic(expected = "EmptyShares")]
@@ -86,4 +86,26 @@ fn test_recover_too_few_shares() {
     let shares = vec![share1, share2];
 
     recover_secret(&shares, false).unwrap();
+}
+
+// See https://github.com/SpinResearch/RustySecrets/issues/43
+#[test]
+fn test_recover_too_few_shares_bug() {
+    let original = b"Test for issue #43".to_vec();
+    let shares = split_secret(4, 5, &original, false).unwrap();
+    let mut share_1 = shares[0].clone().into_bytes();
+    let mut share_2 = shares[3].clone().into_bytes();
+
+    share_1[0] = '2' as u8;
+    share_2[0] = '2' as u8;
+
+    let sub_shares = vec![
+        String::from_utf8_lossy(&share_1).into_owned(),
+        String::from_utf8_lossy(&share_2).into_owned(),
+    ];
+
+    match recover_secret(&sub_shares, false) {
+        Err(_) => assert!(true),
+        Ok(recovered) => assert_ne!(original, recovered),
+    }
 }
