@@ -31,7 +31,7 @@ pub(crate) fn encode_secret_byte(m: u8, j: u8, poly: &Poly) -> u8 {
     let mut acc = Gf256::from_byte(m);
     for (l, &r) in poly.coeffs.iter().enumerate() {
         let s = Gf256::from_byte(j).pow(l as u8 + 1);
-        acc = acc + r * s;
+        acc += r * s;
     }
     acc.to_byte()
 }

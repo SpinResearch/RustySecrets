@@ -9,8 +9,8 @@ pub(crate) fn encode_secret_byte<W: Write>(src: &[u8], n: u8, w: &mut W) -> io::
         let mut fac = Gf256::one();
         let mut acc = Gf256::zero();
         for &coeff in src.iter() {
-            acc = acc + fac * Gf256::from_byte(coeff);
-            fac = fac * x;
+            acc += fac * Gf256::from_byte(coeff);
+            fac *= x;
         }
         w.write_all(&[acc.to_byte()])?;
     }

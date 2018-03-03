@@ -21,7 +21,7 @@ impl Poly {
         let mut result = Gf256::zero();
 
         for (i, c) in self.coeffs.iter().enumerate() {
-            result = result + *c * x.pow(i as u8);
+            result += *c * x.pow(i as u8);
         }
 
         result
