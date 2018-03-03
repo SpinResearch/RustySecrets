@@ -1,7 +1,7 @@
 //! This module provides the Gf256 type which is used to represent
 //! elements of a finite field with 256 elements.
 
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 include!(concat!(env!("OUT_DIR"), "/nothinghardcoded.rs"));
 
@@ -74,11 +74,25 @@ impl Add<Gf256> for Gf256 {
     }
 }
 
+impl AddAssign<Gf256> for Gf256 {
+    #[inline]
+    fn add_assign(&mut self, rhs: Gf256) {
+        *self = *self + rhs;
+    }
+}
+
 impl Sub<Gf256> for Gf256 {
     type Output = Gf256;
     #[inline]
     fn sub(self, rhs: Gf256) -> Gf256 {
         Gf256::from_byte(self.poly ^ rhs.poly)
+    }
+}
+
+impl SubAssign<Gf256> for Gf256 {
+    #[inline]
+    fn sub_assign(&mut self, rhs: Gf256) {
+        *self = *self - rhs;
     }
 }
 
@@ -94,6 +108,12 @@ impl Mul<Gf256> for Gf256 {
     }
 }
 
+impl MulAssign<Gf256> for Gf256 {
+    fn mul_assign(&mut self, rhs: Gf256) {
+        *self = *self * rhs;
+    }
+}
+
 impl Div<Gf256> for Gf256 {
     type Output = Gf256;
     fn div(self, rhs: Gf256) -> Gf256 {
@@ -104,6 +124,12 @@ impl Div<Gf256> for Gf256 {
         } else {
             Gf256 { poly: 0 }
         }
+    }
+}
+
+impl DivAssign<Gf256> for Gf256 {
+    fn div_assign(&mut self, rhs: Gf256) {
+        *self = *self / rhs;
     }
 }
 
