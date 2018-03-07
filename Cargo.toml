@@ -1,6 +1,6 @@
 [package]
 name = "rusty_secrets"
-version = "0.1.1-pre"
+version = "0.2.1"
 authors = [
   "Frederic Jacobs <github@fredericjacobs.com>",
   "Romain Ruetschi <romain.ruetschi@gmail.com>",
