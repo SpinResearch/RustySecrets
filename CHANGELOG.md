@@ -1,9 +1,19 @@
 
 # Changelog
 
-## [Unreleased](https://github.com/SpinResearch/RustySecrets/compare/v0.1.0...master)
+## [Unreleased](https://github.com/SpinResearch/RustySecrets/compare/v0.2.1...master)
 
 > Nothing yet.
+
+## [v0.2.1](https://github.com/SpinResearch/RustySecrets/compare/v0.1.0...v0.2.1) (2018-03-08)
+
+## Fixed
+
+- Fix bug where threshold did not set deg of secret polynomial (@nvesely)
+
+## Added
+
+- Implement {Add, Div, Mul, Sub}Assign for Gf256 (@nvesely)
 
 ## [v0.1.0](https://github.com/SpinResearch/RustySecrets/compare/0.0.2...v0.1.0) (2018-02-13)
 
