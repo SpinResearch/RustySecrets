@@ -35,25 +35,3 @@ mod metadata;
 mod format;
 mod random;
 mod utils;
-
-/// Define the access structure used to deal and recover the shares.
-///
-/// For example, if one wants to deal 10 shares, and require 7 of them to
-/// recover the secret, one would express it as:
-///
-/// ```rust
-/// # use rusty_secrets::dss::AccessStructure;
-/// AccessStructure {
-///     threshold: 7,
-///     shares_count: 10,
-/// };
-/// ```
-#[derive(Copy, Clone, Debug)]
-pub struct AccessStructure {
-    /// The minimum amount of shares required to recover the secret.
-    pub threshold: u8,
-
-    /// The total number of shares generated when splitting up the secret.
-    /// Always greater than or equal to `threshold`.
-    pub shares_count: u8,
-}

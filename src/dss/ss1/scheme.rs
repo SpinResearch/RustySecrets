@@ -5,13 +5,12 @@ use ring::digest::{Context, SHA256};
 use ring::rand::{SecureRandom, SystemRandom};
 use ring::{hkdf, hmac};
 
-use super::share::*;
-use dss::random::{random_bytes_count, FixedRandom, MAX_MESSAGE_SIZE};
-use dss::thss::{MetaData, ThSS};
-use dss::utils;
-use dss::{thss, AccessStructure};
 use errors::*;
+use dss::thss::{self, MetaData, ThSS};
+use dss::random::{random_bytes_count, FixedRandom, MAX_MESSAGE_SIZE};
 use share::validation::{validate_share_count, validate_shares};
+use super::share::*;
+use dss::utils;
 use vol_hash::VOLHash;
 
 /// We bound the message size at about 16MB to avoid overflow in `random_bytes_count`.
@@ -243,10 +242,7 @@ impl SS1 {
     }
 
     /// Recover the secret from the given set of shares
-    pub fn recover_secret(
-        &self,
-        shares: &[Share],
-    ) -> Result<(Vec<u8>, AccessStructure, Option<MetaData>)> {
+    pub fn recover_secret(&self, shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
         let shares = shares.to_vec();
         validate_shares(&shares)?;
 
@@ -262,7 +258,7 @@ impl SS1 {
             .collect::<Vec<_>>();
 
         let underlying = ThSS::default();
-        let (mut secret, _, metadata) = underlying.recover_secret(&underlying_shares)?;
+        let (mut secret, metadata) = underlying.recover_secret(&underlying_shares)?;
         let secret_len = secret.len() - self.random_padding_len;
         let random_padding = secret.split_off(secret_len);
         // `secret` nows holds the secret
@@ -277,17 +273,9 @@ impl SS1 {
             &metadata,
         )?;
 
-        let access_structure = {
-            let first_share = shares.first().unwrap();
-            AccessStructure {
-                threshold: first_share.threshold,
-                shares_count: first_share.shares_count,
-            }
-        };
-
         self.verify_test_shares(shares, test_shares)?;
 
-        Ok((secret, access_structure, metadata))
+        Ok((secret, metadata))
     }
 
     fn verify_test_shares(

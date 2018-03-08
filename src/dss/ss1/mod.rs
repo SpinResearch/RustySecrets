@@ -32,8 +32,6 @@ mod scheme;
 pub use self::scheme::Reproducibility;
 use self::scheme::SS1;
 
-use dss::AccessStructure;
-
 /// Performs threshold k-out-of-n deterministic secret sharing.
 ///
 /// # Examples
@@ -90,7 +88,7 @@ pub fn split_secret(
 /// ).unwrap();
 ///
 /// match ss1::recover_secret(&shares) {
-///     Ok((secret, access_structure, metadata)) => {
+///     Ok((secret, metadata)) => {
 ///         // Do something with the secret and the metadata
 ///     },
 ///     Err(e) => {
@@ -98,7 +96,7 @@ pub fn split_secret(
 ///     }
 /// }
 /// ```
-pub fn recover_secret(shares: &[Share]) -> Result<(Vec<u8>, AccessStructure, Option<MetaData>)> {
+pub fn recover_secret(shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
     SS1::default().recover_secret(shares)
 }
 
@@ -115,11 +113,9 @@ mod tests {
 
         assert_eq!(shares.len(), 10);
 
-        let (recovered, access_structure, metadata) = recover_secret(&shares[2..9]).unwrap();
+        let (recovered, metadata) = recover_secret(&shares[2..9]).unwrap();
 
         assert_eq!(secret, recovered);
-        assert_eq!(access_structure.threshold, 7);
-        assert_eq!(access_structure.shares_count, 10);
         assert_eq!(None, metadata);
     }
 
@@ -131,11 +127,9 @@ mod tests {
 
         assert_eq!(shares.len(), 10);
 
-        let (recovered, access_structure, metadata) = recover_secret(&shares[2..9]).unwrap();
+        let (recovered, metadata) = recover_secret(&shares[2..9]).unwrap();
 
         assert_eq!(secret, recovered);
-        assert_eq!(access_structure.threshold, 7);
-        assert_eq!(access_structure.shares_count, 10);
         assert_eq!(None, metadata);
     }
 
@@ -148,11 +142,9 @@ mod tests {
 
         assert_eq!(shares.len(), 10);
 
-        let (recovered, access_structure, metadata) = recover_secret(&shares[2..9]).unwrap();
+        let (recovered, metadata) = recover_secret(&shares[2..9]).unwrap();
 
         assert_eq!(secret, recovered);
-        assert_eq!(access_structure.threshold, 7);
-        assert_eq!(access_structure.shares_count, 10);
         assert_eq!(None, metadata);
     }
 

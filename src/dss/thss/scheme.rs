@@ -10,9 +10,8 @@ use gf256::Gf256;
 use lagrange;
 use share::validation::{validate_share_count, validate_shares};
 
-use super::AccessStructure;
-use super::encode::encode_secret;
 use super::share::*;
+use super::encode::encode_secret;
 
 /// We bound the message size at about 16MB to avoid overflow in `random_bytes_count`.
 /// Moreover, given the current performances, it is almost unpractical to run
@@ -85,10 +84,7 @@ impl ThSS {
     }
 
     /// Recover the secret from the given set of shares
-    pub fn recover_secret(
-        &self,
-        shares: &[Share],
-    ) -> Result<(Vec<u8>, AccessStructure, Option<MetaData>)> {
+    pub fn recover_secret(&self, shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
         let shares = shares.to_vec();
         let (threshold, cypher_len) = validate_shares(&shares)?;
 
@@ -123,11 +119,6 @@ impl ThSS {
             .map(|p| p.evaluate_at_zero().to_byte())
             .collect();
 
-        let access_structure = AccessStructure {
-            threshold: threshold,
-            shares_count: shares.first().unwrap().shares_count,
-        };
-
-        Ok((secret, access_structure, metadata))
+        Ok((secret, metadata))
     }
 }

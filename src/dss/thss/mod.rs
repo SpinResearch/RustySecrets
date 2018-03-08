@@ -23,8 +23,6 @@ pub use self::share::*;
 mod scheme;
 pub(crate) use self::scheme::ThSS;
 
-use dss::AccessStructure;
-
 /// Performs threshold k-out-of-n secret sharing using the `ThSS` scheme.
 ///
 /// # Examples
@@ -87,7 +85,7 @@ pub fn split_secret(
 /// ).unwrap();
 ///
 /// match thss::recover_secret(&shares) {
-///     Ok((secret, access_structure, metadata)) => {
+///     Ok((secret, metadata)) => {
 ///         // Do something with the secret and the metadata
 ///     },
 ///     Err(e) => {
@@ -95,7 +93,7 @@ pub fn split_secret(
 ///     }
 /// }
 /// ```
-pub fn recover_secret(shares: &[Share]) -> Result<(Vec<u8>, AccessStructure, Option<MetaData>)> {
+pub fn recover_secret(shares: &[Share]) -> Result<(Vec<u8>, Option<MetaData>)> {
     ThSS::default().recover_secret(shares)
 }
 
@@ -111,11 +109,9 @@ mod tests {
         let shares = split_secret(7, 10, &secret, &None).unwrap();
         assert_eq!(shares.len(), 10);
 
-        let (recovered, access, metadata) = recover_secret(&shares[2..9]).unwrap();
+        let (recovered, metadata) = recover_secret(&shares[2..9]).unwrap();
 
         assert_eq!(secret, recovered);
-        assert_eq!(access.threshold, 7);
-        assert_eq!(access.shares_count, 10);
         assert_eq!(None, metadata);
     }
 
