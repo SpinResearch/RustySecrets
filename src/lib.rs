@@ -27,8 +27,6 @@ pub mod errors;
 pub mod proto;
 pub mod sss;
 pub mod wrapped_secrets;
-
-#[cfg(feature = "dss")]
 pub mod dss;
 
 #[cfg(test)]
