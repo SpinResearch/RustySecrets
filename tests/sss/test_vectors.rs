@@ -59,7 +59,7 @@ fn test_recover_es_test_vectors() {
 }
 
 #[test]
-fn test_recover_sellibitze_more_than_threshold_shars() {
+fn test_recover_sellibitze_more_than_threshold_shares() {
     let share1 = "2-1-1YAYwmOHqZ69jA";
     let share2 = "2-4-F7rAjX3UOa53KA";
     let share3 = "2-2-YJZQDGm22Y77Gw";

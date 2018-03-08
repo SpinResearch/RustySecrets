@@ -113,7 +113,7 @@ fn test_recover_invalid_share_threshold() {
 
 // See https://github.com/SpinResearch/RustySecrets/issues/43
 #[test]
-fn test_recover_too_few_shares_bug() {
+fn test_recover_too_few_shares_altered() {
     let original = b"Test for issue #43".to_vec();
     let shares = split_secret(4, 5, &original, false).unwrap();
     let mut share_1 = shares[0].clone().into_bytes();
