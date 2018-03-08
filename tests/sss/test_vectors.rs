@@ -1,7 +1,4 @@
-extern crate base64;
-extern crate protobuf;
-extern crate rusty_secrets;
-
+use base64;
 use protobuf::Message;
 
 use rusty_secrets::proto::wrapped::ShareProto;

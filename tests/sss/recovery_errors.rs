@@ -1,5 +1,3 @@
-extern crate rusty_secrets;
-
 use rusty_secrets::sss::{recover_secret, split_secret};
 
 #[test]

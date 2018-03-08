@@ -1,5 +1,3 @@
-extern crate rusty_secrets;
-
 use rusty_secrets::wrapped_secrets;
 
 #[ignore]

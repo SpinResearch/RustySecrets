@@ -1,8 +1,23 @@
-#![cfg(feature = "dss")]
+use rusty_secrets::dss::ss1::{recover_secret, split_secret, Reproducibility, Share};
 
-extern crate rusty_secrets;
+const TEST_THRESHOLD: u8 = 2;
+const TEST_SHARES_COUNT: u8 = 2;
+const TEST_REPRODUCIBILITY: Reproducibility = Reproducibility::Reproducible;
+const TEST_SECRET: &[u8] =
+    b"These programs were never about terrorism: they're about economic spying, \
+                             social control, and diplomatic manipulation. They're about power.";
 
-use rusty_secrets::dss::thss::{recover_secret, Share};
+fn get_test_hash() -> Vec<u8> {
+    let good_shares = split_secret(
+        TEST_THRESHOLD,
+        TEST_SHARES_COUNT,
+        TEST_SECRET,
+        TEST_REPRODUCIBILITY,
+        &None,
+    ).unwrap();
+
+    good_shares[0].hash.clone()
+}
 
 #[test]
 #[should_panic(expected = "EmptyShares")]
@@ -14,18 +29,22 @@ fn test_recover_no_shares() {
 #[test]
 #[should_panic(expected = "ShareParsingErrorEmptyShare")]
 fn test_recover_2_parts_share() {
+    let hash = get_test_hash();
+
     let share1 = Share {
         id: 1,
-        threshold: 2,
-        shares_count: 2,
+        threshold: TEST_THRESHOLD,
+        shares_count: TEST_SHARES_COUNT,
         data: "CgmKQZHMO+5n5pU".to_string().into_bytes(),
+        hash: hash.clone(),
         metadata: None,
     };
     let share2 = Share {
         id: 2,
-        threshold: 2,
-        shares_count: 2,
+        threshold: TEST_THRESHOLD,
+        shares_count: TEST_SHARES_COUNT,
         data: "".to_string().into_bytes(),
+        hash: hash.clone(),
         metadata: None,
     };
 
@@ -37,18 +56,22 @@ fn test_recover_2_parts_share() {
 #[test]
 #[should_panic(expected = "ShareParsingInvalidShareId")]
 fn test_recover_0_share_num() {
+    let hash = get_test_hash();
+
     let share1 = Share {
         id: 0,
-        threshold: 2,
-        shares_count: 2,
+        threshold: TEST_THRESHOLD,
+        shares_count: TEST_SHARES_COUNT,
         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
+        hash: hash.clone(),
         metadata: None,
     };
     let share2 = Share {
         id: 1,
-        threshold: 2,
-        shares_count: 2,
+        threshold: TEST_THRESHOLD,
+        shares_count: TEST_SHARES_COUNT,
         data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
+        hash: hash.clone(),
         metadata: None,
     };
 
@@ -58,7 +81,7 @@ fn test_recover_0_share_num() {
 }
 
 // ---
-// TODO: will be implemented when serialization is done for thss shares
+// TODO: will be implemented when serialization is done for ss1 shares
 // ---
 // #[test]
 // #[should_panic(expected = "ShareParsingError")]
@@ -86,18 +109,21 @@ fn test_recover_0_share_num() {
 #[test]
 #[should_panic(expected = "DuplicateShareId")]
 fn test_recover_duplicate_shares_number() {
+    let hash = get_test_hash();
     let share1 = Share {
         id: 1,
-        threshold: 2,
-        shares_count: 2,
+        threshold: TEST_THRESHOLD,
+        shares_count: TEST_SHARES_COUNT,
         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
+        hash: hash.clone(),
         metadata: None,
     };
     let share2 = Share {
         id: 1,
-        threshold: 2,
-        shares_count: 2,
+        threshold: TEST_THRESHOLD,
+        shares_count: TEST_SHARES_COUNT,
         data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
+        hash: hash.clone(),
         metadata: None,
     };
 
@@ -109,18 +135,21 @@ fn test_recover_duplicate_shares_number() {
 #[test]
 #[should_panic(expected = "MissingShares")]
 fn test_recover_too_few_shares() {
+    let hash = get_test_hash();
     let share1 = Share {
         id: 1,
-        threshold: 3,
-        shares_count: 3,
+        threshold: TEST_THRESHOLD + 1,
+        shares_count: TEST_SHARES_COUNT + 1,
         data: "1YAYwmOHqZ69jA".to_string().into_bytes(),
+        hash: hash.clone(),
         metadata: None,
     };
     let share2 = Share {
         id: 2,
-        threshold: 3,
-        shares_count: 3,
+        threshold: TEST_THRESHOLD + 1,
+        shares_count: TEST_SHARES_COUNT + 1,
         data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
+        hash: hash.clone(),
         metadata: None,
     };
 
