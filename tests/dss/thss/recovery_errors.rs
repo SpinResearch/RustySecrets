@@ -1,4 +1,4 @@
-use rusty_secrets::dss::thss::{recover_secret, Share};
+use rusty_secrets::dss::thss::{recover_secret, split_secret, Share};
 
 #[test]
 #[should_panic(expected = "EmptyShares")]
@@ -123,4 +123,25 @@ fn test_recover_too_few_shares() {
     let shares = vec![share1, share2];
 
     recover_secret(&shares).unwrap();
+}
+
+#[test]
+fn test_recover_too_few_shares_altered() {
+    let original = b"Test for issue #43".to_vec();
+    let shares = split_secret(4, 5, &original, &None).unwrap();
+    let mut share_1 = shares[0].clone();
+    let mut share_2 = shares[3].clone();
+
+    share_1.threshold = 2;
+    share_2.threshold = 2;
+
+    let sub_shares = vec![share_1, share_2];
+
+    match recover_secret(&sub_shares) {
+        Err(_) => assert!(true),
+        Ok((recovered, metadata)) => {
+            assert_eq!(metadata, None);
+            assert_ne!(original, recovered);
+        }
+    }
 }
