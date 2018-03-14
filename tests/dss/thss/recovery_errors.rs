@@ -3,8 +3,7 @@ use rusty_secrets::dss::thss::{recover_secret, split_secret, Share};
 #[test]
 #[should_panic(expected = "EmptyShares")]
 fn test_recover_no_shares() {
-    let shares = vec![];
-    recover_secret(&shares).unwrap();
+    recover_secret(&[]).unwrap();
 }
 
 #[test]
