@@ -6,13 +6,10 @@ use std::io::prelude::*;
 pub(crate) fn encode_secret_byte<W: Write>(src: &[u8], n: u8, w: &mut W) -> io::Result<()> {
     for raw_x in 1..(u16::from(n) + 1) {
         let x = Gf256::from_byte(raw_x as u8);
-        let mut fac = Gf256::one();
-        let mut acc = Gf256::zero();
-        for &coeff in src.iter() {
-            acc += fac * Gf256::from_byte(coeff);
-            fac *= x;
-        }
-        w.write_all(&[acc.to_byte()])?;
+        let sum = src.iter().rev().fold(Gf256::zero(), |acc, &coeff| {
+            Gf256::from_byte(coeff) + acc * x
+        });
+        w.write_all(&[sum.to_byte()])?;
     }
     Ok(())
 }
