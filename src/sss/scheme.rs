@@ -79,7 +79,7 @@ impl SSS {
             col_in[0] = s;
             osrng.fill_bytes(&mut col_in[1..]);
             col_out.clear();
-            encode_secret_byte(&*col_in, shares_count, &mut col_out)?;
+            encode_secret_byte(&*col_in, threshold, shares_count, &mut col_out)?;
             for (&y, share) in col_out.iter().zip(result.iter_mut()) {
                 share[c] = y;
             }
