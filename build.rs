@@ -78,8 +78,8 @@ fn main() {
     write!(
         f,
         "pub struct Tables {{ \
-             pub exp: [u8; 256], \
-             pub log: [u8; 256] \
+         pub exp: [u8; 256], \
+         pub log: [u8; 256] \
          }} \
          \
          pub static TABLES: Tables = "
