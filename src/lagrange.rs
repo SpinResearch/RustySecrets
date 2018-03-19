@@ -1,53 +1,26 @@
 use gf256::Gf256;
 use poly::Poly;
 
-// Minimum number of points where it becomes faster to use barycentric
-// Lagrange interpolation. Determined by benchmarking.
-const BARYCENTRIC_THRESHOLD: u8 = 5;
-
 /// Evaluates an interpolated polynomial at `Gf256::zero()` where
-/// the polynomial is determined using either standard or barycentric
-/// Lagrange interpolation (depending on number of points, `k`) based
-/// on the given `points` in the G(2^8) Galois field.
+/// the polynomial is determined using barycentric Lagrange
+/// interpolation based on the given `points` in
+/// the G(2^8) Galois field.
 pub(crate) fn interpolate_at(k: u8, points: &[(u8, u8)]) -> u8 {
-    if k < BARYCENTRIC_THRESHOLD {
-        lagrange_interpolate_at(points)
-    } else {
-        barycentric_interpolate_at(k as usize, points)
-    }
-}
-
-/// Evaluates the polynomial at `Gf256::zero()` using standard Langrange
-/// interpolation.
-fn lagrange_interpolate_at(points: &[(u8, u8)]) -> u8 {
-    let mut sum = Gf256::zero();
-    for (i, &(raw_xi, raw_yi)) in points.iter().enumerate() {
-        assert_ne!(raw_xi, 0, "Invalid share x = 0");
-        let xi = Gf256::from_byte(raw_xi);
-        let yi = Gf256::from_byte(raw_yi);
-        let mut prod = Gf256::one();
-        for (j, &(raw_xj, _)) in points.iter().enumerate() {
-            if i != j {
-                let xj = Gf256::from_byte(raw_xj);
-                let delta = xi - xj;
-                assert_ne!(delta.poly, 0, "Duplicate shares");
-                prod *= xj / delta;
-            }
-        }
-        sum += prod * yi;
-    }
-    sum.to_byte()
+    barycentric_interpolate_at(k as usize, points)
 }
 
 /// Barycentric Lagrange interpolation algorithm from "Polynomial
 /// Interpolation: Langrange vs Newton" by Wilhelm Werner. Evaluates
 /// the polynomial at `Gf256::zero()`.
+#[inline]
 fn barycentric_interpolate_at(k: usize, points: &[(u8, u8)]) -> u8 {
     // Compute the barycentric weights `w`.
     let mut w = vec![Gf256::zero(); k];
     w[0] = Gf256::one();
+
     let mut x = Vec::with_capacity(k);
     x.push(Gf256::from_byte(points[0].0));
+
     for i in 1..k {
         x.push(Gf256::from_byte(points[i].0));
         for j in 0..i {
@@ -57,6 +30,7 @@ fn barycentric_interpolate_at(k: usize, points: &[(u8, u8)]) -> u8 {
             w[i] -= w[j];
         }
     }
+
     // Evaluate the second or "true" form of the barycentric
     // interpolation formula at `Gf256::zero()`.
     let (mut num, mut denom) = (Gf256::zero(), Gf256::zero());
@@ -66,6 +40,7 @@ fn barycentric_interpolate_at(k: usize, points: &[(u8, u8)]) -> u8 {
         num += diff * Gf256::from_byte(points[i].1);
         denom += diff;
     }
+
     (num / denom).to_byte()
 }
 
