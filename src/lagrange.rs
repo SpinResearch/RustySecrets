@@ -1,28 +1,26 @@
 use gf256::Gf256;
 use poly::Poly;
 
-/// Evaluates an interpolated polynomial at `Gf256::zero()` where
-/// the polynomial is determined using barycentric Lagrange
-/// interpolation based on the given `points` in
-/// the G(2^8) Galois field.
-pub(crate) fn interpolate_at(k: u8, points: &[(u8, u8)]) -> u8 {
-    barycentric_interpolate_at(k as usize, points)
+/// Evaluates an interpolated polynomial at `Gf256::zero()` where the polynomial is determined
+/// using barycentric Lagrange interpolation based on the given `points` in the G(2^8) Galois
+/// field.
+pub(crate) fn interpolate_at(points: &[(u8, u8)]) -> u8 {
+    // Algorithm from "Polynomial Interpolation: Langrange vs Newton" by Wilhelm Werner.
+    let x = points.iter().map(|x| Gf256::from_byte(x.0)).collect();
+    let y = points.iter().map(|x| Gf256::from_byte(x.1)).collect();
+    let w = compute_barycentric_weights(&x);
+    let (num, denom) = compute_barycentric_num_denom_at(&x, &y, &w);
+    (num / denom).to_byte()
 }
 
-/// Barycentric Lagrange interpolation algorithm from "Polynomial
-/// Interpolation: Langrange vs Newton" by Wilhelm Werner. Evaluates
-/// the polynomial at `Gf256::zero()`.
+/// Compute the barycentric weights `w` corresponding to a set of `x` values.
 #[inline]
-fn barycentric_interpolate_at(k: usize, points: &[(u8, u8)]) -> u8 {
-    // Compute the barycentric weights `w`.
+fn compute_barycentric_weights(x: &Vec<Gf256>) -> Vec<Gf256> {
+    let k = x.len();
     let mut w = vec![Gf256::zero(); k];
     w[0] = Gf256::one();
 
-    let mut x = Vec::with_capacity(k);
-    x.push(Gf256::from_byte(points[0].0));
-
     for i in 1..k {
-        x.push(Gf256::from_byte(points[i].0));
         for j in 0..i {
             let delta = x[j] - x[i];
             assert_ne!(delta.poly, 0, "Duplicate shares");
@@ -31,17 +29,27 @@ fn barycentric_interpolate_at(k: usize, points: &[(u8, u8)]) -> u8 {
         }
     }
 
-    // Evaluate the second or "true" form of the barycentric
-    // interpolation formula at `Gf256::zero()`.
+    w
+}
+
+// Compute the numerator and denominator of the second or "true" form of the barycentric
+// interpolation formula at `Gf256::zero()`.
+#[inline]
+fn compute_barycentric_num_denom_at(
+    x: &Vec<Gf256>,
+    y: &Vec<Gf256>,
+    w: &Vec<Gf256>,
+) -> (Gf256, Gf256) {
     let (mut num, mut denom) = (Gf256::zero(), Gf256::zero());
-    for i in 0..k {
-        assert_ne!(x[i].poly, 0, "Invalid share x = 0");
-        let diff = w[i] / x[i];
-        num += diff * Gf256::from_byte(points[i].1);
+
+    for (i, &xi) in x.iter().enumerate() {
+        assert_ne!(xi.poly, 0, "Invalid share x = 0");
+        let diff = w[i] / xi;
+        num += diff * y[i];
         denom += diff;
     }
 
-    (num / denom).to_byte()
+    (num, denom)
 }
 
 /// Computeds the coefficient of the Lagrange polynomial interpolated
@@ -131,7 +139,7 @@ mod tests {
             let poly = interpolate(&elems);
 
             let equals = poly.evaluate_at(Gf256::zero()).to_byte()
-                == interpolate_at(points.len() as u8, points.as_slice());
+                == interpolate_at(points.as_slice());
 
             TestResult::from_bool(equals)
         }
