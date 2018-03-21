@@ -77,6 +77,8 @@ impl SSS {
         let mut osrng = OsRng::new()?;
         for (c, &s) in src.iter().enumerate() {
             col_in[0] = s;
+            // NOTE: switch to `try_fill_bytes` when it lands in a stable release:
+            // https://github.com/rust-lang-nursery/rand/commit/230b2258dbd99ff8bd991008c972d923d4b5d10c
             osrng.fill_bytes(&mut col_in[1..]);
             col_out.clear();
             encode_secret_byte(&*col_in, shares_count, &mut col_out)?;
