@@ -171,6 +171,34 @@ impl PartialSecret {
         // `threshold`.
         self.threshold - self.ids.len() as u8
     }
+
+    /// Evaluate the interpolated polynomial at the point `Gf256::from_byte(x)` in the G(2^8)
+    /// Galois field.
+    #[inline]
+    pub fn evaluate_at_x(&self, x: u8) -> Result<u8> {
+        if self.shares_needed() != 0 {
+            bail!(ErrorKind::MissingShares(
+                self.ids.len(),
+                self.threshold as usize
+            ));
+        }
+
+        let x = Gf256::from_byte(x);
+        let (mut num, mut denom) = (Gf256::zero(), Gf256::zero());
+        for ((&xi, &di), &wi) in self.ids
+            .iter()
+            .zip(self.diffs.iter())
+            .zip(self.weights.iter())
+        {
+            let delta = x - xi;
+            // Slightly slower to re-multiply the `diffs` by `xi` here, but otherwise we have to
+            // additionally store the `y` values in `PartialSecret`, or store `y` values instead of
+            // the `diffs` and precompute less in the standard case of evaluating at 0.
+            num += wi * di * xi / delta;
+            denom += wi / delta;
+        }
+        Ok((num / denom).to_byte())
+    }
 }
 
 /// Computeds the coefficient of the Lagrange polynomial interpolated
