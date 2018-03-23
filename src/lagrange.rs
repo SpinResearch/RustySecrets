@@ -28,7 +28,7 @@ pub struct PartialSecret {
     /// shares)
     ids: Vec<Gf256>,
     /// The differences of share values divided by their ids.
-    differences: Vec<Gf256>,
+    diffs: Vec<Gf256>,
     /// The barycentric weights.
     weights: Vec<Gf256>,
 }
@@ -50,7 +50,7 @@ impl PartialSecret {
         }
 
         let mut ids = Vec::with_capacity(points.len());
-        let mut differences = Vec::with_capacity(points.len());
+        let mut diffs = Vec::with_capacity(points.len());
         // If provided with more than `threshold` points, only the first threshold are considered.
         for pi in points.iter().take(threshold as usize) {
             if pi.0 == 0 {
@@ -62,14 +62,17 @@ impl PartialSecret {
             }
             let yi = Gf256::from_byte(pi.1);
             ids.push(xi);
-            differences.push(yi / xi);
+            // Storing these `diffs` instead of the `y` values allows us to do a little more
+            // precomputation, since we really only need `y / x` and not `y` to evaluate the second
+            // form of the barycentric interpolation formula.
+            diffs.push(yi / xi);
         }
 
         let mut partial_comp = Self {
             secret: None,
             threshold,
             ids,
-            differences,
+            diffs,
             weights: vec![],
         };
 
@@ -81,11 +84,14 @@ impl PartialSecret {
         Ok(partial_comp)
     }
 
+    /// Update the partial computation given an additional set of `points`.
     #[inline]
     pub fn update(&mut self, points: &[(u8, u8)]) -> Result<()> {
         if points.len() == 0 {
             bail!(ErrorKind::EmptyShares);
-        } else if points.len() + self.ids.len() > MAX_SHARES as usize {
+        } else if points.len() + self.ids.len() > MAX_SHARES as usize
+            || self.ids.len() == self.threshold as usize
+        {
             bail!(ErrorKind::InvalidShareCountMax(
                 (points.len() + self.ids.len()) as u8,
                 MAX_SHARES
@@ -104,7 +110,7 @@ impl PartialSecret {
             }
             let yi = Gf256::from_byte(pi.1);
             self.ids.push(xi);
-            self.differences.push(yi / xi);
+            self.diffs.push(yi / xi);
         }
 
         self.update_barycentric_weights();
@@ -137,25 +143,33 @@ impl PartialSecret {
         }
 
         // If we have sufficient information, we can compute the secret.
-        if self.weights.len() == self.threshold as usize {
+        if self.shares_needed() == 0 {
             self.compute_secret();
         }
     }
 
-    // Compute the secret using the second or "true" form of the barycentric interpolation formula
-    // at `Gf256::zero()`.
+    /// Compute the secret using the second or "true" form of the barycentric interpolation formula
+    /// at `Gf256::zero()`.
     #[inline]
     fn compute_secret(&mut self) {
         let (mut num, mut denom) = (Gf256::zero(), Gf256::zero());
         for ((&xi, &di), &wi) in self.ids
             .iter()
-            .zip(self.differences.iter())
+            .zip(self.diffs.iter())
             .zip(self.weights.iter())
         {
             num += wi * di;
             denom += wi / xi;
         }
         self.secret = Some((num / denom).to_byte());
+    }
+
+    /// Returns the number of shares needed to complete the computation.
+    #[inline]
+    pub fn shares_needed(&self) -> u8 {
+        // Safe to cast and subtract because `ids.len()` will be less than `MAX_SHARES` and <=
+        // `threshold`.
+        self.threshold - self.ids.len() as u8
     }
 }
 
