@@ -102,7 +102,8 @@ impl SSS {
             for s in shares.iter().take(threshold as usize) {
                 col_in.push((s.id, s.data[byteindex]));
             }
-            secret.push(interpolate_at(&*col_in));
+            let secret_byte = interpolate_at(threshold, &*col_in)?;
+            secret.push(secret_byte);
         }
 
         Ok(secret)
