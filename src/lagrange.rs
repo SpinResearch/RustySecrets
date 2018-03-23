@@ -21,9 +21,9 @@ pub(crate) fn interpolate_at(threshold: u8, points: &[(u8, u8)]) -> Result<u8> {
 /// the `secret` field will be updated from `None` to `Some(u8)`.
 pub struct PartialSecret {
     /// The secret byte. `None` until computation is complete.
-    secret: Option<u8>,
+    pub secret: Option<u8>,
     /// The number of shares necessary to recover the secret, a.k.a. the threshold.
-    threshold: u8,
+    pub threshold: u8,
     /// The ids of the share (varies between 1 and n where n is the total number of generated
     /// shares)
     ids: Vec<Gf256>,
@@ -87,11 +87,14 @@ impl PartialSecret {
     /// Update the partial computation given an additional set of `points`.
     #[inline]
     pub fn update(&mut self, points: &[(u8, u8)]) -> Result<()> {
-        if points.len() == 0 {
+        if self.shares_needed() == 0 {
+            bail!(ErrorKind::InvalidShareCountMax(
+                (points.len() + self.ids.len()) as u8,
+                self.threshold
+            ));
+        } else if points.len() == 0 {
             bail!(ErrorKind::EmptyShares);
-        } else if points.len() + self.ids.len() > MAX_SHARES as usize
-            || self.ids.len() == self.threshold as usize
-        {
+        } else if points.len() + self.ids.len() > MAX_SHARES as usize {
             bail!(ErrorKind::InvalidShareCountMax(
                 (points.len() + self.ids.len()) as u8,
                 MAX_SHARES
@@ -166,10 +169,14 @@ impl PartialSecret {
 
     /// Returns the number of shares needed to complete the computation.
     #[inline]
-    pub fn shares_needed(&self) -> u8 {
-        // Safe to cast and subtract because `ids.len()` will be less than `MAX_SHARES` and <=
-        // `threshold`.
-        self.threshold - self.ids.len() as u8
+    pub fn shares_needed(&self) -> usize {
+        self.threshold as usize - self.ids.len()
+    }
+
+    /// Returns the number of shares that have been evaluated so far.
+    #[inline]
+    pub fn shares_evaluated(&self) -> usize {
+        self.ids.len()
     }
 
     /// Evaluate the interpolated polynomial at the point `Gf256::from_byte(x)` in the G(2^8)
