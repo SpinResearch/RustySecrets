@@ -55,11 +55,6 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
             bail!(ErrorKind::ShareParsingErrorEmptyShare(id))
         }
 
-        if result.iter().any(|s| s.get_data() == share.get_data()) && share.get_threshold() != 1 {
-            // When threshold = 1, shares data can be the same
-            bail!(ErrorKind::DuplicateShareData(id));
-        }
-
         result.push(share);
     }
 
