@@ -1,3 +1,4 @@
+use std::cmp::min;
 use std::u8;
 
 use errors::*;
@@ -38,48 +39,20 @@ impl PartialSecret {
     /// finished), and an initial set of `points`.
     #[inline]
     pub fn new(threshold: u8, points: &[(u8, u8)]) -> Result<Self> {
-        if threshold < 2 {
-            bail!(ErrorKind::ThresholdTooSmall(threshold));
-        } else if points.len() == 0 {
-            bail!(ErrorKind::EmptyShares);
-        } else if points.len() > MAX_SHARES as usize {
-            bail!(ErrorKind::InvalidShareCountMax(
-                points.len() as u8,
-                MAX_SHARES
-            ));
-        }
+        validate_threshold(threshold)?;
+        validate_shares_is_nonempty(points)?;
 
-        let mut ids = Vec::with_capacity(points.len());
-        let mut diffs = Vec::with_capacity(points.len());
-        // If provided with more than `threshold` points, only the first threshold are considered.
-        for pi in points.iter().take(threshold as usize) {
-            if pi.0 == 0 {
-                bail!(ErrorKind::ShareParsingInvalidShareId(0));
-            }
-            let xi = Gf256::from_byte(pi.0);
-            if ids.iter().find(|&&xj| xi == xj).is_some() {
-                bail!(ErrorKind::DuplicateShareId(xi.poly));
-            }
-            let yi = Gf256::from_byte(pi.1);
-            ids.push(xi);
-            // Storing these `diffs` instead of the `y` values allows us to do a little more
-            // precomputation, since we really only need `y / x` and not `y` to evaluate the second
-            // form of the barycentric interpolation formula.
-            diffs.push(yi / xi);
-        }
-
+        let capacity = min(threshold as usize, points.len());
         let mut partial_comp = Self {
             secret: None,
             threshold,
-            ids,
-            diffs,
+            ids: Vec::with_capacity(capacity),
+            diffs: Vec::with_capacity(capacity),
             weights: vec![],
         };
+        partial_comp.validate_total_shares_less_than_max(points)?;
 
-        if partial_comp.ids.len() == 1 {
-            return Ok(partial_comp);
-        }
-
+        partial_comp.update_diffs(points)?;
         partial_comp.update_barycentric_weights();
         Ok(partial_comp)
     }
@@ -87,20 +60,18 @@ impl PartialSecret {
     /// Update the partial computation given an additional set of `points`.
     #[inline]
     pub fn update(&mut self, points: &[(u8, u8)]) -> Result<()> {
-        if self.shares_needed() == 0 {
-            bail!(ErrorKind::InvalidShareCountMax(
-                (points.len() + self.ids.len()) as u8,
-                self.threshold
-            ));
-        } else if points.len() == 0 {
-            bail!(ErrorKind::EmptyShares);
-        } else if points.len() + self.ids.len() > MAX_SHARES as usize {
-            bail!(ErrorKind::InvalidShareCountMax(
-                (points.len() + self.ids.len()) as u8,
-                MAX_SHARES
-            ));
-        }
+        self.validate_shares_are_needed()?;
+        validate_shares_is_nonempty(points)?;
+        self.validate_total_shares_less_than_max(points)?;
 
+        self.update_diffs(points)?;
+        self.update_barycentric_weights();
+        Ok(())
+    }
+
+    /// Parse just the `points` we need to compute the secret into `x` values and `diffs`, making
+    // sure they are valid and unique.
+    fn update_diffs(&mut self, points: &[(u8, u8)]) -> Result<()> {
         // If provided with more than than `threshold - self.ids.len()` points, only enough to
         // satisfy the threshold are considered.
         for pi in points.iter().take(self.threshold as usize - self.ids.len()) {
@@ -113,16 +84,23 @@ impl PartialSecret {
             }
             let yi = Gf256::from_byte(pi.1);
             self.ids.push(xi);
+            // Storing these `diffs` instead of the `y` values allows us to do a little more
+            // precomputation, since we really only need `y / x` and not `y` to evaluate the second
+            // form of the barycentric interpolation formula.
             self.diffs.push(yi / xi);
         }
 
-        self.update_barycentric_weights();
         Ok(())
     }
 
     /// Update the barycentric weights `w` corresponding to a set of `x` values.
     #[inline]
     fn update_barycentric_weights(&mut self) {
+        // Need at least two points to start computing the barycentric weights.
+        if self.ids.len() == 1 {
+            return;
+        }
+
         let x = if self.weights.len() == 0 {
             // Initialize initial weights.
             self.weights = vec![Gf256::zero(); self.ids.len()];
@@ -167,6 +145,28 @@ impl PartialSecret {
         self.secret = Some((num / denom).to_byte());
     }
 
+    /// `bail!`s if `threshold` shares have already been evaluated.
+    #[inline]
+    fn validate_shares_are_needed(&self) -> Result<()> {
+        if self.shares_needed() == 0 {
+            bail!(ErrorKind::NoMoreSharesNeeded(self.threshold));
+        }
+        Ok(())
+    }
+
+    /// `bail!`s if shares already evaluated plus new points given is greater than `MAX_SHARES`.
+    #[inline]
+    fn validate_total_shares_less_than_max(&self, points: &[(u8, u8)]) -> Result<()> {
+        let shares_total = points.len() + self.shares_evaluated();
+        if shares_total > MAX_SHARES as usize {
+            bail!(ErrorKind::InvalidShareCountMax(
+                shares_total as u8,
+                MAX_SHARES
+            ));
+        }
+        Ok(())
+    }
+
     /// Returns the number of shares needed to complete the computation.
     #[inline]
     pub fn shares_needed(&self) -> usize {
@@ -206,6 +206,24 @@ impl PartialSecret {
         }
         Ok((num / denom).to_byte())
     }
+}
+
+/// `bail!`s if `threshold` is less than 2.
+#[inline]
+pub fn validate_threshold(threshold: u8) -> Result<()> {
+    if threshold < 2 {
+        bail!(ErrorKind::ThresholdTooSmall(threshold));
+    }
+    Ok(())
+}
+
+/// `bail!`s if `points` is empty.
+#[inline]
+pub fn validate_shares_is_nonempty(points: &[(u8, u8)]) -> Result<()> {
+    if points.len() == 0 {
+        bail!(ErrorKind::EmptyShares);
+    }
+    Ok(())
 }
 
 /// Computeds the coefficient of the Lagrange polynomial interpolated
