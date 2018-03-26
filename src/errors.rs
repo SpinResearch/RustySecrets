@@ -118,11 +118,6 @@ error_chain! {
             display("This share number ({}) has already been used by a previous share.", share_id)
         }
 
-        DuplicateShareData(share_id: u8) {
-            description("The data encoded in this share is the same as the one found in a previous share")
-            display("The data encoded in share #{} is the same as the one found in a previous share.", share_id)
-        }
-
         InconsistentShares {
             description("The shares are inconsistent")
             display("The shares are inconsistent")
