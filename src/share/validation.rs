@@ -37,10 +37,6 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
     for share in shares {
         let (id, threshold) = (share.get_id(), share.get_threshold());
 
-        if id > MAX_SHARES {
-            bail!(ErrorKind::ShareIdentifierTooBig(id, MAX_SHARES))
-        }
-
         if id < 1 {
             bail!(ErrorKind::ShareParsingInvalidShareId(id))
         }

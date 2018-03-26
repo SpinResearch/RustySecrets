@@ -59,11 +59,6 @@ error_chain! {
             display("The shares are incompatible with each other.")
         }
 
-        ShareIdentifierTooBig(id: u8, n: u8) {
-            description("Share identifier too big")
-            display("Found share identifier ({}) bigger than the maximum number of shares ({}).", id, n)
-        }
-
         MissingShares(provided: usize, required: usize) {
             description("The number of shares provided is insufficient to recover the secret.")
             display("{} shares are required to recover the secret, found only {}.", required, provided)
