@@ -64,7 +64,6 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
     let k_sets = k_compatibility_sets.keys().count();
 
     match k_sets {
-        0 => bail!(ErrorKind::EmptyShares),
         1 => {} // All shares have the same roothash.
         _ => {
             bail! {
