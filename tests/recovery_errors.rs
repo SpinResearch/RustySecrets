@@ -77,6 +77,17 @@ fn test_recover_too_few_shares() {
     recover_secret(&shares, false).unwrap();
 }
 
+#[test]
+#[should_panic(expected = "ShareParsingInvalidShareThreshold")]
+fn test_recover_invalid_share_threshold() {
+    let share1 = "1-1-CgnlCxRNtnkzENE".to_string();
+    let share2 = "1-1-CgkAnUgP3lfwjyM".to_string();
+
+    let shares = vec![share1, share2];
+
+    recover_secret(&shares, false).unwrap();
+}
+
 // See https://github.com/SpinResearch/RustySecrets/issues/43
 #[test]
 fn test_recover_too_few_shares_bug() {

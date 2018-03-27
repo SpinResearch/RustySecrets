@@ -39,6 +39,8 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
 
         if id < 1 {
             bail!(ErrorKind::ShareParsingInvalidShareId(id))
+        } else if threshold < 2 {
+            bail!(ErrorKind::ShareParsingInvalidShareThreshold(threshold, id))
         }
 
         k_compatibility_sets

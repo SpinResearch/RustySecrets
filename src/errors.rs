@@ -92,6 +92,11 @@ error_chain! {
             display("Found invalid share identifier ({})", share_id)
         }
 
+        ShareParsingInvalidShareThreshold(k: u8, id: u8) {
+            description("Threshold k must be bigger than or equal to 2")
+            display("Threshold k must be bigger than or equal to 2. Got k = {} for share identifier {}.", k, id)
+        }
+
         InvalidSS1Parameters(r: usize, s: usize) {
             description("Invalid parameters for the SS1 sharing scheme")
             display("Invalid parameters for the SS1 sharing scheme: r = {}, s = {}.", r, s)
