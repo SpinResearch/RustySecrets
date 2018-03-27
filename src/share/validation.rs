@@ -81,7 +81,7 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
     let threshold = k_compatibility_sets.keys().last().unwrap().to_owned();
 
     if shares_count < threshold as usize {
-        bail!(ErrorKind::MissingShares(threshold as usize, shares_count));
+        bail!(ErrorKind::MissingShares(shares_count, threshold as usize));
     }
 
     Ok((threshold, result))
