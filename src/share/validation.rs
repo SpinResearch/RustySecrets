@@ -33,14 +33,17 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
     let mut result: Vec<S> = Vec::with_capacity(shares_count);
 
     let mut k_compatibility_sets = HashMap::new();
+    let mut data_len_compatibility_sets = HashMap::new();
 
     for share in shares {
-        let (id, threshold) = (share.get_id(), share.get_threshold());
+        let (id, threshold, data_len) = (share.get_id(), share.get_threshold(), share.get_data().len());
 
         if id < 1 {
             bail!(ErrorKind::ShareParsingInvalidShareId(id))
         } else if threshold < 2 {
             bail!(ErrorKind::ShareParsingInvalidShareThreshold(threshold, id))
+        } else if data_len < 1 {
+            bail!(ErrorKind::ShareParsingErrorEmptyShare(id))
         }
 
         k_compatibility_sets
@@ -53,9 +56,12 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
             bail!(ErrorKind::DuplicateShareId(id));
         }
 
-        if share.get_data().is_empty() {
-            bail!(ErrorKind::ShareParsingErrorEmptyShare(id))
-        }
+        data_len_compatibility_sets
+            .entry(data_len)
+            .or_insert_with(HashSet::new);
+        let data_len_set = data_len_compatibility_sets.get_mut(&data_len).unwrap();
+        data_len_set.insert(id);
+
 
         result.push(share);
     }
@@ -82,6 +88,23 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
 
     if shares_count < threshold as usize {
         bail!(ErrorKind::MissingShares(shares_count, threshold));
+    }
+
+    // Validate share length consistency
+    let data_len_sets = data_len_compatibility_sets.keys().count();
+
+    match data_len_sets {
+        1 => {} // All shares have the same `data` field len
+        _ => {
+            bail! {
+                ErrorKind::IncompatibleDataLengths(
+                    data_len_compatibility_sets
+                        .values()
+                        .map(|x| x.to_owned())
+                        .collect(),
+                )
+            }
+        }
     }
 
     Ok((threshold, result))
