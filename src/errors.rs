@@ -59,7 +59,7 @@ error_chain! {
             display("The shares are incompatible with each other.")
         }
 
-        MissingShares(provided: usize, required: usize) {
+        MissingShares(provided: usize, required: u8) {
             description("The number of shares provided is insufficient to recover the secret.")
             display("{} shares are required to recover the secret, found only {}.", required, provided)
         }
