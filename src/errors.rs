@@ -64,6 +64,11 @@ error_chain! {
             display("The shares are incompatible with each other because they do not all have the same threshold.")
         }
 
+        IncompatibleDataLengths(sets: Vec<HashSet<u8>>) {
+            description("The shares are incompatible with each other because they do not all have the same share data length.")
+            display("The shares are incompatible with each other because they do not all have the same share data length.")
+        }
+
         MissingShares(provided: usize, required: u8) {
             description("The number of shares provided is insufficient to recover the secret.")
             display("{} shares are required to recover the secret, found only {}.", required, provided)
