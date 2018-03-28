@@ -1,5 +1,6 @@
 #![cfg(test)]
 #![feature(test)]
+#![cfg(feature = "dss")]
 
 extern crate rusty_secrets;
 extern crate test;
