@@ -59,16 +59,6 @@ error_chain! {
             display("The shares are incompatible with each other.")
         }
 
-        IncompatibleThresholds(sets: Vec<HashSet<u8>>) {
-            description("The shares are incompatible with each other because they do not all have the same threshold.")
-            display("The shares are incompatible with each other because they do not all have the same threshold.")
-        }
-
-        IncompatibleDataLengths(sets: Vec<HashSet<u8>>) {
-            description("The shares are incompatible with each other because they do not all have the same share data length.")
-            display("The shares are incompatible with each other because they do not all have the same share data length.")
-        }
-
         MissingShares(provided: usize, required: u8) {
             description("The number of shares provided is insufficient to recover the secret.")
             display("{} shares are required to recover the secret, found only {}.", required, provided)
@@ -133,10 +123,21 @@ error_chain! {
             display("This share number ({}) has already been used by a previous share.", share_id)
         }
 
+        InconsistentSecretLengths(id: u8, slen_: usize, ids: Vec<u8>, slen: usize) {
+            description("The shares are incompatible with each other because they do not all have the same secret length.")
+            display("The share identifier {} had secret length {}, while the secret length {} was found for share identifier(s): {:?}.", id, slen_, slen, ids)
+        }
+
         InconsistentShares {
             description("The shares are inconsistent")
             display("The shares are inconsistent")
         }
+
+        InconsistentThresholds(id: u8, k_: u8, ids: Vec<u8>, k: u8) {
+            description("The shares are incompatible with each other because they do not all have the same threshold.")
+            display("The share identifier {} had k = {}, while k = {} was found for share identifier(s): {:?}.", id, k_, k, ids)
+        }
+
     }
 
     foreign_links {

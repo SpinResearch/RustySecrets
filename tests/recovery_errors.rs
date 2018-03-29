@@ -67,10 +67,21 @@ fn test_recover_duplicate_shares_number() {
 }
 
 #[test]
-#[should_panic(expected = "IncompatibleDataLengths")]
-fn test_recover_incompatible_data_lengths() {
+#[should_panic(expected = "InconsistentSecretLengths")]
+fn test_recover_inconsistent_secret_lengths() {
     let share1 = "2-1-CgnlCxRNtnkzENE".to_string();
     let share2 = "2-2-ChbG46L1zRszs0PPn63XnnupmZTcgYJ3".to_string();
+
+    let shares = vec![share1, share2];
+
+    recover_secret(&shares, false).unwrap();
+}
+
+#[test]
+#[should_panic(expected = "InconsistentThresholds")]
+fn test_inconsistent_thresholds() {
+    let share1 = "2-1-CgnlCxRNtnkzENE".to_string();
+    let share2 = "3-2-CgkAnUgP3lfwjyM".to_string();
 
     let shares = vec![share1, share2];
 
