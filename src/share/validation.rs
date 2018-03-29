@@ -40,6 +40,9 @@ pub(crate) fn validate_shares<S: IsShare>(shares: &Vec<S>) -> Result<(u8, usize)
             share.get_data().len(),
         );
 
+        // Public-facing `Share::share_from_string` performs these three tests, but in case another
+        // type which implements `IsShare` is implemented later that doesn't do that validation,
+        // we'll leave them.
         if id < 1 {
             bail!(ErrorKind::ShareParsingInvalidShareId(id))
         } else if threshold_ < 2 {
