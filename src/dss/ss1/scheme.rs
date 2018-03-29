@@ -247,7 +247,8 @@ impl SS1 {
         &self,
         shares: &[Share],
     ) -> Result<(Vec<u8>, AccessStructure, Option<MetaData>)> {
-        let (_, shares) = validate_shares(shares.to_vec())?;
+        let shares = shares.to_vec();
+        validate_shares(&shares)?;
 
         let underlying_shares = shares
             .iter()

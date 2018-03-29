@@ -89,9 +89,8 @@ impl ThSS {
         &self,
         shares: &[Share],
     ) -> Result<(Vec<u8>, AccessStructure, Option<MetaData>)> {
-        let (threshold, shares) = validate_shares(shares.to_vec())?;
-
-        let cypher_len = shares[0].data.len();
+        let shares = shares.to_vec();
+        let (threshold, cypher_len) = validate_shares(&shares)?;
 
         let polys = (0..cypher_len)
             .map(|i| {
