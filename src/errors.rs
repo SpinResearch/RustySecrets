@@ -3,6 +3,7 @@
 #![allow(unknown_lints, missing_docs)]
 
 use std::collections::HashSet;
+use std::fmt;
 
 #[cfg(feature = "dss")]
 use dss::ss1;
@@ -125,7 +126,7 @@ error_chain! {
 
         InconsistentSecretLengths(id: u8, slen_: usize, ids: Vec<u8>, slen: usize) {
             description("The shares are incompatible with each other because they do not all have the same secret length.")
-            display("The share identifier {} had secret length {}, while the secret length {} was found for share identifier(s): {:?}.", id, slen_, slen, ids)
+            display("The share identifier {} had secret length {}, while the secret length {} was found for share identifier(s): {}.", id, slen_, slen, no_more_than_five(ids))
         }
 
         InconsistentShares {
@@ -135,7 +136,7 @@ error_chain! {
 
         InconsistentThresholds(id: u8, k_: u8, ids: Vec<u8>, k: u8) {
             description("The shares are incompatible with each other because they do not all have the same threshold.")
-            display("The share identifier {} had k = {}, while k = {} was found for share identifier(s): {:?}.", id, k_, k, ids)
+            display("The share identifier {} had k = {}, while k = {} was found for share identifier(s): {}.", id, k_, k, no_more_than_five(ids))
         }
 
     }
@@ -143,5 +144,21 @@ error_chain! {
     foreign_links {
         Io(::std::io::Error);
         IntegerParsingError(::std::num::ParseIntError);
+    }
+}
+
+/// Takes a `Vec<T>` and formats it like the normal `fmt::Debug` implementation, unless it has more
+//than five elements, in which case the rest are replaced by ellipsis.
+fn no_more_than_five<T: fmt::Debug + fmt::Display>(vec: &Vec<T>) -> String {
+    let len = vec.len();
+    if len > 5 {
+        let mut string = String::from("[");
+        for item in vec.iter().take(5) {
+            string += &format!("{}, ", item);
+        }
+        string.push_str("...]");
+        string
+    } else {
+        format!("{:?}", vec)
     }
 }
