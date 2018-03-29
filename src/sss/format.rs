@@ -49,12 +49,12 @@ pub(crate) fn share_from_string(s: &str, is_signed: bool) -> Result<Share> {
         (k, i, p3)
     };
 
-    if k < 1 || i < 1 {
-        bail! {
-            ErrorKind::ShareParsingError(
-                format!("Found illegal share info: threshold = {}, identifier = {}.", k, i),
-            )
-        }
+    if i < 1 {
+        bail!(ErrorKind::ShareParsingInvalidShareId(i))
+    } else if k < 2 {
+        bail!(ErrorKind::ShareParsingInvalidShareThreshold(k, i))
+    } else if p3.is_empty() {
+        bail!(ErrorKind::ShareParsingErrorEmptyShare(i))
     }
 
     let raw_data = base64::decode_config(p3, BASE64_CONFIG).chain_err(|| {

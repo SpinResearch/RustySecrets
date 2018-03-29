@@ -12,6 +12,13 @@ fn test_recover_no_shares() {
 }
 
 #[test]
+#[should_panic(expected = "ShareParsingErrorEmptyShare")]
+fn test_share_parsing_error_empty_share() {
+    let shares = vec!["2-1-".to_string()];
+    recover_secret(&shares, false).unwrap();
+}
+
+#[test]
 #[should_panic(expected = "ShareParsingError")]
 fn test_recover_2_parts_share() {
     let share1 = "2-1-CgmKQZHMO+5n5pU".to_string();
@@ -34,13 +41,9 @@ fn test_recover_incorrect_share_num() {
 }
 
 #[test]
-#[should_panic(expected = "ShareParsingError")]
+#[should_panic(expected = "ShareParsingInvalidShareId")]
 fn test_recover_0_share_num() {
-    let share1 = "2-0-1YAYwmOHqZ69jA".to_string();
-    let share2 = "2-1-YJZQDGm22Y77Gw".to_string();
-
-    let shares = vec![share1, share2];
-
+    let shares = vec!["2-0-1YAYwmOHqZ69jA".to_string()];
     recover_secret(&shares, false).unwrap();
 }
 
