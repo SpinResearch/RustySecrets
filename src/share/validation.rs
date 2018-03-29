@@ -11,27 +11,27 @@ use share::{IsShare, IsSignedShare};
 
 /// TODO: Doc
 pub(crate) fn validate_signed_shares<S: IsSignedShare>(
-    shares: Vec<S>,
+    shares: &Vec<S>,
     verify_signatures: bool,
-) -> Result<(u8, Vec<S>)> {
-    let (threshold, shares) = validate_shares(shares)?;
+) -> Result<(u8, usize)> {
+    let result = validate_shares(shares)?;
 
     if verify_signatures {
         S::verify_signatures(&shares)?;
     }
 
-    Ok((threshold, shares))
+    Ok(result)
 }
 
 /// TODO: Doc
-pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)> {
+pub(crate) fn validate_shares<S: IsShare>(shares: &Vec<S>) -> Result<(u8, usize)> {
     if shares.is_empty() {
         bail!(ErrorKind::EmptyShares);
     }
 
     let shares_count = shares.len();
-    let mut result: Vec<S> = Vec::with_capacity(shares_count);
 
+    let mut ids = Vec::with_capacity(shares_count);
     let mut k_compatibility_sets = HashMap::new();
     let mut data_len_compatibility_sets = HashMap::new();
 
@@ -52,7 +52,7 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
         let k_set = k_compatibility_sets.get_mut(&threshold).unwrap();
         k_set.insert(id);
 
-        if result.iter().any(|s| s.get_id() == id) {
+        if ids.iter().any(|&x| x == id) {
             bail!(ErrorKind::DuplicateShareId(id));
         }
 
@@ -62,8 +62,7 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
         let data_len_set = data_len_compatibility_sets.get_mut(&data_len).unwrap();
         data_len_set.insert(id);
 
-
-        result.push(share);
+        ids.push(id);
     }
 
     // Validate threshold
@@ -107,7 +106,10 @@ pub(crate) fn validate_shares<S: IsShare>(shares: Vec<S>) -> Result<(u8, Vec<S>)
         }
     }
 
-    Ok((threshold, result))
+    // It is safe to unwrap because data_len_sets == 1
+    let slen = data_len_compatibility_sets.keys().last().unwrap().to_owned();
+
+    Ok((threshold, data_len))
 }
 
 pub(crate) fn validate_share_count(threshold: u8, shares_count: u8) -> Result<(u8, u8)> {

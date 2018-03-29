@@ -93,9 +93,8 @@ impl SSS {
     ///
     /// At least `k` distinct shares need to be provided to recover the share.
     pub fn recover_secret(shares: Vec<Share>, verify_signatures: bool) -> Result<Vec<u8>> {
-        let (threshold, shares) = validate_signed_shares(shares, verify_signatures)?;
+        let (threshold, slen) = validate_signed_shares(&shares, verify_signatures)?;
 
-        let slen = shares[0].data.len();
         let mut col_in = Vec::with_capacity(threshold as usize);
         let mut secret = Vec::with_capacity(slen);
         for byteindex in 0..slen {
