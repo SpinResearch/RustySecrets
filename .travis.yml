@@ -10,6 +10,9 @@ rust:
   - nightly
 
 matrix:
+  # Since this item is allowed to fail, don't wait for it's result to mark the
+  # build complete.
+  fast_finish: true
   allow_failures:
     - rust: nightly
   include:
