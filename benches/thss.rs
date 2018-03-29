@@ -10,11 +10,11 @@ mod shared;
 mod thss {
 
     use rusty_secrets::dss::thss;
-    use test::{black_box, Bencher};
     use shared;
+    use test::{black_box, Bencher};
 
     macro_rules! bench_generate {
-        ($name:ident, $k:expr, $n:expr, $secret:ident) => (
+        ($name:ident, $k:expr, $n:expr, $secret:ident) => {
             #[bench]
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
@@ -24,11 +24,11 @@ mod thss {
                     black_box(shares);
                 });
             }
-        )
+        };
     }
 
     macro_rules! bench_recover {
-        ($name:ident, $k:expr, $n:expr, $secret:ident) => (
+        ($name:ident, $k:expr, $n:expr, $secret:ident) => {
             #[bench]
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
@@ -40,7 +40,7 @@ mod thss {
                     black_box(result);
                 });
             }
-        )
+        };
     }
 
     bench_generate!(generate_1kb_3_5, 3, 5, secret_1kb);

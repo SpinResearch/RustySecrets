@@ -143,7 +143,9 @@ impl Neg for Gf256 {
 #[macro_export]
 #[doc(hidden)]
 macro_rules! gf256 {
-    ($e:expr) => (Gf256::from_byte($e))
+    ($e:expr) => {
+        Gf256::from_byte($e)
+    };
 }
 
 #[macro_export]
@@ -178,10 +180,10 @@ mod tests {
 
     mod vectors {
         use super::*;
+        use flate2::read::GzDecoder;
+        use itertools::Itertools;
         use std::fs::File;
         use std::io::{BufRead, BufReader};
-        use itertools::Itertools;
-        use flate2::read::GzDecoder;
 
         macro_rules! mk_test {
             ($id:ident, $op:expr, $val:expr) => {
@@ -196,7 +198,8 @@ mod tests {
                     });
 
                     let ref_path = format!("tests/fixtures/gf256/gf256_{}.txt.gz", stringify!($id));
-                    let reference = BufReader::new(GzDecoder::new(File::open(ref_path).unwrap()).unwrap());
+                    let reference =
+                        BufReader::new(GzDecoder::new(File::open(ref_path).unwrap()).unwrap());
 
                     for ((i, j, k), line) in results.zip(reference.lines()) {
                         let left = format!("{} {} {} = {}", i, $op, j, k);
@@ -204,7 +207,7 @@ mod tests {
                         assert_eq!(left, right);
                     }
                 }
-            }
+            };
         }
 
         mk_test!(add, "+", |i: Gf256, j: Gf256| i + j);

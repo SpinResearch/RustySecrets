@@ -1,5 +1,5 @@
-use std::collections::BTreeMap;
 use ring::digest;
+use std::collections::BTreeMap;
 
 /// A share's public metadata.
 #[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Default)]

@@ -1,8 +1,8 @@
-use std::error::Error;
 use std::collections::{HashMap, HashSet};
+use std::error::Error;
 
-use merkle_sigs::{MerklePublicKey, Proof};
 use merkle_sigs::verify_data_vec_signature;
+use merkle_sigs::{MerklePublicKey, Proof};
 
 use errors::*;
 use share::{IsShare, IsSignedShare};

@@ -4,15 +4,15 @@ use std::fmt;
 
 use ring::rand::{SecureRandom, SystemRandom};
 
+use dss::random::{random_bytes, random_bytes_count, MAX_MESSAGE_SIZE};
 use errors::*;
 use gf256::Gf256;
-use dss::random::{random_bytes, random_bytes_count, MAX_MESSAGE_SIZE};
-use share::validation::{validate_share_count, validate_shares};
 use lagrange;
+use share::validation::{validate_share_count, validate_shares};
 
 use super::AccessStructure;
-use super::share::*;
 use super::encode::encode_secret;
+use super::share::*;
 
 /// We bound the message size at about 16MB to avoid overflow in `random_bytes_count`.
 /// Moreover, given the current performances, it is almost unpractical to run
