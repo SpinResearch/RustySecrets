@@ -34,11 +34,9 @@ pub(crate) fn validate_shares<S: IsShare>(shares: &Vec<S>) -> Result<(u8, usize)
     let mut slen = 0;
 
     for share in shares {
-        let (id, threshold_, slen_) = (
-            share.get_id(),
-            share.get_threshold(),
-            share.get_data().len(),
-        );
+        let id = share.get_id();
+        let threshold_ = share.get_threshold();
+        let slen_ = share.get_data().len();
 
         // Public-facing `Share::share_from_string` performs these three tests, but in case another
         // type which implements `IsShare` is implemented later that doesn't do that validation,
@@ -75,6 +73,8 @@ pub(crate) fn validate_shares<S: IsShare>(shares: &Vec<S>) -> Result<(u8, usize)
         ids.push(id);
     }
 
+    // Only once the threshold is confirmed as consistent should we determine if shares are
+    // missing.
     if shares_count < threshold as usize {
         bail!(ErrorKind::MissingShares(shares_count, threshold))
     }
