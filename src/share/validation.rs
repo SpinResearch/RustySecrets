@@ -33,16 +33,20 @@ pub(crate) fn validate_shares<S: IsShare>(shares: &Vec<S>) -> Result<(u8, usize)
 
     let mut ids = Vec::with_capacity(shares_count);
     let mut k_compatibility_sets = HashMap::new();
-    let mut data_len_compatibility_sets = HashMap::new();
+    let mut slen_compatibility_sets = HashMap::new();
 
     for share in shares {
-        let (id, threshold, data_len) = (share.get_id(), share.get_threshold(), share.get_data().len());
+        let (id, threshold, slen) = (
+            share.get_id(),
+            share.get_threshold(),
+            share.get_data().len(),
+        );
 
         if id < 1 {
             bail!(ErrorKind::ShareParsingInvalidShareId(id))
         } else if threshold < 2 {
             bail!(ErrorKind::ShareParsingInvalidShareThreshold(threshold, id))
-        } else if data_len < 1 {
+        } else if slen < 1 {
             bail!(ErrorKind::ShareParsingErrorEmptyShare(id))
         }
 
@@ -56,11 +60,11 @@ pub(crate) fn validate_shares<S: IsShare>(shares: &Vec<S>) -> Result<(u8, usize)
             bail!(ErrorKind::DuplicateShareId(id));
         }
 
-        data_len_compatibility_sets
-            .entry(data_len)
+        slen_compatibility_sets
+            .entry(slen)
             .or_insert_with(HashSet::new);
-        let data_len_set = data_len_compatibility_sets.get_mut(&data_len).unwrap();
-        data_len_set.insert(id);
+        let slen_set = slen_compatibility_sets.get_mut(&slen).unwrap();
+        slen_set.insert(id);
 
         ids.push(id);
     }
@@ -90,14 +94,14 @@ pub(crate) fn validate_shares<S: IsShare>(shares: &Vec<S>) -> Result<(u8, usize)
     }
 
     // Validate share length consistency
-    let data_len_sets = data_len_compatibility_sets.keys().count();
+    let slen_sets = slen_compatibility_sets.keys().count();
 
-    match data_len_sets {
+    match slen_sets {
         1 => {} // All shares have the same `data` field len
         _ => {
             bail! {
                 ErrorKind::IncompatibleDataLengths(
-                    data_len_compatibility_sets
+                    slen_compatibility_sets
                         .values()
                         .map(|x| x.to_owned())
                         .collect(),
@@ -106,10 +110,10 @@ pub(crate) fn validate_shares<S: IsShare>(shares: &Vec<S>) -> Result<(u8, usize)
         }
     }
 
-    // It is safe to unwrap because data_len_sets == 1
-    let slen = data_len_compatibility_sets.keys().last().unwrap().to_owned();
+    // It is safe to unwrap because slen_sets == 1
+    let slen = slen_compatibility_sets.keys().last().unwrap().to_owned();
 
-    Ok((threshold, data_len))
+    Ok((threshold, slen))
 }
 
 pub(crate) fn validate_share_count(threshold: u8, shares_count: u8) -> Result<(u8, u8)> {
