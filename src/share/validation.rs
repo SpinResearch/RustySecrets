@@ -7,7 +7,7 @@ use share::{IsShare, IsSignedShare};
 // 2) Validate group consistency
 // 3) Validate other properties, in no specific order
 
-/// TODO: Doc
+/// TODO
 pub(crate) fn validate_signed_shares<S: IsSignedShare>(
     shares: &Vec<S>,
     verify_signatures: bool,
@@ -16,22 +16,78 @@ pub(crate) fn validate_signed_shares<S: IsSignedShare>(
 
     if verify_signatures {
         S::verify_signatures(&shares)?;
-    }
+    };
 
     Ok(result)
 }
 
-/// TODO: Doc
+pub(crate) fn begin_signed_share_validation<S: IsSignedShare>(
+    shares: &Vec<S>,
+    verify_signatures: bool,
+) -> Result<(u8, usize, Vec<u8>, Option<Vec<u8>>)> {
+    let (threshold, slen, ids) = _validate_shares(shares, None, None, None)?;
+
+    let root_hash = if verify_signatures {
+        Some(S::verify_signatures(&shares)?)
+    } else {
+        None
+    };
+
+    Ok((threshold, slen, ids, root_hash))
+}
+
+pub(crate) fn continue_signed_share_validation<S: IsSignedShare>(
+    shares: &Vec<S>,
+    already_verified_ids: &Vec<u8>,
+    threshold: u8,
+    slen: usize,
+    root_hash: Option<&Vec<u8>>,
+) -> Result<(Vec<u8>)> {
+    let (_, _, new_ids) = _validate_shares(
+        shares,
+        Some(threshold),
+        Some(slen),
+        Some(already_verified_ids),
+    )?;
+
+    if root_hash.is_some() {
+        S::continue_verify_signatures(shares, root_hash.unwrap(), already_verified_ids)?;
+    }
+
+    Ok(new_ids)
+}
+
+/// Validates a full set of shares.
 pub(crate) fn validate_shares<S: IsShare>(shares: &Vec<S>) -> Result<(u8, usize)> {
+    let (threshold, slen, _) = _validate_shares(shares, None, None, None)?;
+    let shares_count = shares.len();
+    if shares_count < threshold as usize {
+        bail!(ErrorKind::MissingShares(shares_count, threshold))
+    }
+    Ok((threshold, slen))
+}
+
+/// TODO: Doc
+fn _validate_shares<S: IsShare>(
+    shares: &Vec<S>,
+    threshold: Option<u8>,
+    slen: Option<usize>,
+    already_verified_ids: Option<&Vec<u8>>,
+) -> Result<(u8, usize, Vec<u8>)> {
     if shares.is_empty() {
         bail!(ErrorKind::EmptyShares);
     }
 
     let shares_count = shares.len();
-
-    let mut ids = Vec::with_capacity(shares_count);
-    let mut threshold = 0;
-    let mut slen = 0;
+    let mut ids = if already_verified_ids.is_some() {
+        let mut ids = already_verified_ids.unwrap().clone();
+        ids.reserve_exact(shares_count);
+        ids
+    } else {
+        Vec::with_capacity(shares_count)
+    };
+    let mut threshold = threshold.unwrap_or(0);
+    let mut slen = slen.unwrap_or(0);
 
     for share in shares {
         let id = share.get_id();
@@ -73,13 +129,7 @@ pub(crate) fn validate_shares<S: IsShare>(shares: &Vec<S>) -> Result<(u8, usize)
         ids.push(id);
     }
 
-    // Only once the threshold is confirmed as consistent should we determine if shares are
-    // missing.
-    if shares_count < threshold as usize {
-        bail!(ErrorKind::MissingShares(shares_count, threshold))
-    }
-
-    Ok((threshold, slen))
+    Ok((threshold, slen, ids))
 }
 
 pub(crate) fn validate_share_count(threshold: u8, shares_count: u8) -> Result<(u8, u8)> {

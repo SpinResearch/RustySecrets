@@ -1,26 +1,14 @@
 //! SSS provides Shamir's secret sharing with raw data.
 
-<<<<<<< HEAD
-=======
-use std::cmp::min;
-
-use rand::{OsRng, Rng};
->>>>>>> Add sample sss module partial secret recovery fns
 use merkle_sigs::sign_data_vec;
 use rand::{OsRng, Rng};
 
 use errors::*;
-<<<<<<< HEAD
-use lagrange::interpolate_at;
-use share::validation::{validate_share_count, validate_signed_shares};
-use sss::format::format_share_for_signing;
-use sss::{Share, HASH_ALGO};
-=======
-use sss::{Share, HASH_ALGO};
-use sss::format::format_share_for_signing;
-use share::validation::{validate_share_count, validate_signed_shares};
 use lagrange::{interpolate_at, PartialSecret};
->>>>>>> Add sample sss module partial secret recovery fns
+use share::validation::{begin_signed_share_validation, continue_signed_share_validation,
+                        validate_share_count, validate_signed_shares};
+use sss::format::format_share_for_signing;
+use sss::{Share, HASH_ALGO};
 
 use super::encode::encode_secret_byte;
 
@@ -121,102 +109,110 @@ impl SSS {
 
         Ok(secret)
     }
+}
 
+/// `IncrementalRecovery` provides a way to incrementally recover a secret in cases where not all
+/// shares are available at once.
+pub(crate) struct IncrementalRecovery {
+    /// The state of each partially-recovered secret byte.
+    partial_secrets: Vec<PartialSecret>,
+    /// The ids of the share (varies between 1 and n where n is the total number of generated
+    /// shares).
+    ids: Vec<u8>,
+    /// The number of shares necessary to recover the secret.
+    threshold: u8,
+    /// The length of the secret.
+    slen: usize,
+    /// If the shares are signed, the root hash of the Merkle tree all shares are signed with.
+    root_hash: Option<Vec<u8>>,
+}
+
+impl IncrementalRecovery {
     /// Begins a partial secret recovery.
-    pub fn begin_partial_secret_recovery(
-        shares: Vec<Share>,
-        verify_signatures: bool,
-    ) -> Result<Vec<PartialSecret>> {
-        if shares.is_empty() {
-            bail!(ErrorKind::EmptyShares);
-        }
+    pub fn new(shares: Vec<Share>, verify_signatures: bool) -> Result<Self> {
+        let (threshold, slen, ids, root_hash) =
+            begin_signed_share_validation(&shares, verify_signatures)?;
 
-        let (threshold, shares) = validate_signed_shares(shares, verify_signatures)?;
+        let mut incremental_recovery = Self {
+            partial_secrets: Vec::with_capacity(slen),
+            ids,
+            threshold,
+            slen,
+            root_hash,
+        };
 
-        let slen = shares[0].data.len();
-        let mut col_in = Vec::with_capacity(min(shares.len(), threshold as usize));
-        let mut partial_secret = Vec::with_capacity(slen);
+        let mut col_in = Vec::with_capacity(threshold as usize);
         for byteindex in 0..slen {
             col_in.clear();
             for s in shares.iter().take(threshold as usize) {
                 col_in.push((s.id, s.data[byteindex]));
             }
-            let partial_secret_byte = PartialSecret::new(threshold, &*col_in)?;
-            partial_secret.push(partial_secret_byte);
+            let partial_secret = PartialSecret::new(threshold, &col_in);
+            incremental_recovery.partial_secrets.push(partial_secret);
         }
 
-        Ok(partial_secret)
+        Ok(incremental_recovery)
     }
 
     /// Contines a partial secret recovery.
-    pub fn update_partial_secret(
-        partial_secret: &mut Vec<PartialSecret>,
-        shares: Vec<Share>,
-        verify_signatures: bool,
-    ) -> Result<()> {
-        if shares.is_empty() {
-            bail!(ErrorKind::EmptyShares);
-        } else if partial_secret.is_empty() {
-            bail!(ErrorKind::EmptyShares);
-        }
-        let threshold = partial_secret[0].threshold;
-        let shares_evaluated = partial_secret[0].shares_evaluated();
-        let shares_needed = partial_secret[0].shares_needed();
-        if shares_needed == 0 {
-            bail!(ErrorKind::InvalidShareCountMax(
-                (shares.len() + shares_evaluated) as u8,
-                threshold
-            ));
-        } else if shares.is_empty() {
-            bail!(ErrorKind::EmptyShares);
-        } else if shares_evaluated + shares.len() > MAX_SHARES as usize {
-            bail!(ErrorKind::InvalidShareCountMax(
-                (shares_evaluated + shares.len()) as u8,
-                MAX_SHARES
-            ));
+    pub fn update(&mut self, shares: Vec<Share>) -> Result<()> {
+        if self.root_hash.is_some() {
+            let root_hash = self.root_hash.clone().unwrap();
+            self.ids = continue_signed_share_validation(
+                &shares,
+                &self.ids,
+                self.threshold,
+                self.slen,
+                Some(&root_hash),
+            )?;
+        } else {
+            self.ids = continue_signed_share_validation(
+                &shares,
+                &self.ids,
+                self.threshold,
+                self.slen,
+                None,
+            )?;
         }
 
-        let (threshold2, shares) = validate_signed_shares(shares, verify_signatures)?;
-        if threshold != threshold2 {
-            bail!(ErrorKind::InconsistentShares)
-        }
-
-        let slen = shares[0].data.len();
-        let mut col_in = Vec::with_capacity(shares_needed);
-        for byteindex in 0..slen {
+        let mut col_in = Vec::with_capacity(self.threshold as usize);
+        for byteindex in 0..self.slen {
             col_in.clear();
-            for s in shares.iter().take(shares_needed) {
+            for s in shares.iter().take(self.shares_needed() as usize) {
                 col_in.push((s.id, s.data[byteindex]));
             }
-            partial_secret[byteindex].update(&*col_in)?;
+            self.partial_secrets[byteindex].update(&*col_in);
         }
 
         Ok(())
     }
 
     /// Used to determine how many more shares are needed to finish computing a partial secret.
-    pub fn partial_secret_shares_needed(partial_secret: &Vec<PartialSecret>) -> Result<u8> {
-        if partial_secret.is_empty() {
-            bail!(ErrorKind::EmptyShares);
-        }
-        Ok(partial_secret[0].shares_needed() as u8)
+    pub fn shares_interpolated(&self) -> u8 {
+        // Safe indexing because `PartialSecret::new` ensures `self.partial_secrets` will be of
+        // length at least 1.
+        self.partial_secrets[0].shares_interpolated()
+    }
+
+    /// Used to determine how many more shares are needed to finish computing a partial secret.
+    pub fn shares_needed(&self) -> u8 {
+        // Safe indexing because `PartialSecret::new` ensures `self.partial_secrets` will be of
+        // length at least 1.
+        self.partial_secrets[0].shares_needed()
     }
 
     /// Used to obtain the resulting secret when `threshold` shares have been evaluated.
-    pub fn get_final_secret(partial_secret: &Vec<PartialSecret>) -> Result<Vec<u8>> {
-        if partial_secret.is_empty() {
-            bail!(ErrorKind::EmptyShares);
-        }
-        let threshold = partial_secret[0].threshold;
-        let shares_evaluated = partial_secret[0].shares_evaluated();
-        let shares_needed = partial_secret[0].shares_needed();
-        if shares_needed != 0 {
-            bail!(ErrorKind::MissingShares(
-                shares_evaluated,
-                threshold as usize
-            ));
+    pub fn get_secret(&self) -> Result<Vec<u8>> {
+        if self.shares_needed() != 0 {
+            bail!(ErrorKind::PartialInterpolationNotComplete(
+                self.threshold,
+                self.shares_interpolated()
+            ))
         }
         // Safe to unwrap because we already confirmed no more shares are needed.
-        Ok(partial_secret.iter().map(|ps| ps.secret.unwrap()).collect())
+        Ok(self.partial_secrets
+            .iter()
+            .map(|ps| ps.get_secret().unwrap())
+            .collect())
     }
 }

@@ -1,4 +1,3 @@
-use std::cmp::min;
 use std::u8;
 
 use errors::*;
@@ -9,11 +8,8 @@ use poly::Poly;
 /// using barycentric Lagrange interpolation based on the given `points` in the G(2^8) Galois
 /// field.
 pub(crate) fn interpolate_at(threshold: u8, points: &[(u8, u8)]) -> Result<u8> {
-    if points.len() < threshold as usize {
-        bail!(ErrorKind::MissingShares(points.len(), threshold as usize));
-    }
-    let partial_comp = PartialSecret::new(threshold, points)?;
-    Ok(partial_comp.secret.unwrap())
+    let partial_comp = PartialSecret::new(threshold, points);
+    Ok(partial_comp.get_secret().unwrap())
 }
 
 /// Stores the intermediate state of interpolation and evaluation at `Gf256::zero()` of a
@@ -22,11 +18,11 @@ pub(crate) fn interpolate_at(threshold: u8, points: &[(u8, u8)]) -> Result<u8> {
 /// the `secret` field will be updated from `None` to `Some(u8)`.
 pub struct PartialSecret {
     /// The secret byte. `None` until computation is complete.
-    pub secret: Option<u8>,
+    secret: Option<u8>,
     /// The number of shares necessary to recover the secret, a.k.a. the threshold.
-    pub threshold: u8,
+    threshold: u8,
     /// The ids of the share (varies between 1 and n where n is the total number of generated
-    /// shares)
+    /// shares).
     ids: Vec<Gf256>,
     /// The differences of share values divided by their ids.
     diffs: Vec<Gf256>,
@@ -34,54 +30,53 @@ pub struct PartialSecret {
     weights: Vec<Gf256>,
 }
 
+// `PartialSecret` is not a public-facing struct. We expect the functions that interact with it to
+// do validation of the `points` and other arguments it operates on. As a defensive programming
+// practice, we have included `assert!` statements, which should also clarify the validation
+// expectations of each method.
 impl PartialSecret {
     /// Create a new partial computation given a `threshold` (to know when the computation is
     /// finished), and an initial set of `points`.
     #[inline]
-    pub fn new(threshold: u8, points: &[(u8, u8)]) -> Result<Self> {
-        validate_threshold(threshold)?;
-        validate_shares_is_nonempty(points)?;
+    pub fn new(threshold: u8, points: &[(u8, u8)]) -> Self {
+        assert!(threshold >= 2, "Given k less than 2!");
+        assert!(!points.is_empty(), "Given an empty set of points!");
+        assert!(
+            points.len() <= threshold as usize,
+            "Given more than threshold shares!"
+        );
 
-        let capacity = min(threshold as usize, points.len());
         let mut partial_comp = Self {
             secret: None,
             threshold,
-            ids: Vec::with_capacity(capacity),
-            diffs: Vec::with_capacity(capacity),
+            ids: Vec::with_capacity(threshold as usize),
+            diffs: Vec::with_capacity(threshold as usize),
             weights: vec![],
         };
-        partial_comp.validate_total_shares_less_than_max(points)?;
 
-        partial_comp.update_diffs(points)?;
+        partial_comp.update_diffs(points);
         partial_comp.update_barycentric_weights();
-        Ok(partial_comp)
+        partial_comp
     }
 
     /// Update the partial computation given an additional set of `points`.
     #[inline]
-    pub fn update(&mut self, points: &[(u8, u8)]) -> Result<()> {
-        self.validate_shares_are_needed()?;
-        validate_shares_is_nonempty(points)?;
-        self.validate_total_shares_less_than_max(points)?;
+    pub fn update(&mut self, points: &[(u8, u8)]) {
+        assert!(!points.is_empty(), "Given an empty set of points!");
+        assert!(
+            self.shares_interpolated() as usize + points.len() < self.threshold as usize,
+            "Given more than threshold shares!"
+        );
 
-        self.update_diffs(points)?;
+        self.update_diffs(points);
         self.update_barycentric_weights();
-        Ok(())
     }
 
-    /// Parse just the `points` we need to compute the secret into `x` values and `diffs`, making
-    // sure they are valid and unique.
-    fn update_diffs(&mut self, points: &[(u8, u8)]) -> Result<()> {
-        // If provided with more than than `threshold - self.ids.len()` points, only enough to
-        // satisfy the threshold are considered.
-        for pi in points.iter().take(self.threshold as usize - self.ids.len()) {
-            if pi.0 == 0 {
-                bail!(ErrorKind::ShareParsingInvalidShareId(0));
-            }
+    /// Parse just the `points` we need to compute the secret into `x` values and `diffs`.
+    fn update_diffs(&mut self, points: &[(u8, u8)]) {
+        for pi in points.iter() {
             let xi = Gf256::from_byte(pi.0);
-            if self.ids.iter().find(|&&xj| xi == xj).is_some() {
-                bail!(ErrorKind::DuplicateShareId(xi.poly));
-            }
+            assert!(xi.poly != 0, "Given invalid share identifier 0!");
             let yi = Gf256::from_byte(pi.1);
             self.ids.push(xi);
             // Storing these `diffs` instead of the `y` values allows us to do a little more
@@ -89,8 +84,6 @@ impl PartialSecret {
             // form of the barycentric interpolation formula.
             self.diffs.push(yi / xi);
         }
-
-        Ok(())
     }
 
     /// Update the barycentric weights `w` corresponding to a set of `x` values.
@@ -118,7 +111,9 @@ impl PartialSecret {
         // Newton" by Wilhelm Werner.
         for i in x..self.ids.len() {
             for j in 0..i {
-                self.weights[j] /= self.ids[j] - self.ids[i];
+                let diff = self.ids[j] - self.ids[i];
+                assert!(diff.poly != 0, "Duplicate share identifiers encountered!");
+                self.weights[j] /= diff;
                 self.weights[i] -= self.weights[j];
             }
         }
@@ -145,49 +140,50 @@ impl PartialSecret {
         self.secret = Some((num / denom).to_byte());
     }
 
-    /// `bail!`s if `threshold` shares have already been evaluated.
+    /// If the partial computation is complete, return the secret, else an error.
     #[inline]
-    fn validate_shares_are_needed(&self) -> Result<()> {
-        if self.shares_needed() == 0 {
-            bail!(ErrorKind::NoMoreSharesNeeded(self.threshold));
+    pub fn get_secret(&self) -> Result<u8> {
+        if self.secret.is_none() {
+            bail!(ErrorKind::PartialInterpolationNotComplete(
+                self.threshold,
+                self.shares_interpolated()
+            ))
         }
-        Ok(())
+        // Safe to unwrap because we just confirmed it's not `None`.
+        Ok(self.secret.unwrap())
     }
 
-    /// `bail!`s if shares already evaluated plus new points given is greater than `MAX_SHARES`.
+    /// Returns the threshold for the partial computation.
     #[inline]
-    fn validate_total_shares_less_than_max(&self, points: &[(u8, u8)]) -> Result<()> {
-        let shares_total = points.len() + self.shares_evaluated();
-        if shares_total > MAX_SHARES as usize {
-            bail!(ErrorKind::InvalidShareCountMax(
-                shares_total as u8,
-                MAX_SHARES
-            ));
-        }
-        Ok(())
+    fn get_threshold(&self) -> u8 {
+        self.threshold
     }
 
     /// Returns the number of shares needed to complete the computation.
     #[inline]
-    pub fn shares_needed(&self) -> usize {
-        self.threshold as usize - self.ids.len()
+    pub fn shares_needed(&self) -> u8 {
+        // Casting is safe because `assert!` statements in `new` and `update` ensure
+        // `self.ids.len()` will be less than 255.
+        self.threshold - self.ids.len() as u8
     }
 
-    /// Returns the number of shares that have been evaluated so far.
+    /// Returns the number of shares that have been interpolated so far.
     #[inline]
-    pub fn shares_evaluated(&self) -> usize {
-        self.ids.len()
+    pub fn shares_interpolated(&self) -> u8 {
+        // Casting is safe because `assert!` statements in `new` and `update` ensure
+        // `self.ids.len()` will be less than 255.
+        self.ids.len() as u8
     }
 
     /// Evaluate the interpolated polynomial at the point `Gf256::from_byte(x)` in the G(2^8)
     /// Galois field.
     #[inline]
-    pub fn evaluate_at_x(&self, x: u8) -> Result<u8> {
+    fn evaluate_at_x(&self, x: u8) -> Result<u8> {
         if self.shares_needed() != 0 {
-            bail!(ErrorKind::MissingShares(
-                self.ids.len(),
-                self.threshold as usize
-            ));
+            bail!(ErrorKind::PartialInterpolationNotComplete(
+                self.threshold,
+                self.shares_interpolated()
+            ))
         }
 
         let x = Gf256::from_byte(x);
@@ -208,26 +204,8 @@ impl PartialSecret {
     }
 }
 
-/// `bail!`s if `threshold` is less than 2.
-#[inline]
-pub fn validate_threshold(threshold: u8) -> Result<()> {
-    if threshold < 2 {
-        bail!(ErrorKind::ThresholdTooSmall(threshold));
-    }
-    Ok(())
-}
-
-/// `bail!`s if `points` is empty.
-#[inline]
-pub fn validate_shares_is_nonempty(points: &[(u8, u8)]) -> Result<()> {
-    if points.len() == 0 {
-        bail!(ErrorKind::EmptyShares);
-    }
-    Ok(())
-}
-
-/// Computeds the coefficient of the Lagrange polynomial interpolated
-/// from the given `points`, in the G(2^8) Galois field.
+/// Computes the coefficient of the Lagrange polynomial interpolated from the given `points`, in
+//the G(2^8) Galois field.
 #[inline]
 pub(crate) fn interpolate(points: &[(Gf256, Gf256)]) -> Poly {
     let len = points.len();

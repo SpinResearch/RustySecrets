@@ -1,4 +1,3 @@
-use std::collections::{HashMap, HashSet};
 use std::error::Error;
 
 use merkle_sigs::verify_data_vec_signature;
@@ -87,50 +86,19 @@ impl IsShare for Share {
 impl IsSignedShare for Share {
     type Signature = Option<SignaturePair>;
 
-    fn verify_signatures(shares: &[Self]) -> Result<()> {
-        let mut rh_compatibility_sets = HashMap::new();
+    fn verify_signatures(shares: &[Self]) -> Result<Vec<u8>> {
+        Self::_verify_signatures(shares, None, None)
+    }
 
-        for share in shares {
-            if !share.is_signed() {
-                bail!(ErrorKind::MissingSignature(share.get_id()));
-            }
-
-            let sig_pair = share.signature_pair.as_ref().unwrap();
-            let signature = &sig_pair.signature;
-            let proof = &sig_pair.proof;
-            let root_hash = &proof.root_hash;
-
-            verify_data_vec_signature(
-                format_share_for_signing(share.threshold, share.id, share.data.as_slice()),
-                &(signature.to_vec(), proof.clone()),
-                root_hash,
-            ).map_err(|e| ErrorKind::InvalidSignature(share.id, String::from(e.description())))?;
-
-            rh_compatibility_sets
-                .entry(root_hash)
-                .or_insert_with(HashSet::new);
-
-            let rh_set = rh_compatibility_sets.get_mut(&root_hash).unwrap();
-            rh_set.insert(share.id);
-        }
-
-        let rh_sets = rh_compatibility_sets.keys().count();
-
-        match rh_sets {
-            0 => bail!(ErrorKind::EmptyShares),
-            1 => {} // All shares have the same roothash.
-            _ => {
-                bail! {
-                    ErrorKind::IncompatibleSets(
-                        rh_compatibility_sets
-                            .values()
-                            .map(|x| x.to_owned())
-                            .collect(),
-                    )
-                }
-            }
-        }
-
+    // NOTE: the function of `already_verified_ids` is to improve error messages. If you're
+    // specifying a `root_hash` argument, it's recommended to include a list of ids already
+    // verified against that root hash (if any).
+    fn continue_verify_signatures(
+        shares: &[Self],
+        root_hash: &Vec<u8>,
+        already_verified_ids: &Vec<u8>,
+    ) -> Result<()> {
+        Self::_verify_signatures(shares, Some(root_hash), Some(already_verified_ids))?;
         Ok(())
     }
 
@@ -140,6 +108,56 @@ impl IsSignedShare for Share {
 
     fn get_signature(&self) -> &Self::Signature {
         &self.signature_pair
+    }
+}
+
+impl Share {
+    fn _verify_signatures(
+        shares: &[Self],
+        root_hash: Option<&Vec<u8>>,
+        already_verified_ids: Option<&Vec<u8>>,
+    ) -> Result<Vec<u8>> {
+        let shares_count = shares.len();
+        let mut root_hash = if root_hash.is_some() {
+            root_hash.unwrap().clone()
+        } else {
+            vec![]
+        };
+        let mut ids = if already_verified_ids.is_some() {
+            let mut ids_ = already_verified_ids.unwrap().clone();
+            ids_.reserve_exact(shares_count);
+            ids_
+        } else {
+            Vec::with_capacity(shares_count)
+        };
+
+        for share in shares {
+            let id = share.get_id();
+            if !share.is_signed() {
+                bail!(ErrorKind::MissingSignature(id));
+            }
+
+            let sig_pair = share.signature_pair.as_ref().unwrap();
+            let signature = &sig_pair.signature;
+            let proof = &sig_pair.proof;
+            let root_hash_ = &proof.root_hash;
+
+            verify_data_vec_signature(
+                format_share_for_signing(share.threshold, share.id, share.data.as_slice()),
+                &(signature.to_vec(), proof.clone()),
+                &root_hash_,
+            ).map_err(|e| ErrorKind::InvalidSignature(share.id, String::from(e.description())))?;
+
+            if root_hash.is_empty() {
+                root_hash = root_hash_.clone();
+            } else if *root_hash_ != root_hash {
+                bail!(ErrorKind::InconsistentSignatures(id, ids))
+            }
+
+            ids.push(id);
+        }
+
+        Ok(root_hash)
     }
 }
 

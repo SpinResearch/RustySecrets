@@ -135,6 +135,11 @@ error_chain! {
             display("The share identifier {} had secret length {}, while the secret length {} was found for share identifier(s): {}.", id, slen_, slen, no_more_than_five(ids))
         }
 
+        InconsistentSignatures(id: u8, ids: Vec<u8>) {
+            description("The shares are incompatible with each other because they have valid signatures from different keys.")
+            display("The share identifier {} was signed by a different key than share identifier(s): {}.", id, no_more_than_five(ids))
+        }
+
         InconsistentShares {
             description("The shares are inconsistent")
             display("The shares are inconsistent")
@@ -145,6 +150,10 @@ error_chain! {
             display("The share identifier {} had k = {}, while k = {} was found for share identifier(s): {}.", id, k_, k, no_more_than_five(ids))
         }
 
+        PartialInterpolationNotComplete(k: u8, shares_interpolated: u8) {
+            description("The partial interpolation result is not complete because the number of points interpolated has not reached the threshold.")
+            display("In order to evaluate the secret polynomial at any point k = {} shares are needed, whereas only {} have been provided.", k, shares_interpolated)
+        }
     }
 
     foreign_links {
