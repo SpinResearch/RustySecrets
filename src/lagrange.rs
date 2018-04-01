@@ -4,14 +4,6 @@ use errors::*;
 use gf256::Gf256;
 use poly::Poly;
 
-/// Evaluates an interpolated polynomial at `Gf256::zero()` where the polynomial is determined
-/// using barycentric Lagrange interpolation based on the given `points` in the G(2^8) Galois
-/// field.
-pub(crate) fn interpolate_at(threshold: u8, points: &[(u8, u8)]) -> Result<u8> {
-    let partial_comp = PartialSecret::new(threshold, points);
-    Ok(partial_comp.get_secret().unwrap())
-}
-
 /// Stores the intermediate state of interpolation and evaluation at `Gf256::zero()` of a
 /// polynomial. A secret may be computed incrementally using barycentric Lagrange interpolation.
 /// The state is updated with new points until threshold points have been evaluated, at which point
@@ -290,11 +282,12 @@ mod tests {
                 .collect::<Vec<_>>();
 
             let poly = interpolate(&elems);
+            let result_poly = poly.evaluate_at(Gf256::zero()).to_byte();
+            // Safe to cast because if `ys.len() > 255` it is discarded.
+            let interpolation = PartialSecret::new(points.len() as u8, &points);
+            let result_interpolate = interpolation.get_secret().unwrap();
 
-            let equals = poly.evaluate_at(Gf256::zero()).to_byte()
-                == interpolate_at(points.len() as u8, points.as_slice()).unwrap();
-
-            TestResult::from_bool(equals)
+            TestResult::from_bool(result_poly == result_interpolate)
         }
 
     }

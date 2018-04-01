@@ -4,7 +4,7 @@ use merkle_sigs::sign_data_vec;
 use rand::{OsRng, Rng};
 
 use errors::*;
-use lagrange::{interpolate_at, PartialSecret};
+use lagrange::PartialSecret;
 use share::validation::{begin_signed_share_validation, continue_signed_share_validation,
                         validate_share_count, validate_signed_shares};
 use sss::format::format_share_for_signing;
@@ -103,8 +103,10 @@ impl SSS {
             for s in shares.iter().take(threshold as usize) {
                 col_in.push((s.id, s.data[byteindex]));
             }
-            let secret_byte = interpolate_at(threshold, &*col_in)?;
-            secret.push(secret_byte);
+            let secret_byte_computation = PartialSecret::new(threshold, &col_in);
+            // Safe to unwrap because we have already validated we are providing `PartialSecret`
+            // with `threshold` secret bytes in `col_in`.
+            secret.push(secret_byte_computation.get_secret().unwrap());
         }
 
         Ok(secret)
@@ -181,7 +183,7 @@ impl IncrementalRecovery {
             for s in shares.iter().take(self.shares_needed() as usize) {
                 col_in.push((s.id, s.data[byteindex]));
             }
-            self.partial_secrets[byteindex].update(&*col_in);
+            self.partial_secrets[byteindex].update(&col_in);
         }
 
         Ok(())
