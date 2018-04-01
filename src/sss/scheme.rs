@@ -129,9 +129,9 @@ pub(crate) struct IncrementalRecovery {
 
 impl IncrementalRecovery {
     /// Begins a partial secret recovery.
-    pub fn new(shares: Vec<Share>, verify_signatures: bool) -> Result<Self> {
+    pub fn new(shares: &[Share], verify_signatures: bool) -> Result<Self> {
         let (threshold, slen, ids, root_hash) =
-            begin_signed_share_validation(&shares, verify_signatures)?;
+            begin_signed_share_validation(shares, verify_signatures)?;
 
         let mut incremental_recovery = Self {
             partial_secrets: Vec::with_capacity(slen),
@@ -155,11 +155,11 @@ impl IncrementalRecovery {
     }
 
     /// Contines a partial secret recovery.
-    pub fn update(&mut self, shares: Vec<Share>) -> Result<()> {
+    pub fn update(&mut self, shares: &[Share]) -> Result<()> {
         if self.root_hash.is_some() {
             let root_hash = self.root_hash.clone().unwrap();
             self.ids = continue_signed_share_validation(
-                &shares,
+                shares,
                 &self.ids,
                 self.threshold,
                 self.slen,
@@ -167,7 +167,7 @@ impl IncrementalRecovery {
             )?;
         } else {
             self.ids = continue_signed_share_validation(
-                &shares,
+                shares,
                 &self.ids,
                 self.threshold,
                 self.slen,

@@ -66,6 +66,7 @@ impl Gf256 {
     }
 }
 
+#[allow(suspicious_arithmetic_impl)]
 impl Add<Gf256> for Gf256 {
     type Output = Gf256;
     #[inline]
@@ -81,6 +82,7 @@ impl AddAssign<Gf256> for Gf256 {
     }
 }
 
+#[allow(suspicious_arithmetic_impl)]
 impl Sub<Gf256> for Gf256 {
     type Output = Gf256;
     #[inline]

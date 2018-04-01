@@ -94,7 +94,7 @@ impl PartialSecret {
             return;
         }
 
-        let x = if self.weights.len() == 0 {
+        let x = if self.weights.is_empty() {
             // Initialize initial weights.
             self.weights = vec![Gf256::zero(); self.ids.len()];
             self.weights[0] = Gf256::one();

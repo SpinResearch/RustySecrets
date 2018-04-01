@@ -43,7 +43,7 @@ pub(crate) trait IsSignedShare: IsShare {
     /// if verification fails.
     fn continue_verify_signatures(
         shares: &[Self],
-        root_hash: &Vec<u8>,
-        already_verified_ids: &Vec<u8>,
+        root_hash: &[u8],
+        already_verified_ids: &[u8],
     ) -> Result<()>;
 }

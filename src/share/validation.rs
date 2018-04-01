@@ -9,26 +9,26 @@ use share::{IsShare, IsSignedShare};
 
 /// TODO
 pub(crate) fn validate_signed_shares<S: IsSignedShare>(
-    shares: &Vec<S>,
+    shares: &[S],
     verify_signatures: bool,
 ) -> Result<(u8, usize)> {
     let result = validate_shares(shares)?;
 
     if verify_signatures {
-        S::verify_signatures(&shares)?;
+        S::verify_signatures(shares)?;
     };
 
     Ok(result)
 }
 
 pub(crate) fn begin_signed_share_validation<S: IsSignedShare>(
-    shares: &Vec<S>,
+    shares: &[S],
     verify_signatures: bool,
 ) -> Result<(u8, usize, Vec<u8>, Option<Vec<u8>>)> {
     let (threshold, slen, ids) = _validate_shares(shares, None, None, None)?;
 
     let root_hash = if verify_signatures {
-        Some(S::verify_signatures(&shares)?)
+        Some(S::verify_signatures(shares)?)
     } else {
         None
     };
@@ -37,11 +37,11 @@ pub(crate) fn begin_signed_share_validation<S: IsSignedShare>(
 }
 
 pub(crate) fn continue_signed_share_validation<S: IsSignedShare>(
-    shares: &Vec<S>,
-    already_verified_ids: &Vec<u8>,
+    shares: &[S],
+    already_verified_ids: &[u8],
     threshold: u8,
     slen: usize,
-    root_hash: Option<&Vec<u8>>,
+    root_hash: Option<&[u8]>,
 ) -> Result<(Vec<u8>)> {
     let (_, _, new_ids) = _validate_shares(
         shares,
@@ -58,7 +58,7 @@ pub(crate) fn continue_signed_share_validation<S: IsSignedShare>(
 }
 
 /// Validates a full set of shares.
-pub(crate) fn validate_shares<S: IsShare>(shares: &Vec<S>) -> Result<(u8, usize)> {
+pub(crate) fn validate_shares<S: IsShare>(shares: &[S]) -> Result<(u8, usize)> {
     let (threshold, slen, _) = _validate_shares(shares, None, None, None)?;
     let shares_count = shares.len();
     if shares_count < threshold as usize {
@@ -69,10 +69,10 @@ pub(crate) fn validate_shares<S: IsShare>(shares: &Vec<S>) -> Result<(u8, usize)
 
 /// TODO: Doc
 fn _validate_shares<S: IsShare>(
-    shares: &Vec<S>,
+    shares: &[S],
     threshold: Option<u8>,
     slen: Option<usize>,
-    already_verified_ids: Option<&Vec<u8>>,
+    already_verified_ids: Option<&[u8]>,
 ) -> Result<(u8, usize, Vec<u8>)> {
     if shares.is_empty() {
         bail!(ErrorKind::EmptyShares);
@@ -80,7 +80,7 @@ fn _validate_shares<S: IsShare>(
 
     let shares_count = shares.len();
     let mut ids = if already_verified_ids.is_some() {
-        let mut ids = already_verified_ids.unwrap().clone();
+        let mut ids = already_verified_ids.unwrap().to_vec();
         ids.reserve_exact(shares_count);
         ids
     } else {
