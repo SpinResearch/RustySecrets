@@ -8,30 +8,32 @@ mod shared;
 
 mod wrapped_secrets {
 
-    use test::{black_box, Bencher};
     use rusty_secrets::wrapped_secrets;
     use shared;
+    use test::{black_box, Bencher};
 
     macro_rules! bench_generate {
-        ($name:ident, $k:expr, $n:expr, $secret:ident, $signed:expr) => (
+        ($name:ident, $k:expr, $n:expr, $secret:ident, $signed:expr) => {
             #[bench]
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
 
                 b.iter(move || {
-                    let shares = wrapped_secrets::split_secret($k, $n, secret, None, $signed).unwrap();
+                    let shares =
+                        wrapped_secrets::split_secret($k, $n, secret, None, $signed).unwrap();
                     black_box(shares);
                 });
             }
-        )
+        };
     }
 
     macro_rules! bench_recover {
-        ($name:ident, $k:expr, $n:expr, $secret:ident, $signed:expr) => (
+        ($name:ident, $k:expr, $n:expr, $secret:ident, $signed:expr) => {
             #[bench]
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
-                let all_shares = wrapped_secrets::split_secret($k, $n, &secret, None, $signed).unwrap();
+                let all_shares =
+                    wrapped_secrets::split_secret($k, $n, &secret, None, $signed).unwrap();
                 let shares = all_shares.into_iter().take($k).collect::<Vec<_>>();
 
                 b.iter(|| {
@@ -39,7 +41,7 @@ mod wrapped_secrets {
                     black_box(result);
                 });
             }
-        )
+        };
     }
 
     bench_generate!(generate_1kb_3_5, 3, 5, secret_1kb, false);

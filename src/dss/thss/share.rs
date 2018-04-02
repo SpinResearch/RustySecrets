@@ -1,6 +1,6 @@
+use super::serialize::{share_from_string, share_to_string};
 use errors::*;
 use share::IsShare;
-use super::serialize::{share_from_string, share_to_string};
 
 pub use dss::metadata::MetaData;
 

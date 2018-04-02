@@ -1,13 +1,13 @@
 //! SSS provides Shamir's secret sharing with raw data.
 
-use rand::{OsRng, Rng};
 use merkle_sigs::sign_data_vec;
+use rand::{OsRng, Rng};
 
 use errors::*;
-use sss::{Share, HASH_ALGO};
-use sss::format::format_share_for_signing;
-use share::validation::{validate_share_count, validate_signed_shares};
 use lagrange::interpolate_at;
+use share::validation::{validate_share_count, validate_signed_shares};
+use sss::format::format_share_for_signing;
+use sss::{Share, HASH_ALGO};
 
 use super::encode::encode_secret_byte;
 

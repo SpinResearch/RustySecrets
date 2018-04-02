@@ -1,7 +1,7 @@
 use std;
 
-use std::hash::Hash;
 use std::collections::{BTreeMap, HashMap};
+use std::hash::Hash;
 
 /// Transmutes a `&[u8]` into a `&[u32]`.
 /// Despite `std::mem::transmute` being very unsafe in

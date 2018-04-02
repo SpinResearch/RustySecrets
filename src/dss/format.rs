@@ -1,7 +1,7 @@
 use std::error::Error;
 
-use protobuf::{self, Message};
 use base64;
+use protobuf::{self, Message};
 
 use errors::*;
 use proto::dss::ShareProto;

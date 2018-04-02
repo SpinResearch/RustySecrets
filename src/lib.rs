@@ -18,15 +18,15 @@ extern crate ring;
 
 #[macro_use]
 mod gf256;
-mod share;
-mod poly;
 mod lagrange;
+mod poly;
+mod share;
 mod vol_hash;
 
 pub mod errors;
+pub mod proto;
 pub mod sss;
 pub mod wrapped_secrets;
-pub mod proto;
 
 #[cfg(feature = "dss")]
 pub mod dss;

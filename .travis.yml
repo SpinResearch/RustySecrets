@@ -1,38 +1,50 @@
-
-sudo: required
-
 language: rust
+cache: cargo # https://docs.travis-ci.com/user/caching/#Rust-Cargo-cache
 
 rust:
   - stable
   - beta
-  - nightly
 
 matrix:
+  # Since this item is allowed to fail, don't wait for it's result to mark the
+  # build complete.
+  fast_finish: true
   allow_failures:
-    - rust: nightly
+    - env: NAME='nightly'
+    - env: NAME='kcov'
+  include:
+    - env: NAME='nightly'
+      rust: nightly
+    - env: NAME='rustfmt'
+      rust: nightly
+      before_script:
+        - rustup component add rustfmt-preview
+      script:
+        - cargo fmt --all -- --write-mode=diff
+    - env: NAME='kcov'
+      sudo: required # travis-ci/travis-ci#9061
+      before_script:
+        - cargo install cargo-update || echo "cargo-update already installed"
+        - cargo install cargo-kcov || echo "cargo-kcov already installed"
+        - cargo install-update -a
+      script:
+        - cargo kcov --print-install-kcov-sh | sh
+        - cargo update # Creates `Cargo.lock` needed by next command
+        - cargo kcov --verbose --features dss --coveralls -- --verify --exclude-pattern=/.cargo,/usr/lib,src/proto
+      addons:
+        apt:
+          packages:
+            - libcurl4-openssl-dev
+            - libdw-dev
+            - binutils-dev
+            - libiberty-dev
+            - zlib1g-dev
 
 env:
   global:
   - RUSTFLAGS="-C link-dead-code"
 
-addons:
-  apt:
-    packages:
-      - libcurl4-openssl-dev
-      - libdw-dev
-      - cmake
-      - g++
-      - pkg-config
-      - binutils-dev
-      - libiberty-dev
-
 script:
   - cargo build --verbose --all-features
   - cargo test --verbose --all-features
-
-after_success:
-  - cargo install cargo-kcov
-  - cargo kcov --print-install-kcov-sh | sh
-  - cargo kcov --verbose --features dss --coveralls -- --verify --exclude-pattern=/.cargo,/usr/lib,src/proto
-
+  - cargo doc --verbose --all-features

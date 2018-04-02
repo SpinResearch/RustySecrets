@@ -1,8 +1,8 @@
 use errors::*;
+use proto::VersionProto;
+use proto::wrapped::SecretProto;
 use protobuf;
 use protobuf::Message;
-use proto::wrapped::SecretProto;
-use proto::VersionProto;
 
 use sss::SSS;
 pub(crate) use sss::Share;

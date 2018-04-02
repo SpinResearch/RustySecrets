@@ -29,8 +29,8 @@ mod share;
 pub use self::share::*;
 
 mod scheme;
-use self::scheme::SS1;
 pub use self::scheme::Reproducibility;
+use self::scheme::SS1;
 
 use dss::AccessStructure;
 

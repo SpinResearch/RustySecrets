@@ -27,8 +27,8 @@
 //! **ErrDet**   | An inauthentic set of shares produced by an adversary will be flagged as such when fed to the recovery algorithm.
 //! **Repro**    | Share reproducible: The scheme can produce shares in a deterministic way.
 
-pub mod thss;
 pub mod ss1;
+pub mod thss;
 
 mod metadata;
 
