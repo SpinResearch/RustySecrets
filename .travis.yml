@@ -29,6 +29,7 @@ matrix:
         - cargo install-update -a
       script:
         - cargo kcov --print-install-kcov-sh | sh
+        - cargo update # Creates `Cargo.lock` needed by next command
         - cargo kcov --verbose --features dss --coveralls -- --verify --exclude-pattern=/.cargo,/usr/lib,src/proto
       addons:
         apt:
