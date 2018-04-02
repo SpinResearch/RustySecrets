@@ -1,9 +1,9 @@
 use std::env;
+use std::fmt;
 use std::fs::File;
 use std::io::Write;
-use std::path::Path;
-use std::fmt;
 use std::num::Wrapping;
+use std::path::Path;
 
 const POLY: u8 = 0x1D;
 

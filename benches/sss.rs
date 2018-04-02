@@ -8,12 +8,12 @@ mod shared;
 
 mod sss {
 
-    use test::{black_box, Bencher};
     use rusty_secrets::sss;
     use shared;
+    use test::{black_box, Bencher};
 
     macro_rules! bench_generate {
-        ($name:ident, $k:expr, $n:expr, $secret:ident, $signed:expr) => (
+        ($name:ident, $k:expr, $n:expr, $secret:ident, $signed:expr) => {
             #[bench]
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
@@ -23,11 +23,11 @@ mod sss {
                     black_box(shares);
                 });
             }
-        )
+        };
     }
 
     macro_rules! bench_recover {
-        ($name:ident, $k:expr, $n:expr, $secret:ident, $signed:expr) => (
+        ($name:ident, $k:expr, $n:expr, $secret:ident, $signed:expr) => {
             #[bench]
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
@@ -39,7 +39,7 @@ mod sss {
                     black_box(result);
                 });
             }
-        )
+        };
     }
 
     bench_generate!(generate_1kb_3_5, 3, 5, secret_1kb, false);

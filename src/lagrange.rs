@@ -86,10 +86,10 @@ pub(crate) fn interpolate(points: &[(Gf256, Gf256)]) -> Poly {
 #[allow(trivial_casts)]
 mod tests {
 
-    use std;
     use super::*;
     use gf256::*;
     use quickcheck::*;
+    use std;
 
     quickcheck! {
 
