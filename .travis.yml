@@ -20,7 +20,7 @@ matrix:
       before_script:
         - rustup component add rustfmt-preview
       script:
-        - cargo fmt -- --write-mode=diff
+        - cargo fmt --all -- --write-mode=diff
     - env: NAME='kcov'
       sudo: required # travis-ci/travis-ci#9061
       before_script:
