@@ -28,7 +28,6 @@ matrix:
         - cargo install cargo-kcov || echo "cargo-kcov already installed"
         - cargo install-update -a
       script:
-        - cargo build --verbose --all-features
         - cargo kcov --print-install-kcov-sh | sh
         - cargo kcov --verbose --features dss --coveralls -- --verify --exclude-pattern=/.cargo,/usr/lib,src/proto
       addons:
