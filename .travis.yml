@@ -49,3 +49,4 @@ env:
 script:
   - cargo build --verbose --all-features
   - cargo test --verbose --all-features
+  - cargo doc --verbose --all-features
