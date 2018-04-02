@@ -5,7 +5,7 @@ use rand::{OsRng, Rng};
 
 use errors::*;
 use lagrange::PartialSecret;
-use share::validation::{begin_signed_share_validation, continue_signed_share_validation,
+use share::validation::{begin_partial_signed_share_validation, continue_partial_signed_share_validation,
                         validate_share_count, validate_signed_shares};
 use sss::format::format_share_for_signing;
 use sss::{Share, HASH_ALGO};
@@ -133,7 +133,7 @@ impl IncrementalRecovery {
     /// Begins a partial secret recovery.
     pub fn new(shares: &[Share], verify_signatures: bool) -> Result<Self> {
         let (threshold, slen, ids, root_hash) =
-            begin_signed_share_validation(shares, verify_signatures)?;
+            begin_partial_signed_share_validation(shares, verify_signatures)?;
 
         let mut incremental_recovery = Self {
             partial_secrets: Vec::with_capacity(slen),
@@ -160,7 +160,7 @@ impl IncrementalRecovery {
     pub fn update(&mut self, shares: &[Share]) -> Result<()> {
         if self.root_hash.is_some() {
             let root_hash = self.root_hash.clone().unwrap();
-            self.ids = continue_signed_share_validation(
+            self.ids = continue_partial_signed_share_validation(
                 shares,
                 &self.ids,
                 self.threshold,
@@ -168,7 +168,7 @@ impl IncrementalRecovery {
                 Some(&root_hash),
             )?;
         } else {
-            self.ids = continue_signed_share_validation(
+            self.ids = continue_partial_signed_share_validation(
                 shares,
                 &self.ids,
                 self.threshold,

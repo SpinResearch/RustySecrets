@@ -15,20 +15,20 @@ pub(crate) fn validate_signed_shares<S: IsSignedShare>(
     let result = validate_shares(shares)?;
 
     if verify_signatures {
-        S::verify_signatures(shares)?;
+        S::verify_signatures(shares, None)?;
     };
 
     Ok(result)
 }
 
-pub(crate) fn begin_signed_share_validation<S: IsSignedShare>(
+pub(crate) fn begin_partial_signed_share_validation<S: IsSignedShare>(
     shares: &[S],
     verify_signatures: bool,
 ) -> Result<(u8, usize, Vec<u8>, Option<Vec<u8>>)> {
-    let (threshold, slen, ids) = _validate_shares(shares, None, None, None)?;
+    let (threshold, slen, ids) = partial_validate_shares(shares, None, None, None)?;
 
     let root_hash = if verify_signatures {
-        Some(S::verify_signatures(shares)?)
+        Some(S::verify_signatures(shares, None)?)
     } else {
         None
     };
@@ -36,14 +36,14 @@ pub(crate) fn begin_signed_share_validation<S: IsSignedShare>(
     Ok((threshold, slen, ids, root_hash))
 }
 
-pub(crate) fn continue_signed_share_validation<S: IsSignedShare>(
+pub(crate) fn continue_partial_signed_share_validation<S: IsSignedShare>(
     shares: &[S],
     already_verified_ids: &[u8],
     threshold: u8,
     slen: usize,
     root_hash: Option<&[u8]>,
 ) -> Result<(Vec<u8>)> {
-    let (_, _, new_ids) = _validate_shares(
+    let (_, _, new_ids) = partial_validate_shares(
         shares,
         Some(threshold),
         Some(slen),
@@ -51,7 +51,7 @@ pub(crate) fn continue_signed_share_validation<S: IsSignedShare>(
     )?;
 
     if root_hash.is_some() {
-        S::continue_verify_signatures(shares, root_hash.unwrap(), already_verified_ids)?;
+        S::verify_signatures(shares, root_hash)?;
     }
 
     Ok(new_ids)
@@ -59,7 +59,7 @@ pub(crate) fn continue_signed_share_validation<S: IsSignedShare>(
 
 /// Validates a full set of shares.
 pub(crate) fn validate_shares<S: IsShare>(shares: &[S]) -> Result<(u8, usize)> {
-    let (threshold, slen, _) = _validate_shares(shares, None, None, None)?;
+    let (threshold, slen, _) = partial_validate_shares(shares, None, None, None)?;
     let shares_count = shares.len();
     if shares_count < threshold as usize {
         bail!(ErrorKind::MissingShares(shares_count, threshold))
@@ -67,13 +67,12 @@ pub(crate) fn validate_shares<S: IsShare>(shares: &[S]) -> Result<(u8, usize)> {
     Ok((threshold, slen))
 }
 
-/// TODO: Doc
-fn _validate_shares<S: IsShare>(
+pub(crate) fn partial_validate_shares<S: IsShare>(
     shares: &[S],
     threshold: Option<u8>,
     slen: Option<usize>,
     already_verified_ids: Option<&[u8]>,
-) -> Result<(u8, usize, Vec<u8>)> {
+)-> Result<(u8, usize, Vec<u8>)> {
     if shares.is_empty() {
         bail!(ErrorKind::EmptyShares);
     }

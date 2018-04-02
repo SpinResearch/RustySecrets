@@ -34,16 +34,8 @@ pub(crate) trait IsSignedShare: IsShare {
     /// Return the signature itself.
     fn get_signature(&self) -> &Self::Signature;
 
-    /// Verify a given batch of shares are all signed by the same root hash. Returns the root hash
-    /// if verification succeeds, and an `Err` otherwise.
-    fn verify_signatures(shares: &[Self]) -> Result<Vec<u8>>;
-
-    /// Verify the `shares` all have valid signatures from the `root_hash`. Pass a list of shares
-    /// identifiers already verified against this `root_hash`, if any, for better error messaging
-    /// if verification fails.
-    fn continue_verify_signatures(
-        shares: &[Self],
-        root_hash: &[u8],
-        already_verified_ids: &[u8],
-    ) -> Result<()>;
+    /// Verify a given batch of shares are all signed by the same root hash, optionally specifying
+    /// which one using the `root_hash` argument. Returns the root hash if verification succeeds,
+    /// and an `Err` otherwise.
+    fn verify_signatures(shares: &[Self], root_hash: Option<&[u8]>) -> Result<Vec<u8>>;
 }

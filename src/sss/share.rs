@@ -86,50 +86,9 @@ impl IsShare for Share {
 impl IsSignedShare for Share {
     type Signature = Option<SignaturePair>;
 
-    fn verify_signatures(shares: &[Self]) -> Result<Vec<u8>> {
-        Self::_verify_signatures(shares, None, None)
-    }
-
-    // NOTE: the function of `already_verified_ids` is to improve error messages. If you're
-    // specifying a `root_hash` argument, it's recommended to include a list of ids already
-    // verified against that root hash (if any).
-    fn continue_verify_signatures(
-        shares: &[Self],
-        root_hash: &[u8],
-        already_verified_ids: &[u8],
-    ) -> Result<()> {
-        Self::_verify_signatures(shares, Some(root_hash), Some(already_verified_ids))?;
-        Ok(())
-    }
-
-    fn is_signed(&self) -> bool {
-        self.signature_pair.is_some()
-    }
-
-    fn get_signature(&self) -> &Self::Signature {
-        &self.signature_pair
-    }
-}
-
-impl Share {
-    fn _verify_signatures(
-        shares: &[Self],
-        root_hash: Option<&[u8]>,
-        already_verified_ids: Option<&[u8]>,
-    ) -> Result<Vec<u8>> {
-        let shares_count = shares.len();
-        let mut root_hash = if root_hash.is_some() {
-            root_hash.unwrap().to_vec()
-        } else {
-            vec![]
-        };
-        let mut ids = if already_verified_ids.is_some() {
-            let mut ids = already_verified_ids.unwrap().to_vec();
-            ids.reserve_exact(shares_count);
-            ids
-        } else {
-            Vec::with_capacity(shares_count)
-        };
+    fn verify_signatures(shares: &[Self], root_hash: Option<&[u8]>) -> Result<Vec<u8>> {
+        let mut root_hash = root_hash.unwrap_or(&[]).to_vec();
+        let mut ids = Vec::with_capacity(shares.len());
 
         for share in shares {
             let id = share.get_id();
@@ -143,7 +102,7 @@ impl Share {
             let root_hash_ = &proof.root_hash;
 
             verify_data_vec_signature(
-                format_share_for_signing(share.threshold, share.id, share.data.as_slice()),
+                format_share_for_signing(share.threshold, id, &share.data),
                 &(signature.to_vec(), proof.clone()),
                 root_hash_,
             ).map_err(|e| ErrorKind::InvalidSignature(share.id, String::from(e.description())))?;
@@ -158,6 +117,14 @@ impl Share {
         }
 
         Ok(root_hash)
+    }
+
+    fn is_signed(&self) -> bool {
+        self.signature_pair.is_some()
+    }
+
+    fn get_signature(&self) -> &Self::Signature {
+        &self.signature_pair
     }
 }
 
