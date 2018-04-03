@@ -68,7 +68,7 @@ error_chain! {
         NoMoreSharesNeeded(required: u8) {
             description("The number of shares evaluated has already met the threshold and the
             secret is available.")
-            display("Only {} shares are required to recover the secret.", required)
+            display("Only {} shares are required to recover the secret. The secret should already be available.", required)
         }
 
         InvalidSignature(share_id: u8, signature: String) {

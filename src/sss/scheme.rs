@@ -128,6 +128,10 @@ impl Recover {
 
     /// Contines a partial secret recovery.
     pub fn update(&mut self, shares: &[Share]) -> Result<()> {
+        if self.shares_needed() == 0 {
+            bail!(ErrorKind::NoMoreSharesNeeded(self.threshold))
+        }
+
         validate_additional_signed_shares(
             shares,
             Some(self.threshold),
