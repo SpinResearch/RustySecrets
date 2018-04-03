@@ -7,7 +7,7 @@ use rand::{OsRng, Rng};
 
 use errors::*;
 use gf256::Gf256;
-use lagrange::PartialSecret;
+use lagrange::{evaluate_at_zero, BarycentricWeights};
 use share::IsShare;
 use share::validation::*;
 use sss::format::format_share_for_signing;
@@ -90,7 +90,7 @@ fn secret_share(src: &[u8], threshold: u8, shares_count: u8) -> Result<Vec<Vec<u
 /// `Recover` provides an interface for recovering a secret.
 pub(crate) struct Recover {
     /// The state of each partially-recovered secret byte.
-    partial_secrets: Vec<PartialSecret>,
+    barycentric: Vec<BarycentricWeights>,
     /// The ids of the share (varies between 1 and n where n is the total number of generated
     /// shares).
     ids: Vec<Gf256>,
@@ -100,6 +100,8 @@ pub(crate) struct Recover {
     slen: usize,
     /// If the shares are signed, the root hash of the Merkle tree all shares are signed with.
     root_hash: Option<Vec<u8>>,
+    /// The secret. `None` until computation is complete.
+    secret: Option<Vec<u8>>,
 }
 
 impl Recover {
@@ -117,11 +119,12 @@ impl Recover {
             validate_initial_signed_shares(shares, verify_signatures)?;
 
         let mut incremental_recovery = Self {
-            partial_secrets: Vec::with_capacity(slen),
+            barycentric: Vec::with_capacity(slen),
             ids: Vec::with_capacity(threshold as usize),
             threshold,
             slen,
             root_hash,
+            secret: None,
         };
 
         incremental_recovery.process_shares(shares);
@@ -153,23 +156,45 @@ impl Recover {
         let ub = min(self.shares_needed() as usize, shares.len());
         let shares = &shares[..ub];
         let is_new_computation = self.shares_interpolated() == 0;
+        // NOTE: `shares_interpolated` will be very temporarily be out of sync until the next for
+        // loop completes.
         self.ids.extend(shares.iter().map(|s| gf256!(s.id)));
 
         for byteindex in 0..self.slen {
             let ys: Vec<Gf256> = shares.iter().map(|s| gf256!(s.data[byteindex])).collect();
             if is_new_computation {
-                self.partial_secrets
-                    .push(PartialSecret::new(self.threshold, &self.ids, &ys));
+                self.barycentric
+                    .push(BarycentricWeights::new(&self.ids, &ys));
             } else {
-                self.partial_secrets[byteindex].update(self.threshold, &self.ids, &ys);
+                self.barycentric[byteindex].update(&self.ids, &ys);
             }
         }
+
+        // If we have sufficient information, we can compute the secret.
+        if self.shares_needed() == 0 {
+            self.compute_secret();
+        }
+    }
+
+    /// Computes the secret (called automatically when sufficient shares have been processed).
+    fn compute_secret(&mut self) {
+        self.secret = Some(
+            self.barycentric
+                .iter()
+                .map(|wds| evaluate_at_zero(wds, &self.ids))
+                .collect(),
+        );
     }
 
     /// Used to determine how many more shares are needed to finish computing a partial secret.
     pub fn shares_interpolated(&self) -> u8 {
         // Safe cast because validation ensures `self.ids.len() < 255`.
         self.ids.len() as u8
+    }
+
+    /// Returns the threshold of shares needed to recover the secret.
+    pub fn get_threshold(&self) -> u8 {
+        self.threshold
     }
 
     /// Used to determine how many more shares are needed to finish computing a partial secret.
@@ -181,16 +206,13 @@ impl Recover {
 
     /// Used to obtain the resulting secret when `threshold` shares have been evaluated.
     pub fn get_secret(&self) -> Result<Vec<u8>> {
-        if self.shares_needed() != 0 {
+        if self.secret.is_some() {
+            Ok(self.secret.clone().unwrap())
+        } else {
             bail!(ErrorKind::MissingShares(
                 self.shares_interpolated(),
                 self.threshold
             ))
         }
-        // Safe to unwrap because we already confirmed no more shares are needed.
-        Ok(self.partial_secrets
-            .iter()
-            .map(|ps| ps.get_secret().unwrap())
-            .collect())
     }
 }

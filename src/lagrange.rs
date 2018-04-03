@@ -6,70 +6,60 @@ use poly::Poly;
 
 /// Stores the intermediate state of interpolation and evaluation at `Gf256::zero()` of a
 /// polynomial. A secret may be computed incrementally using barycentric Lagrange interpolation.
-/// The state is updated with new points until threshold points have been evaluated, at which point
-/// the `secret` field will be updated from `None` to `Some(u8)`.
-pub struct PartialSecret {
-    /// The secret byte. `None` until computation is complete.
-    secret: Option<u8>,
+pub struct BarycentricWeights {
     /// The number of shares necessary to recover the secret, a.k.a. the threshold.
-    diffs: Vec<Gf256>,
+    pub diffs: Vec<Gf256>,
     /// The barycentric weights.
-    weights: Vec<Gf256>,
+    pub weights: Vec<Gf256>,
 }
 
-// `PartialSecret` is not a public-facing struct. We expect the functions that interact with it to
+// `BarycentricWeights` is not a public-facing struct. We expect the functions that interact with it to
 // do validation of the `points` and other arguments it operates on. As a defensive programming
 // practice, we have included `assert!` statements, which should also clarify the validation
 // expectations of each method.
-impl PartialSecret {
+impl BarycentricWeights {
     /// Create a new partial computation given a `threshold` (to know when the computation is
     /// finished), and an initial set of `points`.
     #[inline]
-    pub fn new(threshold: u8, ids: &[Gf256], new_ys: &[Gf256]) -> Self {
+    pub fn new(ids: &[Gf256], new_ys: &[Gf256]) -> Self {
         let (new_points, total_points) = (new_ys.len(), ids.len());
-        assert!(threshold >= 2, "Given k less than 2!");
         assert_ne!(new_points, 0, "Given an empty set of points!");
-        assert!(
-            total_points <= threshold as usize,
-            "Given more than threshold shares!"
-        );
         assert_eq!(
             new_points, total_points,
             "Given an unequal number of x and y coordinates!"
         );
 
         let mut partial_comp = Self {
-            secret: None,
-            diffs: Vec::with_capacity(threshold as usize),
+            diffs: Vec::with_capacity(total_points),
             weights: vec![],
         };
 
         partial_comp.update_diffs(ids, new_ys);
-        partial_comp.update_barycentric_weights(threshold, ids);
+        partial_comp.update_barycentric_weights(ids);
         partial_comp
     }
 
     /// Update the partial computation given an additional set of `points`.
     #[inline]
-    pub fn update(&mut self, threshold: u8, ids: &[Gf256], ys: &[Gf256]) {
-        assert!(!ys.is_empty(), "Given an empty set of points!");
+    pub fn update(&mut self, ids: &[Gf256], new_ys: &[Gf256]) {
+        let (new_points, total_points) = (new_ys.len(), ids.len());
+        assert_ne!(new_points, 0, "Given an empty set of points!");
+        assert!(total_points >= 2, "In order to call update you must have already processed at least one point to make a `BarycentricWeights`, and you must provide at least a second in your call to update.");
         assert!(
-            ids.len() <= threshold as usize,
-            "Given more than threshold shares!"
-        );
-        assert!(
-            ids.len() >= ys.len(),
+            total_points >= new_points,
             "The IDs of the shares processed should at least number the new y values."
         );
 
-        self.update_diffs(ids, ys);
-        self.update_barycentric_weights(threshold, ids);
+        self.update_diffs(ids, new_ys);
+        self.update_barycentric_weights(ids);
     }
 
-    /// Parse just the `points` we need to compute the secret into `x` values and `diffs`.
+    /// Parse the `new_ys` into `diffs`.
+    #[inline]
     fn update_diffs(&mut self, ids: &[Gf256], new_ys: &[Gf256]) {
         let (new_points, total_points) = (new_ys.len(), ids.len());
         let ids = &ids[(total_points - new_points)..];
+        self.diffs.reserve_exact(new_points);
 
         for (&xi, &yi) in ids.iter().zip(new_ys.iter()) {
             assert!(xi.poly != 0, "Given invalid share identifier 0!");
@@ -82,13 +72,13 @@ impl PartialSecret {
 
     /// Update the barycentric weights `w` corresponding to a set of `x` values.
     #[inline]
-    fn update_barycentric_weights(&mut self, threshold: u8, ids: &[Gf256]) {
+    fn update_barycentric_weights(&mut self, ids: &[Gf256]) {
         let total_points = ids.len();
-        let new_points = total_points - self.weights.len();
         // Need at least two points to start computing the barycentric weights.
         if total_points == 1 {
             return;
         }
+        let new_points = total_points - self.weights.len();
 
         let start_weight = if self.weights.is_empty() {
             // Initialize initial weights.
@@ -111,56 +101,60 @@ impl PartialSecret {
                 self.weights[i] -= self.weights[j];
             }
         }
+    }
+}
 
-        // If we have sufficient information, we can compute the secret.
-        if threshold as usize - total_points == 0 {
-            self.compute_secret(ids);
-        }
+/// Compute the secret using the second or "true" form of the barycentric interpolation formula
+/// at `Gf256::zero()`.
+#[inline]
+pub fn evaluate_at_zero(wds: &BarycentricWeights, ids: &[Gf256]) -> u8 {
+    validate_evaluation_parameters(wds, ids);
+
+    let (mut num, mut denom) = (Gf256::zero(), Gf256::zero());
+    for ((&xi, &di), &wi) in ids.iter().zip(wds.diffs.iter()).zip(wds.weights.iter()) {
+        num += wi * di;
+        denom += wi / xi;
     }
 
-    /// Compute the secret using the second or "true" form of the barycentric interpolation formula
-    /// at `Gf256::zero()`.
-    #[inline]
-    fn compute_secret(&mut self, ids: &[Gf256]) {
-        let (mut num, mut denom) = (Gf256::zero(), Gf256::zero());
-        for ((&xi, &di), &wi) in ids.iter().zip(self.diffs.iter()).zip(self.weights.iter()) {
-            num += wi * di;
-            denom += wi / xi;
-        }
-        self.secret = Some((num / denom).to_byte());
-    }
+    (num / denom).to_byte()
+}
 
-    /// If the partial computation is complete, return the secret, else an error.
-    #[inline]
-    pub fn get_secret(&self) -> Result<u8> {
-        assert!(
-            self.secret.is_some(),
-            "Not enough shares have been interpolated to recover the secret!"
-        );
-        // Safe to unwrap because we just confirmed it's not `None`.
-        Ok(self.secret.unwrap())
-    }
+/// Evaluate the interpolated polynomial at the point `gf256!(x)` in the G(2^8)
+/// Galois field.
+#[inline]
+fn evaluate_at_x(wds: &BarycentricWeights, ids: &[Gf256], x: Gf256) -> Result<u8> {
+    validate_evaluation_parameters(wds, ids);
 
-    /// Evaluate the interpolated polynomial at the point `gf256!(x)` in the G(2^8)
-    /// Galois field.
-    #[inline]
-    fn evaluate_at_x(&self, x: Gf256, ids: &[Gf256]) -> Result<u8> {
-        assert!(
-            self.secret.is_some(),
-            "Not enough shares have been interpolated to recover the secret!"
-        );
-
-        let (mut num, mut denom) = (Gf256::zero(), Gf256::zero());
-        for ((&xi, &di), &wi) in ids.iter().zip(self.diffs.iter()).zip(self.weights.iter()) {
-            let delta = x - xi;
-            // Slightly slower to re-multiply the `diffs` by `xi` here, but otherwise we have to
-            // additionally store the `y` values in `PartialSecret`, or store `y` values instead of
-            // the `diffs` and precompute less in the standard case of evaluating at 0.
-            num += wi * di * xi / delta;
-            denom += wi / delta;
-        }
-        Ok((num / denom).to_byte())
+    let (mut num, mut denom) = (Gf256::zero(), Gf256::zero());
+    for ((&xi, &di), &wi) in ids.iter().zip(wds.diffs.iter()).zip(wds.weights.iter()) {
+        let delta = x - xi;
+        // Slightly slower to re-multiply the `diffs` by `xi` here, but otherwise we have to
+        // additionally store the `y` values in `BarycentricWeights`, or store `y` values instead
+        // of the `diffs` and precompute less in the standard case of evaluating at 0.
+        num += wi * di * xi / delta;
+        denom += wi / delta;
     }
+    Ok((num / denom).to_byte())
+}
+
+/// TODO:
+#[inline]
+fn validate_evaluation_parameters(wds: &BarycentricWeights, ids: &[Gf256]) {
+    let num_weights = wds.weights.len();
+    let num_diffs = wds.diffs.len();
+    assert_eq!(
+        num_weights, num_diffs,
+        "`BarycentricWeights` should contain the same number of weights and diffs!"
+    );
+    let num_points = ids.len();
+    assert_eq!(
+        num_weights, num_points,
+        "The number of barycentric weights is not equal to the number of IDs!"
+    );
+    assert!(
+        num_points >= 2,
+        "Can't evaluate a polynomial at 0 without at least having processed two points."
+    );
 }
 
 /// Computes the coefficient of the Lagrange polynomial interpolated from the given `points`, in
@@ -251,8 +245,8 @@ mod tests {
             let poly = interpolate(&elems);
             let result_poly = poly.evaluate_at(Gf256::zero()).to_byte();
 
-            let interpolation = PartialSecret::new(num_points, &ids, &ys);
-            let result_interpolate = interpolation.get_secret().unwrap();
+            let wds = BarycentricWeights::new(&ids, &ys);
+            let result_interpolate = evaluate_at_zero(&wds, &ids);
 
             TestResult::from_bool(result_poly == result_interpolate)
         }
