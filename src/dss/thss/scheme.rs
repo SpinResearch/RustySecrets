@@ -8,7 +8,7 @@ use dss::random::{random_bytes, random_bytes_count, MAX_MESSAGE_SIZE};
 use errors::*;
 use gf256::Gf256;
 use lagrange;
-use share::validation::{validate_share_count, validate_shares};
+use share::validation::{validate_all_shares, validate_share_count};
 
 use super::AccessStructure;
 use super::encode::encode_secret;
@@ -90,14 +90,7 @@ impl ThSS {
         shares: &[Share],
     ) -> Result<(Vec<u8>, AccessStructure, Option<MetaData>)> {
         let shares = shares.to_vec();
-        let (threshold, cypher_len) = validate_shares(&shares, None, None, None)?;
-        // TODO: rewrite validation mod, so we can nix this `if` statement.
-        if shares.len() < threshold as usize {
-            bail!(ErrorKind::MissingShares(
-                shares.len() as u8,
-                threshold
-            ))
-        }
+        let (threshold, cypher_len) = validate_all_shares(&shares)?;
 
         let polys = (0..cypher_len)
             .map(|i| {

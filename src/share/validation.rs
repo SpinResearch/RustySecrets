@@ -6,9 +6,20 @@ use share::{IsShare, IsSignedShare};
 // 2) Validate duplicate shares share num && data
 // 2) Validate group consistency
 // 3) Validate other properties, in no specific order
-pub(crate) fn validate_signed_shares<S: IsSignedShare>(
+pub(crate) fn validate_initial_signed_shares<S: IsSignedShare>(
     shares: &[S],
     verify_signatures: bool,
+) -> Result<(u8, usize, Option<Vec<u8>>)> {
+    if verify_signatures {
+        let root_hash = vec![];
+        validate_additional_signed_shares(shares, None, None, None, Some(&root_hash))
+    } else {
+        validate_additional_signed_shares(shares, None, None, None, None)
+    }
+}
+
+pub(crate) fn validate_additional_signed_shares<S: IsSignedShare>(
+    shares: &[S],
     threshold: Option<u8>,
     slen: Option<usize>,
     already_verified_ids: Option<&[u8]>,
@@ -16,18 +27,43 @@ pub(crate) fn validate_signed_shares<S: IsSignedShare>(
 ) -> Result<(u8, usize, Option<Vec<u8>>)> {
     let (threshold, slen) = validate_shares(shares, threshold, slen, already_verified_ids)?;
 
-    let rhash = if root_hash.is_some() || verify_signatures {
-        if !verify_signatures {
-            // TODO: =><=
-        }
+    let root_hash = if root_hash.is_some() {
         Some(S::verify_signatures(shares, root_hash)?)
     } else {
         None
     };
 
-    Ok((threshold, slen, rhash))
+    Ok((threshold, slen, root_hash))
 }
 
+/// Does check there at at least threshold shares.
+pub(crate) fn validate_all_signed_shares<S: IsSignedShare>(
+    shares: &[S],
+    verify_signature: bool,
+) -> Result<(u8, usize)> {
+    let result = validate_all_shares(shares)?;
+
+    if verify_signature {
+        S::verify_signatures(shares, None)?;
+    }
+
+    Ok(result)
+}
+
+/// Does check there at at least threshold shares.
+pub(crate) fn validate_all_shares<S: IsShare>(shares: &[S]) -> Result<(u8, usize)> {
+    let (threshold, slen) = validate_shares(shares, None, None, None)?;
+
+    // Safe to cast because `validate_shares` ensures `len() < 255`.
+    let shares_count = shares.len() as u8;
+    if shares_count < threshold {
+        bail!(ErrorKind::MissingShares(shares_count, threshold))
+    }
+
+    Ok((threshold, slen))
+}
+
+/// Does not check there at at least threshold shares.
 pub(crate) fn validate_shares<S: IsShare>(
     shares: &[S],
     threshold: Option<u8>,

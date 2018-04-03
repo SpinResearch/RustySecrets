@@ -6,7 +6,7 @@ use rand::{OsRng, Rng};
 use errors::*;
 use lagrange::PartialSecret;
 use share::IsShare;
-use share::validation::{validate_share_count, validate_signed_shares};
+use share::validation::*;
 use sss::format::format_share_for_signing;
 use sss::{Share, HASH_ALGO};
 
@@ -111,7 +111,7 @@ impl Recover {
     /// Begins a partial secret recovery.
     pub fn new(shares: &[Share], verify_signatures: bool) -> Result<Self> {
         let (threshold, slen, root_hash) =
-            validate_signed_shares(shares, verify_signatures, None, None, None, None)?;
+            validate_initial_signed_shares(shares, verify_signatures)?;
 
         let mut incremental_recovery = Self {
             partial_secrets: Vec::with_capacity(slen),
@@ -128,25 +128,13 @@ impl Recover {
 
     /// Contines a partial secret recovery.
     pub fn update(&mut self, shares: &[Share]) -> Result<()> {
-        if self.root_hash.is_some() {
-            validate_signed_shares(
-                shares,
-                true,
-                Some(self.threshold),
-                Some(self.slen),
-                Some(&self.ids),
-                Some(&self.root_hash.clone().unwrap()),
-            )?;
-        } else {
-            validate_signed_shares(
-                shares,
-                false,
-                Some(self.threshold),
-                Some(self.slen),
-                Some(&self.ids),
-                None,
-            )?;
-        }
+        validate_additional_signed_shares(
+            shares,
+            Some(self.threshold),
+            Some(self.slen),
+            Some(&self.ids),
+            Some(&self.root_hash.clone().unwrap()),
+        )?;
 
         self.process_shares(shares);
         Ok(())
@@ -170,7 +158,8 @@ impl Recover {
             }
         }
 
-        self.ids.extend(shares.iter().take(shares_needed).map(|s| s.get_id()));
+        self.ids
+            .extend(shares.iter().take(shares_needed).map(|s| s.get_id()));
     }
 
     /// Used to determine how many more shares are needed to finish computing a partial secret.

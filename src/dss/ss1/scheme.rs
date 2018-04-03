@@ -11,7 +11,7 @@ use dss::thss::{MetaData, ThSS};
 use dss::utils;
 use dss::{thss, AccessStructure};
 use errors::*;
-use share::validation::{validate_share_count, validate_shares};
+use share::validation::{validate_all_shares, validate_share_count};
 use vol_hash::VOLHash;
 
 /// We bound the message size at about 16MB to avoid overflow in `random_bytes_count`.
@@ -248,14 +248,7 @@ impl SS1 {
         shares: &[Share],
     ) -> Result<(Vec<u8>, AccessStructure, Option<MetaData>)> {
         let shares = shares.to_vec();
-        let (threshold, _) = validate_shares(&shares, None, None, None)?;
-        // TODO: rewrite validation mod, so we can nix this `if` statement.
-        if shares.len() < threshold as usize {
-            bail!(ErrorKind::MissingShares(
-                shares.len() as u8,
-                threshold
-            ))
-        }
+        let (threshold, _) = validate_all_shares(&shares)?;
 
         let underlying_shares = shares
             .iter()
