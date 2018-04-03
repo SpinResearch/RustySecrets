@@ -1,9 +1,12 @@
 //! Provides Shamir's secret sharing with raw data.
 
+use std::cmp::min;
+
 use merkle_sigs::sign_data_vec;
 use rand::{OsRng, Rng};
 
 use errors::*;
+use gf256::Gf256;
 use lagrange::PartialSecret;
 use share::IsShare;
 use share::validation::*;
@@ -90,7 +93,7 @@ pub(crate) struct Recover {
     partial_secrets: Vec<PartialSecret>,
     /// The ids of the share (varies between 1 and n where n is the total number of generated
     /// shares).
-    ids: Vec<u8>,
+    ids: Vec<Gf256>,
     /// The number of shares necessary to recover the secret.
     threshold: u8,
     /// The length of the secret.
@@ -132,11 +135,12 @@ impl Recover {
             bail!(ErrorKind::NoMoreSharesNeeded(self.threshold))
         }
 
+        let ids: Vec<u8> = self.ids.iter().map(|id| id.poly).collect();
         validate_additional_signed_shares(
             shares,
             Some(self.threshold),
             Some(self.slen),
-            Some(&self.ids),
+            Some(&ids),
             Some(&self.root_hash.clone().unwrap()),
         )?;
 
@@ -145,25 +149,25 @@ impl Recover {
     }
 
     fn process_shares(&mut self, shares: &[Share]) {
+        // Don't bother interpolating more than k shares.
+        let ub = min(self.shares_needed() as usize, shares.len());
+        let shares = &shares[..ub];
         let is_new_computation = self.shares_interpolated() == 0;
-        let shares_needed = self.shares_needed() as usize;
+        self.ids
+            .extend(shares.iter().map(|s| Gf256::from_byte(s.id)));
 
         for byteindex in 0..self.slen {
-            let col_in: Vec<(u8, u8)> = shares
+            let ys: Vec<Gf256> = shares
                 .iter()
-                .take(shares_needed)
-                .map(|s| (s.id, s.data[byteindex]))
+                .map(|s| Gf256::from_byte(s.data[byteindex]))
                 .collect();
             if is_new_computation {
                 self.partial_secrets
-                    .push(PartialSecret::new(self.threshold, &col_in));
+                    .push(PartialSecret::new(self.threshold, &self.ids, &ys));
             } else {
-                self.partial_secrets[byteindex].update(&col_in);
+                self.partial_secrets[byteindex].update(self.threshold, &self.ids, &ys);
             }
         }
-
-        self.ids
-            .extend(shares.iter().take(shares_needed).map(|s| s.get_id()));
     }
 
     /// Used to determine how many more shares are needed to finish computing a partial secret.
