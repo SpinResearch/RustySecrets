@@ -153,14 +153,10 @@ impl Recover {
         let ub = min(self.shares_needed() as usize, shares.len());
         let shares = &shares[..ub];
         let is_new_computation = self.shares_interpolated() == 0;
-        self.ids
-            .extend(shares.iter().map(|s| Gf256::from_byte(s.id)));
+        self.ids.extend(shares.iter().map(|s| gf256!(s.id)));
 
         for byteindex in 0..self.slen {
-            let ys: Vec<Gf256> = shares
-                .iter()
-                .map(|s| Gf256::from_byte(s.data[byteindex]))
-                .collect();
+            let ys: Vec<Gf256> = shares.iter().map(|s| gf256!(s.data[byteindex])).collect();
             if is_new_computation {
                 self.partial_secrets
                     .push(PartialSecret::new(self.threshold, &self.ids, &ys));
