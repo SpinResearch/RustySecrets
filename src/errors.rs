@@ -60,7 +60,7 @@ error_chain! {
             display("The shares are incompatible with each other.")
         }
 
-        MissingShares(provided: usize, required: u8) {
+        MissingShares(provided: u8, required: u8) {
             description("The number of shares provided is insufficient to recover the secret.")
             display("{} shares are required to recover the secret, found only {}.", required, provided)
         }
@@ -150,10 +150,10 @@ error_chain! {
             display("The share identifier {} had k = {}, while k = {} was found for share identifier(s): {}.", id, k_, k, no_more_than_five(ids))
         }
 
-        PartialInterpolationNotComplete(k: u8, shares_interpolated: u8) {
-            description("The partial interpolation result is not complete because the number of points interpolated has not reached the threshold.")
-            display("In order to evaluate the secret polynomial at any point k = {} shares are needed, whereas only {} have been provided.", k, shares_interpolated)
-        }
+        // PartialInterpolationNotComplete(k: u8, shares_interpolated: u8) {
+        //     description("The partial interpolation result is not complete because the number of points interpolated has not reached the threshold.")
+        //     display("In order to evaluate the secret polynomial at any point k = {} shares are needed, whereas only {} have been provided.", k, shares_interpolated)
+        // }
     }
 
     foreign_links {

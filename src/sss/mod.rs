@@ -8,8 +8,8 @@ pub(crate) use self::share::*;
 mod format;
 // pub use self::format::*;
 
-mod scheme;
-pub(crate) use self::scheme::*;
+pub(crate) mod scheme;
+use self::scheme::Recover;
 
 mod encode;
 
@@ -36,8 +36,7 @@ static HASH_ALGO: &'static Algorithm = &SHA512;
 /// }
 /// ```
 pub fn split_secret(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result<Vec<String>> {
-    SSS::default()
-        .split_secret(k, n, secret, sign_shares)
+    scheme::split_secret(k, n, secret, sign_shares)
         .map(|shares| shares.into_iter().map(Share::into_string).collect())
 }
 
@@ -65,5 +64,5 @@ pub fn split_secret(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result<Ve
 /// ```
 pub fn recover_secret(shares: &[String], verify_signatures: bool) -> Result<Vec<u8>> {
     let shares = Share::parse_all(shares, verify_signatures)?;
-    SSS::recover_secret(shares, verify_signatures)
+    Recover::recover_secret(&shares, verify_signatures)
 }

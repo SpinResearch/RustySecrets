@@ -248,7 +248,14 @@ impl SS1 {
         shares: &[Share],
     ) -> Result<(Vec<u8>, AccessStructure, Option<MetaData>)> {
         let shares = shares.to_vec();
-        validate_shares(&shares)?;
+        let (threshold, _) = validate_shares(&shares, None, None, None)?;
+        // TODO: rewrite validation mod, so we can nix this `if` statement.
+        if shares.len() < threshold as usize {
+            bail!(ErrorKind::MissingShares(
+                shares.len() as u8,
+                threshold
+            ))
+        }
 
         let underlying_shares = shares
             .iter()

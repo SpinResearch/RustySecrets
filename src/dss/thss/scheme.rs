@@ -90,7 +90,14 @@ impl ThSS {
         shares: &[Share],
     ) -> Result<(Vec<u8>, AccessStructure, Option<MetaData>)> {
         let shares = shares.to_vec();
-        let (threshold, cypher_len) = validate_shares(&shares)?;
+        let (threshold, cypher_len) = validate_shares(&shares, None, None, None)?;
+        // TODO: rewrite validation mod, so we can nix this `if` statement.
+        if shares.len() < threshold as usize {
+            bail!(ErrorKind::MissingShares(
+                shares.len() as u8,
+                threshold
+            ))
+        }
 
         let polys = (0..cypher_len)
             .map(|i| {

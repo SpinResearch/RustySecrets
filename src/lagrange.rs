@@ -136,19 +136,13 @@ impl PartialSecret {
     #[inline]
     pub fn get_secret(&self) -> Result<u8> {
         if self.secret.is_none() {
-            bail!(ErrorKind::PartialInterpolationNotComplete(
-                self.threshold,
-                self.shares_interpolated()
+            bail!(ErrorKind::MissingShares(
+                self.shares_interpolated(),
+                self.threshold
             ))
         }
         // Safe to unwrap because we just confirmed it's not `None`.
         Ok(self.secret.unwrap())
-    }
-
-    /// Returns the threshold for the partial computation.
-    #[inline]
-    fn get_threshold(&self) -> u8 {
-        self.threshold
     }
 
     /// Returns the number of shares needed to complete the computation.
@@ -172,9 +166,9 @@ impl PartialSecret {
     #[inline]
     fn evaluate_at_x(&self, x: u8) -> Result<u8> {
         if self.shares_needed() != 0 {
-            bail!(ErrorKind::PartialInterpolationNotComplete(
-                self.threshold,
-                self.shares_interpolated()
+            bail!(ErrorKind::MissingShares(
+                self.shares_interpolated(),
+                self.threshold
             ))
         }
 

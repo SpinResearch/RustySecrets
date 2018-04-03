@@ -6,73 +6,34 @@ use share::{IsShare, IsSignedShare};
 // 2) Validate duplicate shares share num && data
 // 2) Validate group consistency
 // 3) Validate other properties, in no specific order
-
-/// TODO
 pub(crate) fn validate_signed_shares<S: IsSignedShare>(
     shares: &[S],
     verify_signatures: bool,
-) -> Result<(u8, usize)> {
-    let result = validate_shares(shares)?;
+    threshold: Option<u8>,
+    slen: Option<usize>,
+    already_verified_ids: Option<&[u8]>,
+    root_hash: Option<&[u8]>,
+) -> Result<(u8, usize, Option<Vec<u8>>)> {
+    let (threshold, slen) = validate_shares(shares, threshold, slen, already_verified_ids)?;
 
-    if verify_signatures {
-        S::verify_signatures(shares, None)?;
-    };
-
-    Ok(result)
-}
-
-pub(crate) fn begin_partial_signed_share_validation<S: IsSignedShare>(
-    shares: &[S],
-    verify_signatures: bool,
-) -> Result<(u8, usize, Vec<u8>, Option<Vec<u8>>)> {
-    let (threshold, slen, ids) = partial_validate_shares(shares, None, None, None)?;
-
-    let root_hash = if verify_signatures {
-        Some(S::verify_signatures(shares, None)?)
+    let rhash = if root_hash.is_some() || verify_signatures {
+        if !verify_signatures {
+            // TODO: =><=
+        }
+        Some(S::verify_signatures(shares, root_hash)?)
     } else {
         None
     };
 
-    Ok((threshold, slen, ids, root_hash))
+    Ok((threshold, slen, rhash))
 }
 
-pub(crate) fn continue_partial_signed_share_validation<S: IsSignedShare>(
-    shares: &[S],
-    already_verified_ids: &[u8],
-    threshold: u8,
-    slen: usize,
-    root_hash: Option<&[u8]>,
-) -> Result<(Vec<u8>)> {
-    let (_, _, new_ids) = partial_validate_shares(
-        shares,
-        Some(threshold),
-        Some(slen),
-        Some(already_verified_ids),
-    )?;
-
-    if root_hash.is_some() {
-        S::verify_signatures(shares, root_hash)?;
-    }
-
-    Ok(new_ids)
-}
-
-/// Validates a full set of shares.
-pub(crate) fn validate_shares<S: IsShare>(shares: &[S]) -> Result<(u8, usize)> {
-    let (threshold, slen, _) = partial_validate_shares(shares, None, None, None)?;
-    let shares_count = shares.len();
-    if shares_count < threshold as usize {
-        bail!(ErrorKind::MissingShares(shares_count, threshold))
-    }
-    Ok((threshold, slen))
-}
-
-pub(crate) fn partial_validate_shares<S: IsShare>(
+pub(crate) fn validate_shares<S: IsShare>(
     shares: &[S],
     threshold: Option<u8>,
     slen: Option<usize>,
     already_verified_ids: Option<&[u8]>,
-)-> Result<(u8, usize, Vec<u8>)> {
+) -> Result<(u8, usize)> {
     if shares.is_empty() {
         bail!(ErrorKind::EmptyShares);
     }
@@ -85,8 +46,9 @@ pub(crate) fn partial_validate_shares<S: IsShare>(
     } else {
         Vec::with_capacity(shares_count)
     };
-    let mut threshold = threshold.unwrap_or(0);
-    let mut slen = slen.unwrap_or(0);
+    // Safe to index since we already confirmed `shares` is nonempty.
+    let threshold = threshold.unwrap_or_else(|| shares[0].get_threshold());
+    let slen = slen.unwrap_or_else(|| shares[0].get_data().len());
 
     for share in shares {
         let id = share.get_id();
@@ -106,10 +68,6 @@ pub(crate) fn partial_validate_shares<S: IsShare>(
 
         if ids.iter().any(|&x| x == id) {
             bail!(ErrorKind::DuplicateShareId(id));
-        }
-
-        if threshold == 0 {
-            threshold = threshold_;
         } else if threshold_ != threshold {
             bail!(ErrorKind::InconsistentThresholds(
                 id,
@@ -117,10 +75,6 @@ pub(crate) fn partial_validate_shares<S: IsShare>(
                 ids,
                 threshold
             ))
-        }
-
-        if slen == 0 {
-            slen = slen_;
         } else if slen_ != slen {
             bail!(ErrorKind::InconsistentSecretLengths(id, slen_, ids, slen))
         }
@@ -128,7 +82,7 @@ pub(crate) fn partial_validate_shares<S: IsShare>(
         ids.push(id);
     }
 
-    Ok((threshold, slen, ids))
+    Ok((threshold, slen))
 }
 
 pub(crate) fn validate_share_count(threshold: u8, shares_count: u8) -> Result<(u8, u8)> {
