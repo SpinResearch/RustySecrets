@@ -91,9 +91,10 @@ pub(crate) fn validate_shares<S: IsShare>(
         let threshold_ = share.get_threshold();
         let slen_ = share.get_data().len();
 
-        // Public-facing `Share::share_from_string` performs these three tests, but in case another
-        // type which implements `IsShare` is implemented later that doesn't do that validation,
-        // we'll leave them.
+        // Public-facing `Share::share_from_string` performs the following three tests, so they are
+        // redudant in production for the time being. However, for our tests, not all shares tested
+        // come from strings (e.g., `dss::ss1::Share` we test by constructing from parts), so they
+        // should be left for now.
         if id < 1 {
             bail!(ErrorKind::ShareParsingInvalidShareId(id))
         } else if threshold_ < 2 {

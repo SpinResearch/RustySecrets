@@ -8,7 +8,6 @@ use rand::{OsRng, Rng};
 use errors::*;
 use gf256::Gf256;
 use lagrange::{evaluate_at_zero, BarycentricWeights};
-use share::IsShare;
 use share::validation::*;
 use sss::format::format_share_for_signing;
 use sss::{Share, HASH_ALGO};

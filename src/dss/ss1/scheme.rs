@@ -254,7 +254,7 @@ impl SS1 {
             .iter()
             .map(|share| thss::Share {
                 id: share.id,
-                threshold: share.threshold,
+                threshold,
                 shares_count: share.shares_count,
                 data: share.data.clone(),
                 metadata: share.metadata.clone(),

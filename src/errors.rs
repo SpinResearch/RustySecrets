@@ -149,11 +149,6 @@ error_chain! {
             description("The shares are incompatible with each other because they do not all have the same threshold.")
             display("The share identifier {} had k = {}, while k = {} was found for share identifier(s): {}.", id, k_, k, no_more_than_five(ids))
         }
-
-        // PartialInterpolationNotComplete(k: u8, shares_interpolated: u8) {
-        //     description("The partial interpolation result is not complete because the number of points interpolated has not reached the threshold.")
-        //     display("In order to evaluate the secret polynomial at any point k = {} shares are needed, whereas only {} have been provided.", k, shares_interpolated)
-        // }
     }
 
     foreign_links {

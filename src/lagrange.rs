@@ -1,4 +1,4 @@
-use std::u8;
+/// Implements barycentric Lagrange interpolation.
 
 use errors::*;
 use gf256::Gf256;
@@ -13,10 +13,9 @@ pub struct BarycentricWeights {
     pub weights: Vec<Gf256>,
 }
 
-// `BarycentricWeights` is not a public-facing struct. We expect the functions that interact with it to
-// do validation of the `points` and other arguments it operates on. As a defensive programming
-// practice, we have included `assert!` statements, which should also clarify the validation
-// expectations of each method.
+// `BarycentricWeights` is not a public-facing struct. We expect the functions that interact with
+// it to do validation of its operands (namely, the methods of `sss::Recover`.) Still, we have
+// included many assertions to guard against clearly wrong inputs.
 impl BarycentricWeights {
     /// Create a new partial computation given a `threshold` (to know when the computation is
     /// finished), and an initial set of `points`.
@@ -44,11 +43,17 @@ impl BarycentricWeights {
     pub fn update(&mut self, ids: &[Gf256], new_ys: &[Gf256]) {
         let (new_points, total_points) = (new_ys.len(), ids.len());
         assert_ne!(new_points, 0, "Given an empty set of points!");
-        assert!(total_points >= 2, "In order to call update you must have already processed at least one point to make a `BarycentricWeights`, and you must provide at least a second in your call to update.");
+        assert!(total_points > 1, "In order to call update you must have already processed at least
+        one point to make a `BarycentricWeights`, and you must provide at least a second in your
+        call to update.");
         assert!(
-            total_points >= new_points,
-            "The IDs of the shares processed should at least number the new y values."
+            total_points > new_points,
+            "During an update IDs of the shares processed should at least number the new y values."
         );
+        // We use diffs here and not weights because no weights are generated until at least 2
+        // points have been interpolated.
+        assert_eq!(new_points + self.diffs.len(), total_points, "The new points given plus the
+        existing diffs should be equal in length to the total points given.");
 
         self.update_diffs(ids, new_ys);
         self.update_barycentric_weights(ids);
@@ -137,7 +142,7 @@ fn evaluate_at_x(wds: &BarycentricWeights, ids: &[Gf256], x: Gf256) -> Result<u8
     Ok((num / denom).to_byte())
 }
 
-/// TODO:
+/// Validates the `BarycentricWeights` and `ids` can successfully be used to compute a secret byte.
 #[inline]
 fn validate_evaluation_parameters(wds: &BarycentricWeights, ids: &[Gf256]) {
     let num_weights = wds.weights.len();
@@ -203,7 +208,7 @@ mod tests {
     use super::*;
     use gf256::*;
     use quickcheck::*;
-    use std;
+    use std::u8;
 
     quickcheck! {
 
