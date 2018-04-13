@@ -36,6 +36,7 @@ default-features = false
 itertools = "^0.7"
 quickcheck = "^0.4"
 flate2 = "^0.2"
+rand = "^0.4.2"
 
 [profile.bench]
 opt-level = 3
