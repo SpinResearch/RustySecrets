@@ -42,10 +42,20 @@ use self::scheme::SS1;
 /// let secret = "These programs were never about terrorism: they’re about economic spying, \
 ///               social control, and diplomatic manipulation. They’re about power.";
 ///
+/// let seed = b"d640570fae10a989f5b1d8fc2e1961ea2e046875".to_vec();
+///
 /// let mut metadata = MetaData::new();
 /// metadata.tags.insert("mime_type".to_string(), "text/plain".to_string());
 ///
-/// match ss1::split_secret(7, 10, &secret.as_bytes(), Reproducibility::reproducible(), &Some(metadata)) {
+/// let shares = ss1::split_secret(
+///     7,  // threshold
+///     10, // total shares count
+///     &secret.as_bytes(),
+///     Reproducibility::deterministic(seed),
+///     &Some(metadata)
+/// );
+///
+/// match shares {
 ///     Ok(shares) => {
 ///         // Do something with the shares
 ///     },
@@ -76,14 +86,16 @@ pub fn split_secret(
 /// let secret = "These programs were never about terrorism: they’re about economic spying, \
 ///               social control, and diplomatic manipulation. They’re about power.";
 ///
+/// let seed = b"d640570fae10a989f5b1d8fc2e1961ea2e046875".to_vec();
+///
 /// let mut metadata = MetaData::new();
 /// metadata.tags.insert("mime_type".to_string(), "text/plain".to_string());
 ///
 /// let shares = ss1::split_secret(
-///     7,
-///     10,
+///     7,  // threshold
+///     10, // total shares count
 ///     &secret.as_bytes(),
-///     Reproducibility::reproducible(),
+///     Reproducibility::deterministic(seed),
 ///     &Some(metadata)
 /// ).unwrap();
 ///
@@ -106,10 +118,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn nonreproducible_split_then_recover_yields_original_secret() {
+    fn nondeterministic_split_then_recover_yields_original_secret() {
         let secret = "Hello, World!".to_string().into_bytes();
 
-        let shares = split_secret(7, 10, &secret, Reproducibility::none(), &None).unwrap();
+        let shares = split_secret(7, 10, &secret, Reproducibility::probabilistic(), &None).unwrap();
 
         assert_eq!(shares.len(), 10);
 
@@ -120,25 +132,12 @@ mod tests {
     }
 
     #[test]
-    fn reproducible_split_then_recover_yields_original_secret() {
-        let secret = "Hello, World!".to_string().into_bytes();
-
-        let shares = split_secret(7, 10, &secret, Reproducibility::reproducible(), &None).unwrap();
-
-        assert_eq!(shares.len(), 10);
-
-        let (recovered, metadata) = recover_secret(&shares[2..9]).unwrap();
-
-        assert_eq!(secret, recovered);
-        assert_eq!(None, metadata);
-    }
-
-    #[test]
-    fn seeded_reproducible_split_then_recover_yields_original_secret() {
+    fn deterministic_split_then_recover_yields_original_secret() {
         let secret = "Hello, World!".to_string().into_bytes();
 
         let seed = vec![1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16u8];
-        let shares = split_secret(7, 10, &secret, Reproducibility::seeded(seed), &None).unwrap();
+        let shares =
+            split_secret(7, 10, &secret, Reproducibility::deterministic(seed), &None).unwrap();
 
         assert_eq!(shares.len(), 10);
 
@@ -149,36 +148,36 @@ mod tests {
     }
 
     #[test]
-    fn reproducible_split() {
+    fn nondeterministic_split() {
         let secret = "Hello, World!".to_string().into_bytes();
 
         let shares_1 =
-            split_secret(7, 10, &secret, Reproducibility::reproducible(), &None).unwrap();
+            split_secret(7, 10, &secret, Reproducibility::probabilistic(), &None).unwrap();
         let shares_2 =
-            split_secret(7, 10, &secret, Reproducibility::reproducible(), &None).unwrap();
-
-        assert_eq!(shares_1, shares_2);
-    }
-
-    #[test]
-    fn nonreproducible_split() {
-        let secret = "Hello, World!".to_string().into_bytes();
-
-        let shares_1 = split_secret(7, 10, &secret, Reproducibility::none(), &None).unwrap();
-        let shares_2 = split_secret(7, 10, &secret, Reproducibility::none(), &None).unwrap();
+            split_secret(7, 10, &secret, Reproducibility::probabilistic(), &None).unwrap();
 
         assert!(shares_1 != shares_2);
     }
 
     #[test]
-    fn seeded_split() {
+    fn deterministic_split() {
         let secret = "Hello, World!".to_string().into_bytes();
 
         let seed = vec![1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16u8];
-        let shares_1 =
-            split_secret(7, 10, &secret, Reproducibility::seeded(seed.clone()), &None).unwrap();
-        let shares_2 =
-            split_secret(7, 10, &secret, Reproducibility::seeded(seed.clone()), &None).unwrap();
+        let shares_1 = split_secret(
+            7,
+            10,
+            &secret,
+            Reproducibility::deterministic(seed.clone()),
+            &None,
+        ).unwrap();
+        let shares_2 = split_secret(
+            7,
+            10,
+            &secret,
+            Reproducibility::deterministic(seed.clone()),
+            &None,
+        ).unwrap();
 
         assert_eq!(shares_1, shares_2);
     }

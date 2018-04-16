@@ -24,7 +24,7 @@ mod ss1 {
                         $k,
                         $n,
                         &secret,
-                        ss1::Reproducibility::reproducible(),
+                        ss1::Reproducibility::default(),
                         &None,
                     ).unwrap();
                     black_box(shares);
@@ -39,7 +39,7 @@ mod ss1 {
             fn $name(b: &mut Bencher) {
                 let secret = shared::$secret();
                 let all_shares =
-                    ss1::split_secret($k, $n, &secret, ss1::Reproducibility::reproducible(), &None)
+                    ss1::split_secret($k, $n, &secret, ss1::Reproducibility::default(), &None)
                         .unwrap();
                 let shares = &all_shares.into_iter().take($k).collect::<Vec<_>>().clone();
 

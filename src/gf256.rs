@@ -197,8 +197,10 @@ mod tests {
                         (i.to_byte(), j.to_byte(), $val(i, j).to_byte())
                     });
 
-                    let ref_path = format!("tests/_fixtures/gf256/gf256_{}.txt.gz", stringify!($id));
-                    let reference = BufReader::new(GzDecoder::new(File::open(ref_path).unwrap()).unwrap());
+                    let ref_path =
+                        format!("tests/_fixtures/gf256/gf256_{}.txt.gz", stringify!($id));
+                    let reference =
+                        BufReader::new(GzDecoder::new(File::open(ref_path).unwrap()).unwrap());
 
                     for ((i, j, k), line) in results.zip(reference.lines()) {
                         let left = format!("{} {} {} = {}", i, $op, j, k);

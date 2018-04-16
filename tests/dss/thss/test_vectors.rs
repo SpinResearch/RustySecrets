@@ -1,4 +1,4 @@
-use rusty_secrets::dss::thss::{recover_secret, split_secret, MetaData, Share};
+use rusty_secrets::dss::thss::{recover_secret, MetaData, Share};
 
 const THRESHOLD: u8 = 5;
 const SHARES_COUNT: u8 = 7;

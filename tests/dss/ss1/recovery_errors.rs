@@ -2,17 +2,17 @@ use rusty_secrets::dss::ss1::{recover_secret, split_secret, Reproducibility, Sha
 
 const TEST_THRESHOLD: u8 = 2;
 const TEST_SHARES_COUNT: u8 = 2;
-const TEST_REPRODUCIBILITY: Reproducibility = Reproducibility::Reproducible;
+const TEST_SEED: &[u8] = b"d640570fae10a989f5b1d8fc2e1961ea2e046875";
 const TEST_SECRET: &[u8] =
     b"These programs were never about terrorism: they're about economic spying, \
-                             social control, and diplomatic manipulation. They're about power.";
+      social control, and diplomatic manipulation. They're about power.";
 
 fn get_test_hash() -> Vec<u8> {
     let good_shares = split_secret(
         TEST_THRESHOLD,
         TEST_SHARES_COUNT,
         TEST_SECRET,
-        TEST_REPRODUCIBILITY,
+        Reproducibility::deterministic(TEST_SEED.to_vec()),
         &None,
     ).unwrap();
 
