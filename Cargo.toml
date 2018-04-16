@@ -5,6 +5,7 @@ authors = [
   "Frederic Jacobs <github@fredericjacobs.com>",
   "Romain Ruetschi <romain.ruetschi@gmail.com>",
   "Dylan Bourgeois <dtsbourg@gmail.com>",
+  "Noah Vesely <fowlslegs@riseup.net>",
   "sellibitze"
 ]
 description = "Implementation of threshold Shamir's secret sharing in the Rust programming language."
