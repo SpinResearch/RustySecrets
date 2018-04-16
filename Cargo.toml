@@ -13,6 +13,8 @@ license = "BSD-3-Clause"
 readme = "README.md"
 build = "build.rs"
 
+exclude = ["Cargo.lock"]
+
 [badges]
 travis-ci = { repository = "SpinResearch/RustySecrets", branch = "master" }
 coveralls = { repository = "SpinResearch/RustySecrets", branch = "master", service = "github" }
