@@ -55,7 +55,7 @@ any security vulnerability in this code privately to anybody.**
 
 ## License
 
-See [LICENSE](LICENSE).
+RustySecrets is distributed under the BSD 3-Clause license. See the [LICENSE](LICENSE) file for more information.
 
 ## Vocabulary
 
