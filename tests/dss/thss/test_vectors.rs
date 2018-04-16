@@ -14,6 +14,7 @@ fn meta_data() -> MetaData {
     metadata
 }
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 fn shares_meta() -> Vec<&'static str> {
     vec!["5-1-CAEQBRgHIosByvXQoy+4Cg/UFieZRaQXJU+PW508oor5AQX+7aU+i+qAn3ope5AH/HvVsoQNaoi6zKJOEgoru0etz0BLhgqyyTuw+K0MKtdiS3dw5JHiUJBfDf1lwZIserX2cFhLLgRYRA0stuFkAmNeQvy9Mhn0m/gEfPSI9HxIS78Aqeo/RATgkgO6/Zwxl3l98zIZChcKCW1pbWVfdHlwZRIKdGV4dC9wbGFpbg",
     "5-2-CAIQBRgHIosBm/oF5oOAmoA+8A9q2fWXhQTcq9WUxlwGSaeEVQSvrtNL/UjcEioBgwQ2vqsI5sBAY6A0PSK1AS1PuPpY+A1WDtyE0dwGoTKkh7qfyxZ+iIfFcDtHS8fBFr58FWGePGyoFDGgCByubmxgDsTR8PQpGjdN0B6Kq2LMwaZ1n6Hj8wnfKMHBbRthxK/mkzIZChcKCW1pbWVfdHlwZRIKdGV4dC9wbGFpbg",
@@ -24,6 +25,7 @@ fn shares_meta() -> Vec<&'static str> {
     "5-7-CAcQBRgHIosBShSxrUr7DNl8dZX9w0M7+UTUUvPObFrv+d5W0/6ceVMySC65x4zkdInHc4O0oL5Acm76JIAc0/JCVNeiwLJ3CGf5n0qXvBPJ04XaujkiJONmJaqaVicBZArD2i0yytCMiZA2Uj2NxIMxRGCFbgYf1JU+DRR891TZDhSpeBFjeLzu8Bicf2+m1UtkkTIZChcKCW1pbWVfdHlwZRIKdGV4dC9wbGFpbg"]
 }
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 fn shares_no_meta() -> Vec<&'static str> {
     vec![
         "5-1-CAEQBRgIIosBnXo/a91D0XoED+H/h/jcYgcgEo7EvSIFmvFZmIqLUKC6uZ1u6Xnrub0KTWlmKWf+qGpmx4xbPq8Tu+TY1ng8GI1AP5U8+h0+EOHctgaQxRJi59u2HBBn0AGIlZTW/1e3USO4wQElC+HOX5TN9dWKD9+HZvKQjYGHwHGauAdMxOD73HNWeKRndO569Q",
