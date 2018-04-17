@@ -20,13 +20,9 @@ mod ss1 {
                 let secret = shared::$secret();
 
                 b.iter(move || {
-                    let shares = ss1::split_secret(
-                        $k,
-                        $n,
-                        &secret,
-                        ss1::Reproducibility::default(),
-                        &None,
-                    ).unwrap();
+                    let shares =
+                        ss1::split_secret($k, $n, &secret, ss1::Reproducibility::default(), &None)
+                            .unwrap();
                     black_box(shares);
                 });
             }

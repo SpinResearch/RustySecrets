@@ -5,12 +5,12 @@ use ring::digest::{Context, SHA256};
 use ring::rand::{SecureRandom, SystemRandom};
 use ring::{hkdf, hmac};
 
-use errors::*;
-use dss::thss::{self, MetaData, ThSS};
-use dss::random::{random_bytes_count, FixedRandom, MAX_MESSAGE_SIZE};
-use share::validation::{validate_share_count, validate_shares};
 use super::share::*;
+use dss::random::{random_bytes_count, FixedRandom, MAX_MESSAGE_SIZE};
+use dss::thss::{self, MetaData, ThSS};
 use dss::utils;
+use errors::*;
+use share::validation::{validate_share_count, validate_shares};
 use vol_hash::VOLHash;
 
 /// We bound the message size at about 16MB to avoid overflow in `random_bytes_count`.

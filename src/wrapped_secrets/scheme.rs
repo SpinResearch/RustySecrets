@@ -1,11 +1,11 @@
 use errors::*;
-use proto::VersionProto;
 use proto::wrapped::SecretProto;
+use proto::VersionProto;
 use protobuf;
 use protobuf::Message;
 
-use sss::SSS;
 pub(crate) use sss::Share;
+use sss::SSS;
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) struct WrappedSecrets;
