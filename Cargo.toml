@@ -5,6 +5,7 @@ authors = [
   "Frederic Jacobs <github@fredericjacobs.com>",
   "Romain Ruetschi <romain.ruetschi@gmail.com>",
   "Dylan Bourgeois <dtsbourg@gmail.com>",
+  "Noah Vesely <fowlslegs@riseup.net>",
   "sellibitze"
 ]
 description = "Implementation of threshold Shamir's secret sharing in the Rust programming language."
@@ -12,6 +13,8 @@ homepage = "https://github.com/freedomofpress/RustySecrets"
 license = "BSD-3-Clause"
 readme = "README.md"
 build = "build.rs"
+
+exclude = ["Cargo.lock"]
 
 [badges]
 travis-ci = { repository = "SpinResearch/RustySecrets", branch = "master" }
