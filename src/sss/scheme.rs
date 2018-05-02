@@ -68,7 +68,12 @@ impl SSS {
         Ok(result.collect())
     }
 
-    fn secret_share<R: Rng>(rng: &mut R, src: &[u8], threshold: u8, shares_count: u8) -> Result<Vec<Vec<u8>>> {
+    fn secret_share<R: Rng>(
+        rng: &mut R,
+        src: &[u8],
+        threshold: u8,
+        shares_count: u8,
+    ) -> Result<Vec<Vec<u8>>> {
         let mut result = Vec::with_capacity(shares_count as usize);
         for _ in 0..(shares_count as usize) {
             result.push(vec![0u8; src.len()]);

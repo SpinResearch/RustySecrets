@@ -63,7 +63,13 @@ pub fn split_secret(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result<Ve
 ///     }
 /// }
 /// ```
-pub fn split_secret_rng<R: Rng>(rng: &mut R, k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result<Vec<String>> {
+pub fn split_secret_rng<R: Rng>(
+    rng: &mut R,
+    k: u8,
+    n: u8,
+    secret: &[u8],
+    sign_shares: bool,
+) -> Result<Vec<String>> {
     SSS::default()
         .split_secret(rng, k, n, secret, sign_shares)
         .map(|shares| shares.into_iter().map(Share::into_string).collect())
