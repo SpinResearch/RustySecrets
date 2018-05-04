@@ -13,10 +13,13 @@ pub(crate) use self::scheme::*;
 
 mod encode;
 
+use rand::{OsRng, Rng};
 use ring::digest::{Algorithm, SHA512};
 static HASH_ALGO: &'static Algorithm = &SHA512;
 
 /// Performs threshold k-out-of-n Shamir's secret sharing.
+///
+/// Uses a `rand::OsRng` as a source of entropy.
 ///
 /// # Examples
 ///
@@ -37,7 +40,38 @@ static HASH_ALGO: &'static Algorithm = &SHA512;
 /// ```
 pub fn split_secret(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result<Vec<String>> {
     SSS::default()
-        .split_secret(k, n, secret, sign_shares)
+        .split_secret(&mut OsRng::new()?, k, n, secret, sign_shares)
+        .map(|shares| shares.into_iter().map(Share::into_string).collect())
+}
+
+/// Performs threshold k-out-of-n Shamir's secret sharing with a custom RNG.
+///
+/// # Examples
+///
+/// ```
+/// use rusty_secrets::sss::split_secret;
+///
+/// let secret = "These programs were never about terrorism: they’re about economic spying, \
+///               social control, and diplomatic manipulation. They’re about power.";
+///
+/// match split_secret(7, 10, &secret.as_bytes(), true) {
+///     Ok(shares) => {
+///         // Do something with the shares
+///     },
+///     Err(_) => {
+///         // Deal with error
+///     }
+/// }
+/// ```
+pub fn split_secret_rng<R: Rng>(
+    rng: &mut R,
+    k: u8,
+    n: u8,
+    secret: &[u8],
+    sign_shares: bool,
+) -> Result<Vec<String>> {
+    SSS::default()
+        .split_secret(rng, k, n, secret, sign_shares)
         .map(|shares| shares.into_iter().map(Share::into_string).collect())
 }
 
