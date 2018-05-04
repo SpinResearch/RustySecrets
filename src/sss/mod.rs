@@ -49,12 +49,26 @@ pub fn split_secret(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result<Ve
 /// # Examples
 ///
 /// ```
-/// use rusty_secrets::sss::split_secret;
+/// # extern crate rusty_secrets;
+/// # extern crate rand;
+/// #
+/// # use rand::ChaChaRng;
+/// #
+/// # fn some_custom_rng() -> ChaChaRng {
+/// #     let mut rng = ChaChaRng::new_unseeded();
+/// #     rng.set_counter(42, 42);
+/// #     rng
+/// # }
+/// #
+/// # fn main() {
+/// use rusty_secrets::sss::split_secret_rng;
 ///
 /// let secret = "These programs were never about terrorism: they’re about economic spying, \
 ///               social control, and diplomatic manipulation. They’re about power.";
 ///
-/// match split_secret(7, 10, &secret.as_bytes(), true) {
+/// let mut rng = some_custom_rng();
+///
+/// match split_secret_rng(&mut rng, 7, 10, &secret.as_bytes(), true) {
 ///     Ok(shares) => {
 ///         // Do something with the shares
 ///     },
@@ -62,6 +76,7 @@ pub fn split_secret(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result<Ve
 ///         // Deal with error
 ///     }
 /// }
+/// # }
 /// ```
 pub fn split_secret_rng<R: Rng>(
     rng: &mut R,
