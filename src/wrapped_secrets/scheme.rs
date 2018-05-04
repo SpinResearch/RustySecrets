@@ -3,6 +3,7 @@ use proto::VersionProto;
 use proto::wrapped::SecretProto;
 use protobuf;
 use protobuf::Message;
+use rand::Rng;
 
 use sss::SSS;
 pub(crate) use sss::Share;
@@ -12,8 +13,9 @@ pub(crate) struct WrappedSecrets;
 
 impl WrappedSecrets {
     /// Performs threshold k-out-of-n Shamir's secret sharing.
-    pub fn split_secret(
+    pub fn split_secret<R: Rng>(
         &self,
+        rng: &mut R,
         k: u8,
         n: u8,
         secret: &[u8],
@@ -30,7 +32,7 @@ impl WrappedSecrets {
 
         let data = rusty_secret.write_to_bytes().unwrap();
 
-        SSS::default().split_secret(k, n, data.as_slice(), sign_shares)
+        SSS::default().split_secret(rng, k, n, data.as_slice(), sign_shares)
     }
 
     /// Recovers the secret from a k-out-of-n Shamir's secret sharing.
