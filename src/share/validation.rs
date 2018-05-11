@@ -83,7 +83,7 @@ pub(crate) fn validate_shares<S: IsShare>(shares: &Vec<S>) -> Result<(u8, usize)
 }
 
 pub(crate) fn validate_share_count(threshold: u8, shares_count: u8) -> Result<(u8, u8)> {
-    if threshold < MIN_SHARES {
+    if threshold < MIN_THRESHOLD {
         bail!(ErrorKind::ThresholdTooSmall(threshold));
     }
     if shares_count > MAX_SHARES {
