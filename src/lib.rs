@@ -19,9 +19,7 @@ extern crate ring;
 #[macro_use]
 mod gf256;
 mod lagrange;
-mod poly;
 mod share;
-mod vol_hash;
 
 pub mod errors;
 pub mod proto;
