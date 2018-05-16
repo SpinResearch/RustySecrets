@@ -1,3 +1,5 @@
+#![allow(suspicious_arithmetic_impl)]
+
 //! This module provides the Gf256 type which is used to represent
 //! elements of a finite field with 256 elements.
 
@@ -21,23 +23,28 @@ impl Gf256 {
     pub fn zero() -> Gf256 {
         Gf256 { poly: 0 }
     }
+
     /// returns the multiplicative neutral element of the field
     #[inline]
     pub fn one() -> Gf256 {
         Gf256 { poly: 1 }
     }
+
     #[inline]
     pub fn from_byte(b: u8) -> Gf256 {
         Gf256 { poly: b }
     }
+
     #[inline]
     pub fn to_byte(&self) -> u8 {
         self.poly
     }
+
     pub fn exp(power: u8) -> Gf256 {
         let tabs = get_tables();
         Gf256::from_byte(tabs.exp[power as usize])
     }
+
     pub fn log(&self) -> Option<u8> {
         if self.poly == 0 {
             None
@@ -46,20 +53,22 @@ impl Gf256 {
             Some(tabs.log[self.poly as usize])
         }
     }
+
+    #[allow(dead_code)]
     pub fn pow(&self, mut exp: u8) -> Gf256 {
         let mut base = *self;
         let mut acc = Self::one();
 
         while exp > 1 {
             if (exp & 1) == 1 {
-                acc = acc * base;
+                acc *= base;
             }
             exp /= 2;
             base = base * base;
         }
 
         if exp == 1 {
-            acc = acc * base;
+            acc *= base;
         }
 
         acc

@@ -38,7 +38,7 @@ impl WrappedSecrets {
     /// Recovers the secret from a k-out-of-n Shamir's secret sharing.
     ///
     /// At least `k` distinct shares need to be provided to recover the share.
-    pub fn recover_secret(shares: Vec<Share>, verify_signatures: bool) -> Result<SecretProto> {
+    pub fn recover_secret(shares: &[Share], verify_signatures: bool) -> Result<SecretProto> {
         let secret = SSS::recover_secret(shares, verify_signatures)?;
 
         protobuf::parse_from_bytes::<SecretProto>(secret.as_slice())
