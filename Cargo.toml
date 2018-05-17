@@ -29,7 +29,10 @@ base64 = "0.9.0"
 rand = "^0.4.2"
 ring = "^0.12"
 merkle_sigs = "^1.4"
-protobuf = "^1.4"
+protobuf = "^1.5"
+
+[build-dependencies]
+protoc-rust = "1.5"
 
 [dependencies.error-chain]
 version = "0.11.0"
