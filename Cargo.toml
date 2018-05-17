@@ -26,7 +26,7 @@ base64 = "0.9.0"
 rand = "^0.3"
 ring = "^0.12"
 merkle_sigs = "^1.4"
-protobuf = "^1.4"
+protobuf = ">= 1.4, < 1.6"
 
 [dependencies.error-chain]
 version = "0.11.0"
