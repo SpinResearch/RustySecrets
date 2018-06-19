@@ -24,6 +24,9 @@ matrix:
       rust: nightly
       before_script:
         - rustup component add rustfmt-preview
+        - touch src/proto/version.rs
+        - touch src/proto/dss/metadata.rs src/proto/dss/secret.rs src/proto/dss/share.rs
+        - touch src/proto/wrapped/secret.rs src/proto/wrapped/share.rs
       script:
         - cargo fmt --all -- --check
     - env: NAME='kcov'
