@@ -36,7 +36,7 @@ impl Gf256 {
     }
 
     #[inline]
-    pub fn to_byte(&self) -> u8 {
+    pub fn to_byte(self) -> u8 {
         self.poly
     }
 
@@ -45,7 +45,7 @@ impl Gf256 {
         Gf256::from_byte(tabs.exp[power as usize])
     }
 
-    pub fn log(&self) -> Option<u8> {
+    pub fn log(self) -> Option<u8> {
         if self.poly == 0 {
             None
         } else {
@@ -55,8 +55,8 @@ impl Gf256 {
     }
 
     #[allow(dead_code)]
-    pub fn pow(&self, mut exp: u8) -> Gf256 {
-        let mut base = *self;
+    pub fn pow(self, mut exp: u8) -> Gf256 {
+        let mut base = self;
         let mut acc = Self::one();
 
         while exp > 1 {
@@ -240,6 +240,7 @@ mod tests {
                 (a + b) + c == a + (b + c)
             }
 
+            #[cfg_attr(feature = "cargo-clippy", allow(eq_op))]
             fn law_commutativity(a: Gf256, b: Gf256) -> bool {
                 a + b == b + a
             }
@@ -266,6 +267,7 @@ mod tests {
                 (a * b) * c == a * (b * c)
             }
 
+            #[cfg_attr(feature = "cargo-clippy", allow(eq_op))]
             fn law_commutativity(a: Gf256, b: Gf256) -> bool {
                 a * b == b * a
             }
