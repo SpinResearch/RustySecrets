@@ -57,10 +57,7 @@ pub(crate) fn validate_shares<S: IsShare>(shares: &[S]) -> Result<(u8, usize)> {
             threshold = threshold_;
         } else if threshold_ != threshold {
             bail!(ErrorKind::InconsistentThresholds(
-                id,
-                threshold_,
-                ids,
-                threshold
+                id, threshold_, ids, threshold
             ))
         }
 
