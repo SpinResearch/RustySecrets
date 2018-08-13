@@ -29,7 +29,7 @@ matrix:
       before_script:
         - cargo install clippy --version $CLIPPY_VERSION || echo "clippy already installed"
       script:
-        - cargo clippy --all -- -D clippy
+        - cargo clippy --all --tests --all-features -- -D clippy
     - env: NAME='kcov'
       sudo: required # travis-ci/travis-ci#9061
       before_script:
