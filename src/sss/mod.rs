@@ -39,8 +39,9 @@ static HASH_ALGO: &'static Algorithm = &SHA512;
 /// }
 /// ```
 pub fn split_secret(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result<Vec<String>> {
+    let mut rng = OsRng::new().chain_err(|| ErrorKind::CannotGenerateRandomNumbers)?;
     SSS::default()
-        .split_secret(&mut OsRng::new()?, k, n, secret, sign_shares)
+        .split_secret(&mut rng, k, n, secret, sign_shares)
         .map(|shares| shares.into_iter().map(Share::into_string).collect())
 }
 

@@ -44,8 +44,9 @@ pub fn split_secret(
     mime_type: Option<String>,
     sign_shares: bool,
 ) -> Result<Vec<String>> {
+    let mut rng = OsRng::new().chain_err(|| ErrorKind::CannotGenerateRandomNumbers)?;
     WrappedSecrets::default()
-        .split_secret(&mut OsRng::new()?, k, n, secret, mime_type, sign_shares)
+        .split_secret(&mut rng, k, n, secret, mime_type, sign_shares)
         .map(|shares| shares.into_iter().map(Share::into_string).collect())
 }
 
