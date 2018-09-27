@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["recover_secret","Recovers the secret from a k-out-of-n Shamir's secret sharing."],["split_secret","Performs threshold k-out-of-n Shamir's secret sharing."],["split_secret_rng","Performs threshold k-out-of-n Shamir's secret sharing with a custom RNG."]]});

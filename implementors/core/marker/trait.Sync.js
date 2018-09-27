@@ -1,0 +1,10 @@
+(function() {var implementors = {};
+implementors["rusty_secrets"] = [{text:"impl !<a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html\" title=\"trait core::marker::Sync\">Sync</a> for <a class=\"struct\" href=\"rusty_secrets/errors/struct.Error.html\" title=\"struct rusty_secrets::errors::Error\">Error</a>",synthetic:true,types:["rusty_secrets::errors::Error"]},{text:"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html\" title=\"trait core::marker::Sync\">Sync</a> for <a class=\"enum\" href=\"rusty_secrets/errors/enum.ErrorKind.html\" title=\"enum rusty_secrets::errors::ErrorKind\">ErrorKind</a>",synthetic:true,types:["rusty_secrets::errors::ErrorKind"]},{text:"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html\" title=\"trait core::marker::Sync\">Sync</a> for <a class=\"enum\" href=\"rusty_secrets/proto/enum.VersionProto.html\" title=\"enum rusty_secrets::proto::VersionProto\">VersionProto</a>",synthetic:true,types:["rusty_secrets::proto::version::VersionProto"]},{text:"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html\" title=\"trait core::marker::Sync\">Sync</a> for <a class=\"struct\" href=\"rusty_secrets/proto/wrapped/struct.SecretProto.html\" title=\"struct rusty_secrets::proto::wrapped::SecretProto\">SecretProto</a>",synthetic:false,types:["rusty_secrets::proto::wrapped::secret::SecretProto"]},{text:"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html\" title=\"trait core::marker::Sync\">Sync</a> for <a class=\"struct\" href=\"rusty_secrets/proto/wrapped/struct.ShareProto.html\" title=\"struct rusty_secrets::proto::wrapped::ShareProto\">ShareProto</a>",synthetic:false,types:["rusty_secrets::proto::wrapped::share::ShareProto"]},];
+
+            if (window.register_implementors) {
+                window.register_implementors(implementors);
+            } else {
+                window.pending_implementors = implementors;
+            }
+        
+})()
