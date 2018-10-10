@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -e
+set -x
 
 PROTOC_VERSION=$(cat PROTOC_VERSION)
 
