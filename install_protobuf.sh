@@ -14,10 +14,10 @@ if check_protoc_version; then
     exit
 fi
 
-wget https://github.com/google/protobuf/archive/v$PROTOC_VERSION.tar.gz
-tar -xzf v$PROTOC_VERSION.tar.gz
-cd protobuf-$PROTOC_VERSION
-./autogen.sh >/dev/null 2>&1
-./configure --prefix=$HOME/protobuf >/dev/null 2>&1
-make >/dev/null 2>&1
-make install >/dev/null 2>&1
+PROTOC_FILENAME=protoc-${PROTOC_VERSION}-linux-x86_64.zip
+mkdir -p $HOME/protobuf
+pushd $HOME/protobuf
+wget https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOC_FILENAME}
+unzip ${PROTOC_FILENAME}
+bin/protoc --version
+popd
