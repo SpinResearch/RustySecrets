@@ -18,6 +18,6 @@ PROTOC_FILENAME=protoc-${PROTOC_VERSION}-linux-x86_64.zip
 mkdir -p $HOME/protobuf
 pushd $HOME/protobuf
 wget https://github.com/google/protobuf/releases/download/v${PROTOC_VERSION}/${PROTOC_FILENAME}
-unzip ${PROTOC_FILENAME}
+unzip -o ${PROTOC_FILENAME}
 bin/protoc --version
 popd
