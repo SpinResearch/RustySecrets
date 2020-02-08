@@ -1,5 +1,9 @@
 language: rust
-cache: cargo # https://docs.travis-ci.com/user/caching/#Rust-Cargo-cache
+cache:
+  directories:
+    - $HOME/.cargo
+    - $HOME/protobuf
+    - $TRAVIS_BUILD_DIR/target
 
 rust:
   - stable
