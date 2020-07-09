@@ -6,13 +6,13 @@ use ring::rand::{SecureRandom, SystemRandom};
 use ring::{hkdf, hmac};
 
 use super::share::*;
-use dss::random::{random_bytes_count, FixedRandom, MAX_MESSAGE_SIZE};
-use dss::thss::{MetaData, ThSS};
-use dss::utils;
-use dss::{thss, AccessStructure};
-use errors::*;
-use share::validation::{validate_share_count, validate_shares};
-use vol_hash::VOLHash;
+use crate::dss::random::{random_bytes_count, FixedRandom, MAX_MESSAGE_SIZE};
+use crate::dss::thss::{MetaData, ThSS};
+use crate::dss::utils;
+use crate::dss::{thss, AccessStructure};
+use crate::errors::*;
+use crate::share::validation::{validate_share_count, validate_shares};
+use crate::vol_hash::VOLHash;
 
 /// We bound the message size at about 16MB to avoid overflow in `random_bytes_count`.
 /// Moreover, given the current performances, it is almost unpractical to run

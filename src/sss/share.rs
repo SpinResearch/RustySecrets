@@ -4,9 +4,9 @@ use std::error::Error;
 use merkle_sigs::verify_data_vec_signature;
 use merkle_sigs::{MerklePublicKey, Proof};
 
-use errors::*;
-use share::{IsShare, IsSignedShare};
-use sss::format::{format_share_for_signing, share_from_string, share_to_string};
+use crate::errors::*;
+use crate::share::{IsShare, IsSignedShare};
+use crate::sss::format::{format_share_for_signing, share_from_string, share_to_string};
 
 /// A share identified by an `id`, a threshold `k`, a number of total shares `n`,
 /// the `data` held in the share, and the share's `metadata`.

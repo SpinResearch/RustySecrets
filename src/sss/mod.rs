@@ -1,6 +1,6 @@
 //! SSS provides Shamir's secret sharing with raw data.
 
-use errors::*;
+use crate::errors::*;
 
 mod share;
 pub(crate) use self::share::*;

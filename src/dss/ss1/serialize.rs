@@ -1,8 +1,8 @@
 use super::{MetaData, Share};
-use dss::format::{format_share_protobuf, parse_share_protobuf};
-use dss::utils::{btreemap_to_hashmap, hashmap_to_btreemap};
-use errors::*;
-use proto::dss::{MetaDataProto, ShareProto};
+use crate::dss::format::{format_share_protobuf, parse_share_protobuf};
+use crate::dss::utils::{btreemap_to_hashmap, hashmap_to_btreemap};
+use crate::errors::*;
+use crate::proto::dss::{MetaDataProto, ShareProto};
 
 pub(crate) fn share_to_string(share: Share) -> String {
     let proto = share_to_protobuf(share);

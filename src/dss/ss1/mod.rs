@@ -21,7 +21,7 @@
 //!
 //! - *New Directions in Secret Sharing* (TODO: Full reference)
 
-use errors::*;
+use crate::errors::*;
 
 mod serialize;
 
@@ -32,7 +32,7 @@ mod scheme;
 pub use self::scheme::Reproducibility;
 use self::scheme::SS1;
 
-use dss::AccessStructure;
+use crate::dss::AccessStructure;
 
 /// Performs threshold k-out-of-n deterministic secret sharing.
 ///

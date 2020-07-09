@@ -3,11 +3,11 @@
 use merkle_sigs::sign_data_vec;
 use rand::Rng;
 
-use errors::*;
-use lagrange::interpolate_at;
-use share::validation::{validate_share_count, validate_signed_shares};
-use sss::format::format_share_for_signing;
-use sss::{Share, HASH_ALGO};
+use crate::errors::*;
+use crate::lagrange::interpolate_at;
+use crate::share::validation::{validate_share_count, validate_signed_shares};
+use crate::sss::format::format_share_for_signing;
+use crate::sss::{Share, HASH_ALGO};
 
 use super::encode::encode_secret_byte;
 

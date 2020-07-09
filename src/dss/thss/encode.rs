@@ -1,5 +1,5 @@
-use gf256::Gf256;
-use poly::Poly;
+use crate::gf256::Gf256;
+use crate::poly::Poly;
 
 /// Encode the given `secret` using the `ThSS[N].Share` algorithm described
 /// in the *New directions in Secret Sharing* paper.

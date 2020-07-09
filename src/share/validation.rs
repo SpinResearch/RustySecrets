@@ -1,5 +1,5 @@
-use errors::*;
-use share::{IsShare, IsSignedShare};
+use crate::errors::*;
+use crate::share::{IsShare, IsSignedShare};
 
 // The order of validation that we think makes the most sense is the following:
 // 1) Validate shares individually

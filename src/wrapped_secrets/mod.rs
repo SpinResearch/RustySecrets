@@ -1,7 +1,7 @@
 //! (Beta) `wrapped_secrets` provides Shamir's secret sharing with a wrapped secret. It currently offers versioning and MIME information about the data.
 
-use errors::*;
-use proto::wrapped::SecretProto;
+use crate::errors::*;
+use crate::proto::wrapped::SecretProto;
 
 use rand::{OsRng, Rng};
 

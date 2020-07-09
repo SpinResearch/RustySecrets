@@ -1,9 +1,9 @@
 use base64;
-use errors::*;
+use crate::errors::*;
 use merkle_sigs::{MerklePublicKey, Proof, PublicKey};
-use proto::wrapped::ShareProto;
+use crate::proto::wrapped::ShareProto;
 use protobuf::{self, Message, RepeatedField};
-use sss::{Share, HASH_ALGO};
+use crate::sss::{Share, HASH_ALGO};
 use std::error::Error;
 
 const BASE64_CONFIG: base64::Config = base64::STANDARD_NO_PAD;

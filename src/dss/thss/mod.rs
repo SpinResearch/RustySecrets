@@ -12,7 +12,7 @@
 //! **ErrDet**   | Yes | An inauthentic set of shares produced by an adversary will be flagged as such when fed to the recovery algorithm.
 //! **Repro**    | No | Share reproducible: The scheme can produce shares in a deterministic way.
 
-use errors::*;
+use crate::errors::*;
 
 mod encode;
 mod serialize;
@@ -23,7 +23,7 @@ pub use self::share::*;
 mod scheme;
 pub(crate) use self::scheme::ThSS;
 
-use dss::AccessStructure;
+use crate::dss::AccessStructure;
 
 /// Performs threshold k-out-of-n secret sharing using the `ThSS` scheme.
 ///

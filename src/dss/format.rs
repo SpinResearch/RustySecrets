@@ -3,8 +3,8 @@ use std::error::Error;
 use base64;
 use protobuf::{self, Message};
 
-use errors::*;
-use proto::dss::ShareProto;
+use crate::errors::*;
+use crate::proto::dss::ShareProto;
 
 const BASE64_CONFIG: base64::Config = base64::STANDARD_NO_PAD;
 

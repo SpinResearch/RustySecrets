@@ -1,5 +1,5 @@
-use gf256::Gf256;
-use poly::Poly;
+use crate::gf256::Gf256;
+use crate::poly::Poly;
 
 /// Evaluates an interpolated polynomial at `Gf256::zero()` where
 /// the polynomial is determined using barycentric Lagrange
@@ -89,7 +89,7 @@ pub(crate) fn interpolate(points: &[(Gf256, Gf256)]) -> Poly {
 mod tests {
 
     use super::*;
-    use gf256::*;
+    use crate::gf256::*;
     use quickcheck::*;
     use std;
 

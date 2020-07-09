@@ -6,7 +6,7 @@ use std::collections::HashSet;
 use std::fmt;
 
 #[cfg(feature = "dss")]
-use dss::ss1;
+use crate::dss::ss1;
 
 /// Minimum allowed number of shares (n)
 pub(crate) static MIN_SHARES: u8 = 2;
