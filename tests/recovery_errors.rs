@@ -121,16 +121,15 @@ fn test_recover_too_few_shares_bug() {
     let mut share_1 = shares[0].clone().into_bytes();
     let mut share_2 = shares[3].clone().into_bytes();
 
-    share_1[0] = '2' as u8;
-    share_2[0] = '2' as u8;
+    share_1[0] = b'2';
+    share_2[0] = b'2';
 
     let sub_shares = vec![
         String::from_utf8_lossy(&share_1).into_owned(),
         String::from_utf8_lossy(&share_2).into_owned(),
     ];
 
-    match recover_secret(&sub_shares, false) {
-        Err(_) => assert!(true),
-        Ok(recovered) => assert_ne!(original, recovered),
+    if let Ok(recovered) = recover_secret(&sub_shares, false) {
+        assert_ne!(original, recovered);
     }
 }

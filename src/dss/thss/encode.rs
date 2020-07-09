@@ -1,5 +1,5 @@
-use gf256::Gf256;
-use poly::Poly;
+use crate::gf256::Gf256;
+use crate::poly::Poly;
 
 /// Encode the given `secret` using the `ThSS[N].Share` algorithm described
 /// in the *New directions in Secret Sharing* paper.
@@ -7,7 +7,7 @@ use poly::Poly;
 /// Reference: Figure 7 from the *New Directions in Secret Sharing* paper.
 pub(crate) fn encode_secret(secret: &[u8], k: u8, share_id: u8, rands: &[u8]) -> Vec<u8> {
     secret
-        .into_iter()
+        .iter()
         .enumerate()
         .map(|(i, m)| {
             let k_pred = (k - 1) as usize;

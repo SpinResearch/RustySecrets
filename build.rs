@@ -25,6 +25,7 @@ struct Tables {
     log: [u8; 256],
 }
 
+#[allow(clippy::match_wild_err_arm)]
 fn generate_tables(mut file: &File) {
     let mut tabs = Tables {
         exp: [0; 256],
@@ -46,10 +47,10 @@ fn generate_tables(mut file: &File) {
 }
 
 fn farray(array: [u8; 256], f: &mut fmt::Formatter) -> fmt::Result {
-    for (index, value) in array.into_iter().enumerate() {
-        try!(write!(f, "{}", value));
+    for (index, value) in array.iter().enumerate() {
+        write!(f, "{}", value)?;
         if index != array.len() - 1 {
-            try!(write!(f, ","));
+            write!(f, ",")?;
         }
     }
     Ok(())
@@ -57,13 +58,13 @@ fn farray(array: [u8; 256], f: &mut fmt::Formatter) -> fmt::Result {
 
 impl fmt::Display for Tables {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(f, "Tables {{\n"));
-        try!(write!(f, "    exp: ["));
-        try!(farray(self.exp, f));
-        try!(write!(f, "],\n"));
-        try!(write!(f, "    log: ["));
-        try!(farray(self.log, f));
-        try!(write!(f, "]\n"));
+        writeln!(f, "Tables {{")?;
+        write!(f, "    exp: [")?;
+        farray(self.exp, f)?;
+        writeln!(f, "],")?;
+        write!(f, "    log: [")?;
+        farray(self.log, f)?;
+        writeln!(f, "]")?;
         write!(f, "}};")
     }
 }

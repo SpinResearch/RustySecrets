@@ -3,7 +3,7 @@
 //! These traits are currently not exposed, but this might
 //! change in the future.
 
-use errors::*;
+use crate::errors::*;
 
 pub(crate) mod validation;
 

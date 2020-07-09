@@ -1,6 +1,4 @@
-use std;
-
-use errors::*;
+use crate::errors::*;
 
 use ring::error::Unspecified;
 use ring::rand::SecureRandom;
@@ -23,7 +21,7 @@ pub(crate) fn random_bytes_count(threshold: u8, message_size: usize) -> usize {
 }
 
 /// Attempts to read `count` random bytes from the given secure random generator.
-pub(crate) fn random_bytes(random: &SecureRandom, count: usize) -> Result<Vec<u8>> {
+pub(crate) fn random_bytes(random: &dyn SecureRandom, count: usize) -> Result<Vec<u8>> {
     if count == 0 {
         return Ok(Vec::new());
     }

@@ -1,6 +1,6 @@
 //! SSS provides Shamir's secret sharing with raw data.
 
-use errors::*;
+use crate::errors::*;
 
 mod share;
 pub(crate) use self::share::*;
@@ -13,13 +13,14 @@ pub(crate) use self::scheme::*;
 
 mod encode;
 
-use rand::{OsRng, Rng};
+use rand::{rngs::OsRng, Rng};
 use ring::digest::{Algorithm, SHA512};
-static HASH_ALGO: &'static Algorithm = &SHA512;
+
+static HASH_ALGO: &Algorithm = &SHA512;
 
 /// Performs threshold k-out-of-n Shamir's secret sharing.
 ///
-/// Uses a `rand::OsRng` as a source of entropy.
+/// Uses a `rand::rngs::OsRng` as a source of entropy.
 ///
 /// # Examples
 ///
@@ -40,7 +41,7 @@ static HASH_ALGO: &'static Algorithm = &SHA512;
 /// ```
 pub fn split_secret(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result<Vec<String>> {
     SSS::default()
-        .split_secret(&mut OsRng::new()?, k, n, secret, sign_shares)
+        .split_secret(&mut OsRng, k, n, secret, sign_shares)
         .map(|shares| shares.into_iter().map(Share::into_string).collect())
 }
 
@@ -50,14 +51,14 @@ pub fn split_secret(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result<Ve
 ///
 /// ```
 /// # extern crate rusty_secrets;
-/// # extern crate rand;
+/// # extern crate rand_chacha;
 /// #
-/// # use rand::ChaChaRng;
+/// # use rand_chacha::ChaChaRng;
+/// # use rand_chacha::rand_core::SeedableRng;
 /// #
 /// # fn some_custom_rng() -> ChaChaRng {
-/// #     let mut rng = ChaChaRng::new_unseeded();
-/// #     rng.set_counter(42, 42);
-/// #     rng
+/// #     let seed = [42u8; 32];
+/// #     ChaChaRng::from_seed(seed)
 /// # }
 /// #
 /// # fn main() {

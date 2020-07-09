@@ -4,15 +4,15 @@ use std::fmt;
 
 use ring::rand::{SecureRandom, SystemRandom};
 
-use dss::random::{random_bytes, random_bytes_count, MAX_MESSAGE_SIZE};
-use errors::*;
-use gf256::Gf256;
-use lagrange;
-use share::validation::{validate_share_count, validate_shares};
+use crate::dss::random::{random_bytes, random_bytes_count, MAX_MESSAGE_SIZE};
+use crate::errors::*;
+use crate::gf256::Gf256;
+use crate::lagrange;
+use crate::share::validation::{validate_share_count, validate_shares};
 
-use super::AccessStructure;
 use super::encode::encode_secret;
 use super::share::*;
+use super::AccessStructure;
 
 /// We bound the message size at about 16MB to avoid overflow in `random_bytes_count`.
 /// Moreover, given the current performances, it is almost unpractical to run
@@ -23,7 +23,7 @@ const MAX_SECRET_SIZE: usize = MAX_MESSAGE_SIZE;
 #[allow(missing_debug_implementations)]
 pub(crate) struct ThSS {
     /// The randomness source
-    random: Box<SecureRandom>,
+    random: Box<dyn SecureRandom>,
 }
 
 impl fmt::Debug for ThSS {
@@ -40,7 +40,7 @@ impl Default for ThSS {
 
 impl ThSS {
     /// Constructs a new sharing scheme
-    pub fn new(random: Box<SecureRandom>) -> Self {
+    pub fn new(random: Box<dyn SecureRandom>) -> Self {
         Self { random }
     }
 
@@ -124,7 +124,7 @@ impl ThSS {
             .collect();
 
         let access_structure = AccessStructure {
-            threshold: threshold,
+            threshold,
             shares_count: shares.first().unwrap().shares_count,
         };
 

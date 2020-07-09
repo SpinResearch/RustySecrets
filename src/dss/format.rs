@@ -1,10 +1,7 @@
-use std::error::Error;
-
-use base64;
 use protobuf::{self, Message};
 
-use errors::*;
-use proto::dss::ShareProto;
+use crate::errors::*;
+use crate::proto::dss::ShareProto;
 
 const BASE64_CONFIG: base64::Config = base64::STANDARD_NO_PAD;
 
@@ -24,7 +21,7 @@ pub(crate) fn parse_share_protobuf(raw: &str) -> Result<ShareProto> {
     let share_proto = protobuf::parse_from_bytes::<ShareProto>(data.as_slice()).map_err(|e| {
         ErrorKind::ShareParsingError(format!(
             "Protobuf decoding of data block failed with error: {} .",
-            e.description()
+            e
         ))
     })?;
 

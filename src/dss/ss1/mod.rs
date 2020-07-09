@@ -21,7 +21,7 @@
 //!
 //! - *New Directions in Secret Sharing* (TODO: Full reference)
 
-use errors::*;
+use crate::errors::*;
 
 mod serialize;
 
@@ -32,7 +32,7 @@ mod scheme;
 pub use self::scheme::Reproducibility;
 use self::scheme::SS1;
 
-use dss::AccessStructure;
+use crate::dss::AccessStructure;
 
 /// Performs threshold k-out-of-n deterministic secret sharing.
 ///
@@ -185,10 +185,8 @@ mod tests {
         let seed = vec![1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16u8];
         let shares_1 =
             split_secret(7, 10, &secret, Reproducibility::seeded(seed.clone()), &None).unwrap();
-        let shares_2 =
-            split_secret(7, 10, &secret, Reproducibility::seeded(seed.clone()), &None).unwrap();
+        let shares_2 = split_secret(7, 10, &secret, Reproducibility::seeded(seed), &None).unwrap();
 
         assert_eq!(shares_1, shares_2);
     }
-
 }

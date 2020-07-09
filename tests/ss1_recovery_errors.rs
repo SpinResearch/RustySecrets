@@ -17,7 +17,8 @@ fn get_test_hash() -> Vec<u8> {
         TEST_SECRET,
         TEST_REPRODUCIBILITY,
         &None,
-    ).unwrap();
+    )
+    .unwrap();
 
     good_shares[0].hash.clone()
 }
@@ -47,7 +48,7 @@ fn test_recover_2_parts_share() {
         threshold: TEST_THRESHOLD,
         shares_count: TEST_SHARES_COUNT,
         data: "".to_string().into_bytes(),
-        hash: hash.clone(),
+        hash,
         metadata: None,
     };
 
@@ -74,7 +75,7 @@ fn test_recover_0_share_num() {
         threshold: TEST_THRESHOLD,
         shares_count: TEST_SHARES_COUNT,
         data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
-        hash: hash.clone(),
+        hash,
         metadata: None,
     };
 
@@ -126,7 +127,7 @@ fn test_recover_duplicate_shares_number() {
         threshold: TEST_THRESHOLD,
         shares_count: TEST_SHARES_COUNT,
         data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
-        hash: hash.clone(),
+        hash,
         metadata: None,
     };
 
@@ -152,7 +153,7 @@ fn test_recover_too_few_shares() {
         threshold: TEST_THRESHOLD + 1,
         shares_count: TEST_SHARES_COUNT + 1,
         data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
-        hash: hash.clone(),
+        hash,
         metadata: None,
     };
 

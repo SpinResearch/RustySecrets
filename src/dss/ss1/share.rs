@@ -1,8 +1,8 @@
 use super::serialize::{share_from_string, share_to_string};
-use errors::*;
-use share::IsShare;
+use crate::errors::*;
+use crate::share::IsShare;
 
-pub use dss::metadata::MetaData;
+pub use crate::dss::metadata::MetaData;
 
 /// A share identified by an `id`, a threshold `k`, a number of total shares `n`,
 /// the `data` held in the share, and the share's `metadata`.
