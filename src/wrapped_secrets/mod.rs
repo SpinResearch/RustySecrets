@@ -3,14 +3,14 @@
 use crate::errors::*;
 use crate::proto::wrapped::SecretProto;
 
-use rand::{OsRng, Rng};
+use rand::{rngs::OsRng, Rng};
 
 mod scheme;
 pub(crate) use self::scheme::*;
 
 /// Performs threshold k-out-of-n Shamir's secret sharing.
 ///
-/// Uses an `OsRng` as a source of entropy.
+/// Uses a `rand::rngs::OsRng` as a source of entropy.
 ///
 /// # Examples
 ///
@@ -45,7 +45,7 @@ pub fn split_secret(
     sign_shares: bool,
 ) -> Result<Vec<String>> {
     WrappedSecrets::default()
-        .split_secret(&mut OsRng::new()?, k, n, secret, mime_type, sign_shares)
+        .split_secret(&mut OsRng, k, n, secret, mime_type, sign_shares)
         .map(|shares| shares.into_iter().map(Share::into_string).collect())
 }
 

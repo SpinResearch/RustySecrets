@@ -22,25 +22,25 @@ travis-ci = { repository = "SpinResearch/RustySecrets", branch = "master" }
 coveralls = { repository = "SpinResearch/RustySecrets", branch = "master", service = "github" }
 
 [features]
-default = []
+default = ["dss"]
 dss     = []
 
 [dependencies]
-base64      = "0.9.0"
-rand        = "^0.4.2"
-ring        = "^0.12"
-merkle_sigs = "^1.4"
+base64      = "0.12"
+rand        = "0.7"
+ring        = "0.12"
+merkle_sigs = "1.4"
 protobuf    = ">= 1.4, < 1.6"
+rand_chacha = "0.2.2"
 
 [dependencies.error-chain]
-version          = "0.11.0"
+version          = "0.12.0"
 default-features = false
 
 [dev-dependencies]
-itertools  = "^0.7"
-quickcheck = "^0.4"
-flate2     = "^0.2"
-rand       = "^0.4.2"
+itertools  = "0.9"
+quickcheck = "0.9"
+flate2     = "0.2"
 
 [profile.bench]
 opt-level        = 3

@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
-use rand::{ChaChaRng, Rng, SeedableRng};
+use rand::{RngCore, SeedableRng};
+use rand_chacha::ChaCha20Rng;
 use ring::digest::{Context, SHA256};
 use ring::rand::{SecureRandom, SystemRandom};
 use ring::{hkdf, hmac};
@@ -8,7 +9,6 @@ use ring::{hkdf, hmac};
 use super::share::*;
 use crate::dss::random::{random_bytes_count, FixedRandom, MAX_MESSAGE_SIZE};
 use crate::dss::thss::{MetaData, ThSS};
-use crate::dss::utils;
 use crate::dss::{thss, AccessStructure};
 use crate::errors::*;
 use crate::share::validation::{validate_share_count, validate_shares};
@@ -198,14 +198,14 @@ impl SS1 {
             }
             Reproducibility::Reproducible => {
                 let seed = self.generate_seed(DEFAULT_PRESEED, secret, metadata);
-                let mut rng = ChaChaRng::from_seed(&seed);
+                let mut rng = ChaCha20Rng::from_seed(seed);
                 let mut result = vec![0u8; self.random_padding_len];
                 rng.fill_bytes(result.as_mut_slice());
                 Ok(result)
             }
             Reproducibility::Seeded(preseed) => {
                 let seed = self.generate_seed(&preseed, secret, metadata);
-                let mut rng = ChaChaRng::from_seed(&seed);
+                let mut rng = ChaCha20Rng::from_seed(seed);
                 let mut result = vec![0u8; self.random_padding_len];
                 rng.fill_bytes(result.as_mut_slice());
                 Ok(result)
@@ -222,7 +222,7 @@ impl SS1 {
         preseed: &[u8],
         secret: &[u8],
         metadata: &Option<MetaData>,
-    ) -> Vec<u32> {
+    ) -> [u8; 32] {
         let mut ctx = Context::new(&SHA256);
         ctx.update(preseed);
         ctx.update(secret);
@@ -232,14 +232,9 @@ impl SS1 {
         let preseed_hash = ctx.finish();
 
         let salt = hmac::SigningKey::new(&SHA256, &[]);
-        let mut seed_bytes = vec![0u8; 32];
+        let mut seed_bytes = [0u8; 32];
         hkdf::extract_and_expand(&salt, preseed_hash.as_ref(), &[], &mut seed_bytes);
-
-        // We can safely call `utils::slice_u8_to_slice_u32` because
-        // the `digest` produced with `SHA256` is 256 bits long, as is
-        // `seed_bytes`, and the latter can thus be represented both as a
-        // slice of 32 bytes or as a slice of 8 32-bit words.
-        utils::slice_u8_to_slice_u32(&seed_bytes).to_vec()
+        seed_bytes
     }
 
     /// Recover the secret from the given set of shares
