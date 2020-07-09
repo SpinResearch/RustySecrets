@@ -1,5 +1,4 @@
 use std::collections::{HashMap, HashSet};
-use std::error::Error;
 
 use merkle_sigs::verify_data_vec_signature;
 use merkle_sigs::{MerklePublicKey, Proof};
@@ -35,7 +34,7 @@ impl Share {
     /// Attempts to parse all the given strings into shares.
     /// Calls out to `Share::from_string`.
     pub(crate) fn parse_all(raws: &[String], is_signed: bool) -> Result<Vec<Share>> {
-        raws.into_iter()
+        raws.iter()
             .map(|raw| Self::from_string(raw, is_signed))
             .collect()
     }
@@ -104,7 +103,8 @@ impl IsSignedShare for Share {
                 format_share_for_signing(share.threshold, share.id, share.data.as_slice()),
                 &(signature.to_vec(), proof.clone()),
                 root_hash,
-            ).map_err(|e| ErrorKind::InvalidSignature(share.id, String::from(e.description())))?;
+            )
+            .map_err(|e| ErrorKind::InvalidSignature(share.id, e.to_string()))?;
 
             rh_compatibility_sets
                 .entry(root_hash)

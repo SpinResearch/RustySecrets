@@ -8,9 +8,9 @@ extern crate test;
 mod shared;
 
 mod ss1 {
+    use super::shared;
 
     use rusty_secrets::dss::ss1;
-    use shared;
     use test::{black_box, Bencher};
 
     macro_rules! bench_generate {
@@ -26,7 +26,8 @@ mod ss1 {
                         &secret,
                         ss1::Reproducibility::reproducible(),
                         &None,
-                    ).unwrap();
+                    )
+                    .unwrap();
                     black_box(shares);
                 });
             }
@@ -56,5 +57,4 @@ mod ss1 {
 
     bench_generate!(generate_1kb_10_25, 10, 25, secret_1kb);
     bench_recover!(recover_1kb_10_25, 10, 25, secret_1kb);
-
 }

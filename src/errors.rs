@@ -1,6 +1,6 @@
 //! Define the various error kinds specific to deterministic secret sharing.
 
-#![allow(unknown_lints, missing_docs)]
+#![allow(unknown_lints, missing_docs, unused_doc_comments)]
 
 use std::collections::HashSet;
 use std::fmt;
@@ -17,7 +17,7 @@ pub(crate) static MAX_SHARES: u8 = 255;
 /// SSS Shares should be structured as k-n-data hence 3 parts
 pub(crate) static SSS_SHARE_PARTS_COUNT: usize = 3;
 
-/// Create the Error, ErrorKind, ResultExt, and Result types
+// Create the Error, ErrorKind, ResultExt, and Result types
 error_chain! {
     errors {
         ThresholdTooBig(k: u8, n: u8) {
@@ -126,7 +126,7 @@ error_chain! {
 
         InconsistentSecretLengths(id: u8, slen_: usize, ids: Vec<u8>, slen: usize) {
             description("The shares are incompatible with each other because they do not all have the same secret length.")
-            display("The share identifier {} had secret length {}, while the secret length {} was found for share identifier(s): {}.", id, slen_, slen, no_more_than_five(ids))
+            display("The share identifier {} had secret length {}, while the secret length {} was found for share identifier(s): {}.", id, slen_, slen, no_more_than_five(&ids))
         }
 
         InconsistentShares {
@@ -148,8 +148,8 @@ error_chain! {
 }
 
 /// Takes a `Vec<T>` and formats it like the normal `fmt::Debug` implementation, unless it has more
-//than five elements, in which case the rest are replaced by ellipsis.
-fn no_more_than_five<T: fmt::Debug + fmt::Display>(vec: &Vec<T>) -> String {
+/// than five elements, in which case the rest are replaced by ellipsis.
+fn no_more_than_five<T: fmt::Debug + fmt::Display>(vec: &[T]) -> String {
     let len = vec.len();
     if len > 5 {
         let mut string = String::from("[");

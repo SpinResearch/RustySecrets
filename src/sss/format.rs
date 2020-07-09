@@ -1,10 +1,9 @@
-use base64;
 use crate::errors::*;
-use merkle_sigs::{MerklePublicKey, Proof, PublicKey};
 use crate::proto::wrapped::ShareProto;
-use protobuf::{self, Message, RepeatedField};
 use crate::sss::{Share, HASH_ALGO};
-use std::error::Error;
+
+use merkle_sigs::{MerklePublicKey, Proof, PublicKey};
+use protobuf::{self, Message, RepeatedField};
 
 const BASE64_CONFIG: base64::Config = base64::STANDARD_NO_PAD;
 
@@ -17,8 +16,7 @@ pub(crate) fn share_to_string(
     let mut share_protobuf = ShareProto::new();
     share_protobuf.set_shamir_data(share);
 
-    if signature_pair.is_some() {
-        let (signature, proof) = signature_pair.unwrap();
+    if let Some((signature, proof)) = signature_pair {
         share_protobuf.set_signature(RepeatedField::from_vec(signature));
         share_protobuf.set_proof(proof.write_to_bytes().unwrap());
     }
@@ -65,7 +63,7 @@ pub(crate) fn share_from_string(s: &str, is_signed: bool) -> Result<Share> {
         protobuf::parse_from_bytes::<ShareProto>(raw_data.as_slice()).map_err(|e| {
             ErrorKind::ShareParsingError(format!(
                 "Protobuf decoding of data block failed with error: {} .",
-                e.description()
+                e
             ))
         })?;
 

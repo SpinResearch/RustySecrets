@@ -10,9 +10,9 @@ use crate::gf256::Gf256;
 use crate::lagrange;
 use crate::share::validation::{validate_share_count, validate_shares};
 
-use super::AccessStructure;
 use super::encode::encode_secret;
 use super::share::*;
+use super::AccessStructure;
 
 /// We bound the message size at about 16MB to avoid overflow in `random_bytes_count`.
 /// Moreover, given the current performances, it is almost unpractical to run
@@ -124,7 +124,7 @@ impl ThSS {
             .collect();
 
         let access_structure = AccessStructure {
-            threshold: threshold,
+            threshold,
             shares_count: shares.first().unwrap().shares_count,
         };
 

@@ -1,4 +1,3 @@
-use std;
 use std::mem::transmute;
 
 use ring::digest::{Algorithm, Context};

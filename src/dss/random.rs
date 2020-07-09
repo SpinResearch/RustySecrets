@@ -1,5 +1,3 @@
-use std;
-
 use crate::errors::*;
 
 use ring::error::Unspecified;

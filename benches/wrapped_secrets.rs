@@ -7,9 +7,9 @@ extern crate test;
 mod shared;
 
 mod wrapped_secrets {
+    use super::shared;
 
     use rusty_secrets::wrapped_secrets;
-    use shared;
     use test::{black_box, Bencher};
 
     macro_rules! bench_generate {
@@ -55,5 +55,4 @@ mod wrapped_secrets {
 
     bench_generate!(generate_1kb_10_25_signed, 10, 25, secret_1kb, true);
     bench_recover!(recover_1kb_10_25_signed, 10, 25, secret_1kb, true);
-
 }

@@ -7,9 +7,9 @@ extern crate test;
 mod shared;
 
 mod sss {
+    use super::shared;
 
     use rusty_secrets::sss;
-    use shared;
     use test::{black_box, Bencher};
 
     macro_rules! bench_generate {
@@ -53,5 +53,4 @@ mod sss {
 
     bench_generate!(generate_1kb_10_25_signed, 10, 25, secret_1kb, true);
     bench_recover!(recover_1kb_10_25_signed, 10, 25, secret_1kb, true);
-
 }

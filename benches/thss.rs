@@ -8,9 +8,9 @@ extern crate test;
 mod shared;
 
 mod thss {
+    use super::shared;
 
     use rusty_secrets::dss::thss;
-    use shared;
     use test::{black_box, Bencher};
 
     macro_rules! bench_generate {
@@ -48,5 +48,4 @@ mod thss {
 
     bench_generate!(generate_1kb_10_25, 10, 25, secret_1kb);
     bench_recover!(recover_1kb_10_25, 10, 25, secret_1kb);
-
 }

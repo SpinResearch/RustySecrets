@@ -1,5 +1,3 @@
-use std;
-
 use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
 
@@ -7,7 +5,7 @@ use std::hash::Hash;
 /// Despite `std::mem::transmute` being very unsafe in
 /// general, this should actually be safe as long as
 /// `input` contains a multiple of 4 bytes.
-#[allow(unsafe_code)]
+#[allow(unsafe_code, clippy::transmute_ptr_to_ptr)]
 pub(crate) fn slice_u8_to_slice_u32(input: &[u8]) -> &[u32] {
     assert_eq!(input.len() % 4, 0);
     unsafe { std::mem::transmute(input) }

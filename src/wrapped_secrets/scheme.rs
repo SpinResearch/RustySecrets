@@ -1,11 +1,11 @@
 use crate::errors::*;
-use crate::proto::VersionProto;
 use crate::proto::wrapped::SecretProto;
-use protobuf;
+use crate::proto::VersionProto;
+use crate::sss::SSS;
+
 use protobuf::Message;
 use rand::Rng;
 
-use crate::sss::SSS;
 pub(crate) use crate::sss::Share;
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]

@@ -175,7 +175,7 @@ impl SS1 {
                 shares_count: share.shares_count,
                 data: share.data,
                 hash: hash.to_vec(),
-                metadata: share.metadata.clone(),
+                metadata: share.metadata,
             })
             .collect();
 

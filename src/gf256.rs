@@ -1,6 +1,8 @@
 //! This module provides the Gf256 type which is used to represent
 //! elements of a finite field with 256 elements.
 
+#![allow(clippy::misrefactored_assign_op)]
+
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 include!(concat!(env!("OUT_DIR"), "/nothinghardcoded.rs"));
@@ -46,6 +48,8 @@ impl Gf256 {
             Some(tabs.log[self.poly as usize])
         }
     }
+
+    #[allow(clippy::assign_op_pattern)]
     pub fn pow(&self, mut exp: u8) -> Gf256 {
         let mut base = *self;
         let mut acc = Self::one();
@@ -68,7 +72,9 @@ impl Gf256 {
 
 impl Add<Gf256> for Gf256 {
     type Output = Gf256;
+
     #[inline]
+    #[allow(clippy::suspicious_arithmetic_impl)]
     fn add(self, rhs: Gf256) -> Gf256 {
         Gf256::from_byte(self.poly ^ rhs.poly)
     }
@@ -83,7 +89,9 @@ impl AddAssign<Gf256> for Gf256 {
 
 impl Sub<Gf256> for Gf256 {
     type Output = Gf256;
+
     #[inline]
+    #[allow(clippy::suspicious_arithmetic_impl)]
     fn sub(self, rhs: Gf256) -> Gf256 {
         Gf256::from_byte(self.poly ^ rhs.poly)
     }
@@ -231,6 +239,7 @@ mod tests {
                 (a + b) + c == a + (b + c)
             }
 
+            #[allow(clippy::eq_op)]
             fn law_commutativity(a: Gf256, b: Gf256) -> bool {
                 a + b == b + a
             }
@@ -257,6 +266,7 @@ mod tests {
                 (a * b) * c == a * (b * c)
             }
 
+            #[allow(clippy::eq_op)]
             fn law_commutativity(a: Gf256, b: Gf256) -> bool {
                 a * b == b * a
             }
@@ -280,7 +290,5 @@ mod tests {
                 TestResult::from_bool(left && right)
             }
         }
-
     }
-
 }

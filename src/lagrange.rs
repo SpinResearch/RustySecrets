@@ -91,7 +91,6 @@ mod tests {
     use super::*;
     use crate::gf256::*;
     use quickcheck::*;
-    use std;
 
     quickcheck! {
 
