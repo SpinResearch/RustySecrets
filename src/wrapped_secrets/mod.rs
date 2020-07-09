@@ -55,17 +55,21 @@ pub fn split_secret(
 ///
 /// ```
 /// # extern crate rusty_secrets;
-/// # extern crate rand;
+/// # extern crate rand_chacha;
 /// #
 /// # fn main() {
 /// use rusty_secrets::wrapped_secrets::split_secret_rng;
-/// use rand::ChaChaRng;
+/// use rand_chacha::ChaChaRng;
+/// use rand_chacha::rand_core::SeedableRng;
+///
+/// let seed = [42u8; 32]; // REPLACE WITH PROPER SEED
+/// let mut rng = ChaChaRng::from_seed(seed);
 ///
 /// let secret = "These programs were never about terrorism: they’re about economic spying, \
 ///               social control, and diplomatic manipulation. They’re about power.";
 ///
 /// let result = split_secret_rng(
-///     &mut ChaChaRng::new_unseeded(),
+///     &mut rng,
 ///     7,
 ///     10,
 ///     &secret.as_bytes(),

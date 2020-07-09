@@ -51,14 +51,14 @@ pub fn split_secret(k: u8, n: u8, secret: &[u8], sign_shares: bool) -> Result<Ve
 ///
 /// ```
 /// # extern crate rusty_secrets;
-/// # extern crate rand;
+/// # extern crate rand_chacha;
 /// #
-/// # use rand::ChaChaRng;
+/// # use rand_chacha::ChaChaRng;
+/// # use rand_chacha::rand_core::SeedableRng;
 /// #
 /// # fn some_custom_rng() -> ChaChaRng {
-/// #     let mut rng = ChaChaRng::new_unseeded();
-/// #     rng.set_counter(42, 42);
-/// #     rng
+/// #     let seed = [42u8; 32];
+/// #     ChaChaRng::from_seed(seed)
 /// # }
 /// #
 /// # fn main() {

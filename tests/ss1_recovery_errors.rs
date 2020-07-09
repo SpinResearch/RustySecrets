@@ -75,7 +75,7 @@ fn test_recover_0_share_num() {
         threshold: TEST_THRESHOLD,
         shares_count: TEST_SHARES_COUNT,
         data: "YJZQDGm22Y77Gw".to_string().into_bytes(),
-        hash: hash.clone(),
+        hash,
         metadata: None,
     };
 
